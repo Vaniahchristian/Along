@@ -15,7 +15,7 @@ function SelectField({ id, label, value, onChange, options }) {
 }
 
 export function CreateScreen() {
-  const { publishPlan } = useAlong();
+  const { publishPlan, busy } = useAlong();
   const [category, setCategory] = useState('Fitness');
   const [size, setSize] = useState('2');
 
@@ -27,7 +27,7 @@ export function CreateScreen() {
     if (date <= new Date()) return toast.error('Choose a future date for your plan.');
     const groupSize = Number(size);
     publishPlan({
-      id: Date.now(), category, size: groupSize, spots: groupSize - 1, status: 'open', host: 'You', initials: 'YO', tone: '',
+      category, size: groupSize, spots: groupSize - 1, status: 'open',
       title: String(form.get('title')).trim(), venue: String(form.get('venue')).trim(), intro: String(form.get('intro')).trim(),
       date: date.toLocaleDateString('en-UG', { weekday: 'short', day: 'numeric', month: 'short' }),
       time: date.toLocaleTimeString('en-UG', { hour: 'numeric', minute: '2-digit' }),
@@ -43,7 +43,7 @@ export function CreateScreen() {
       <div className="grid grid-cols-2 gap-4 max-[760px]:grid-cols-1"><div className="mb-4 grid gap-2"><Label htmlFor="date" className="text-[13px] font-extrabold">Date</Label><Input className="h-11 rounded-xl border-border bg-card" id="date" name="date" type="date" required /></div><div className="mb-4 grid gap-2"><Label htmlFor="time" className="text-[13px] font-extrabold">Time</Label><Input className="h-11 rounded-xl border-border bg-card" id="time" name="time" type="time" required /></div></div>
       <div className="mb-4 grid gap-2"><Label htmlFor="intro" className="text-[13px] font-extrabold">What should people know?</Label><Textarea className="min-h-[105px] rounded-xl border-border bg-card" id="intro" name="intro" required maxLength={320} placeholder="The pace, vibe, and why you'd like company" /></div>
       <div className="grid grid-cols-2 gap-4 max-[760px]:grid-cols-1"><div className="mb-4 grid gap-2"><Label htmlFor="meet" className="text-[13px] font-extrabold">Where exactly will you meet?</Label><Input className="h-11 rounded-xl border-border bg-card" id="meet" name="meet" required placeholder="e.g. At the front entrance" /></div><div className="mb-4 grid gap-2"><Label htmlFor="bring" className="text-[13px] font-extrabold">What should they bring?</Label><Input className="h-11 rounded-xl border-border bg-card" id="bring" name="bring" placeholder="e.g. Comfortable shoes" /></div></div>
-      <ActionButton type="submit">Publish plan <ArrowRight aria-hidden="true" /></ActionButton>
+      <ActionButton type="submit" disabled={busy}>{busy ? 'Publishing…' : 'Publish plan'} <ArrowRight aria-hidden="true" /></ActionButton>
     </form></Panel>
     <Panel className="h-fit border-0 bg-soft-green"><h2 className="mb-3 font-heading text-[22px] font-extrabold text-forest">A good plan feels easy to join.</h2><p className="text-forest">Specific details help someone decide, show up, and find you when they arrive.</p><ol className="mt-4 list-decimal space-y-3 pl-5 text-forest"><li>Choose a public venue with a clear meeting point.</li><li>Say whether it’s beginner friendly and mention likely costs.</li><li>Keep the group small enough to coordinate easily.</li></ol></Panel>
   </div></>;

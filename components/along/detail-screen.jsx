@@ -2,17 +2,17 @@
 
 import { CalendarDays, MapPin, ShieldCheck, UsersRound } from 'lucide-react';
 import { useAlong } from './context';
-import { ActionButton, BackButton, BeginnerBadge, CategoryBadge, Panel, PersonAvatar, ReportForm } from './shared';
+import { ActionButton, BackButton, BeginnerBadge, CategoryBadge, Panel, PersonAvatar } from './shared';
 
 export function DetailScreen() {
-  const { data, selectedPlanId, openChat, requestJoin, acceptHostRequest } = useAlong();
+  const { data, selectedPlanId, openChat, requestJoin, approveRequest, busy } = useAlong();
   const plan = data.plans.find((item) => item.id === selectedPlanId);
-  if (!plan) return <><BackButton /><Panel><h1 className="font-heading text-2xl font-extrabold">Plan not found</h1><p className="text-muted-foreground">This plan is no longer in the demo.</p></Panel></>;
+  if (!plan) return <><BackButton /><Panel><h1 className="font-heading text-2xl font-extrabold">Plan not found</h1><p className="text-muted-foreground">This plan may have been removed.</p></Panel></>;
 
   const requested = data.requests.includes(plan.id);
   const joined = data.joined.includes(plan.id);
   const mine = plan.host === 'You';
-  const incoming = data.hostRequests.includes(plan.id);
+  const incoming = data.hostRequests.filter((request) => request.planId === plan.id);
 
   return <><BackButton /><div className="grid grid-cols-[minmax(0,1.3fr)_minmax(290px,.7fr)] gap-5 max-[760px]:grid-cols-1">
     <Panel><div className="flex flex-wrap gap-1.5"><CategoryBadge category={plan.category} />{plan.beginnerFriendly && <BeginnerBadge />}</div><h1 className="mt-4 mb-4 font-heading text-[clamp(1.8rem,3.3vw,2.7rem)] leading-[1.14] font-extrabold tracking-[-.04em]">{plan.title}</h1><p className="max-w-[65ch] text-muted-foreground">{plan.intro}</p>
@@ -27,8 +27,8 @@ export function DetailScreen() {
       <Panel><h2 className="mb-3 font-heading text-lg font-extrabold">{mine ? 'Your plan' : 'Meet your host'}</h2><div className="flex items-center gap-3"><PersonAvatar initials={plan.initials} name={plan.host} tone={plan.tone} large /><div><strong className="block">{plan.host}</strong><span className="text-xs text-muted-foreground">Hosting a public activity</span></div></div><div className="mt-4 flex items-start gap-2 rounded-xl bg-secondary p-3 text-xs text-secondary-foreground"><ShieldCheck className="size-4 shrink-0" aria-hidden="true" /> Take a moment to review the place and plan. Share your plans with someone you trust and meet at the listed public venue.</div>
         {mine || joined ? <ActionButton type="button" className="mt-4 w-full" onClick={() => openChat(plan.id)}>Open group chat</ActionButton> : requested ? <><ActionButton className="mt-4 w-full" disabled>Request sent</ActionButton><p className="mt-2 text-xs text-muted-foreground">You’ll see this in My plans until the host responds.</p></> : plan.spots > 0 ? <><ActionButton type="button" className="mt-4 w-full" onClick={() => requestJoin(plan.id)}>Ask to join</ActionButton><p className="mt-2 text-xs text-muted-foreground">The host will review your request before chat opens.</p></> : <p className="mt-4 text-xs text-muted-foreground">This plan is full.</p>}
       </Panel>
-      {mine && <Panel><h2 className="mb-3 font-heading text-lg font-extrabold">Join requests</h2>{incoming ? <><div className="flex items-center gap-3"><PersonAvatar initials="NA" name="Nina A." tone="pink" large /><div><strong className="block">Nina A.</strong><span className="text-xs text-muted-foreground">Interested in joining · sample request</span></div></div><ActionButton type="button" className="mt-4 w-full" onClick={() => acceptHostRequest(plan.id)}>Accept Nina</ActionButton></> : <p className="text-xs text-muted-foreground">No requests are waiting. When someone asks to join, review their profile here.</p>}</Panel>}
-      <Panel><h2 className="mb-3 font-heading text-lg font-extrabold">Before you meet</h2><p className="text-xs text-muted-foreground">Keep first meetups in public places. You can leave a plan, and report anything that feels wrong.</p><ReportForm planId={plan.id} /></Panel>
+      {mine && <Panel><h2 className="mb-3 font-heading text-lg font-extrabold">Join requests</h2>{incoming.length ? <div className="grid gap-4">{incoming.map((request) => <div key={request.id} className="flex flex-wrap items-center gap-3"><PersonAvatar initials={request.initials} name={request.name} tone="pink" large /><div className="min-w-0 flex-1"><strong className="block">{request.name}</strong><span className="text-xs text-muted-foreground">Interested in joining</span></div><ActionButton type="button" disabled={busy} onClick={() => approveRequest(plan.id, request.id)}>Accept</ActionButton></div>)}</div> : <p className="text-xs text-muted-foreground">No requests are waiting.</p>}</Panel>}
+      <Panel><h2 className="mb-3 font-heading text-lg font-extrabold">Before you meet</h2><p className="text-xs text-muted-foreground">Keep first meetups in public places. Share the details with someone you trust.</p></Panel>
     </div>
   </div></>;
 }

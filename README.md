@@ -1,30 +1,17 @@
-# Along — interactive UI concept
+# Along
 
-Along helps someone turn a specific activity into a small public plan with company. This is a responsive Next.js App Router prototype built from the Stitch concepts in `stitch_activity_buddy_finder_ui/`.
+Along helps people make a specific public activity plan and find someone to join them. The site uses Next.js App Router, React, Tailwind CSS, shadcn controls, and Supabase.
 
-Run `npm install` and `npm run dev`, then open `http://localhost:3000` for the public landing page. Its calls to action open the interactive demo at `/app`. The entry screens use the supplied Along logo in `public/along-logo.png`. Sign in with `demo@along.app` / `along123`, create a demo profile, or continue as a guest. Plans, requests, memberships, and messages live in the Supabase project **along**. Copy `.env.example` to `.env.local` with your project URL and anon key. Use **Profile → Reset sample data** to reseed the database.
+## Run locally
 
-The route and metadata live in `app/`. Each screen is a React component in `components/along/`, styled with Tailwind utilities and the installed shadcn controls. `lib/along-db.js` talks to Supabase; `lib/demo-state.mjs` still holds the pure reducer used by smoke tests.
+1. Copy `.env.example` to `.env.local` and set the Along project's URL and publishable key.
+2. Run `npm install` and `npm run dev`.
+3. Open `http://localhost:3000` for the public home page or `/app` for the product.
 
-## The main journey
+The browser client uses Supabase Auth for email signup, confirmation, sign in, password recovery, session restore, and sign out. It never stores passwords in local storage. User profiles, plans, join requests, memberships, and messages use the project's database.
 
-0. **Enter:** Welcome, sign in, sign up, interest selection, and password-reset preview are interactive. Sign-up saves name, email, and selected interests as a `profiles` row in Supabase. It discards passwords. Password reset sends no email.
-1. **Explore:** Search or filter small plans around Kampala. Cards show the activity, place, time, host, and remaining spots.
-2. **Review:** Open a plan to see the meeting point, what to bring, likely costs, group size, and public-place guidance.
-3. **Ask to join:** The plan enters **My plans** as pending. In **Profile → Demo controls**, simulate the host accepting it.
-4. **Coordinate:** The confirmed plan opens a group chat. Send a message, check in at the meeting point, and mark the activity complete.
-5. **Host:** Create a plan with an activity, public venue, time, group size, and clear meeting instructions. It appears in Explore and My plans. A clearly labeled sample request from Nina appears on the new plan so you can try accepting someone as a host.
+## Launch checks
 
-The demo includes empty search results, pending and confirmed states, form validation, completed plans, and a simple reporting entry point. Reporting, identity checks, moderation, real messaging, and attendance verification are **not implemented**. The UI avoids claiming they exist.
+The database's Row Level Security and grants must be reviewed before public launch. A proposed setup is in `database/launch-readiness.sql`. The current Codex Supabase MCP connection cannot access project `jjhjuezixwelxcwnnlrt`, so that SQL could not be installed or verified. The join approval action requires its `accept_along_request` transaction. Configure Supabase Auth URL settings to allow the deployed site and `/app` redirects. Test signup, email confirmation, password recovery, joining, hosting, and chat with two real accounts after the database setup is applied.
 
-## Design direction
-
-The visual concept is **a friendly field guide for getting out of the house**. White (`#FFFFFF`) keeps the main screens quiet; YoTip green (`#3B793F`) leads actions and navigation; forest (`#0F2218`) anchors the welcome panel. Vivid green (`#22C55E`) marks confirmed outcomes, pink (`#EC4899`) appears in small interest cues, and amber (`#FFB900`) signals pending states. Text and borders use `#0A0A0A`, `#636C61`, and `#DEE3DE`.
-
-Activity cards prioritize the decision facts: what, when, where, who, and whether there is room. Details are written as human instructions rather than generic social-app labels. The demo's date and location are fixed sample content, not a live location service.
-
-## Next product decisions
-
-- Choose a launch community and real venue coverage before connecting live data.
-- Define identity, reporting, cancellation, and check-in policies before allowing public meetups.
-- Test whether host approval is needed for every plan, and whether one-to-one or small groups lead to more completed activities.
+The home page's activity cards illustrate ideas; they do not represent current available plans. `/app` only displays real plans whose host profile is not marked as old seed content. Reporting and moderation are not yet implemented, so the interface does not present a nonfunctional report form.

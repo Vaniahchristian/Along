@@ -5,8 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
-    "test": "node smoke-test.js"
+    "start": "next start"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

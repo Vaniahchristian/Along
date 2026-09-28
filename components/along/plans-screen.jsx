@@ -27,6 +27,5 @@ export function PlansScreen() {
         {(joined || mine) && <ActionButton type="button" className="max-[420px]:flex-1" onClick={() => openChat(plan.id)}>Chat</ActionButton>}
       </article>;
     }) : <EmptyState title={tab === 'past' ? 'No past plans yet' : 'Nothing on your calendar yet'} description={tab === 'past' ? 'Your completed meetups will appear here.' : 'Find a plan that makes you want to go.'} action="Explore plans" onAction={() => navigate('explore')} />}
-    {tab === 'upcoming' && data.requests.length > 0 && <div className="mt-4 rounded-xl bg-muted p-3 text-[13px] text-foreground">Demo tip: Open Profile → Demo controls to accept a pending request and try the confirmed plan flow.</div>}
   </>;
 }

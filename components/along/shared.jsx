@@ -1,13 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import { ArrowLeft, Flag } from 'lucide-react';
-import { toast } from 'sonner';
+import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { useAlong } from './context';
 
@@ -51,25 +48,4 @@ export function EmptyState({ title, description, action, onAction }) {
 export function BackButton() {
   const { navigate } = useAlong();
   return <button type="button" className="mb-5 flex items-center gap-2 py-1 font-bold text-muted-foreground hover:text-primary focus-visible:rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" onClick={() => navigate('explore')}><ArrowLeft className="size-4" aria-hidden="true" /> Back to explore</button>;
-}
-
-export function ReportForm({ planId }) {
-  const [open, setOpen] = useState(false);
-  const [reason, setReason] = useState('');
-
-  function submit(event) {
-    event.preventDefault();
-    if (!reason.trim()) return;
-    setReason('');
-    setOpen(false);
-    toast.info('Demo only: reporting is not connected to a moderation service.');
-  }
-
-  if (!open) return <ActionButton tone="text" type="button" onClick={() => setOpen(true)}><Flag aria-hidden="true" /> Report this plan</ActionButton>;
-  return <form className="mt-4 grid gap-2.5" onSubmit={submit}>
-    <label className="text-sm font-bold" htmlFor={`report-${planId}`}>What concerns you about this plan?</label>
-    <Textarea className="min-h-24 border-border bg-card" id={`report-${planId}`} value={reason} onChange={(event) => setReason(event.target.value)} required maxLength={500} placeholder="Tell us what happened or what seems wrong" />
-    <p className="text-xs text-muted-foreground">This prototype does not send reports. In a real app, this would go to a moderation team.</p>
-    <div className="flex flex-wrap items-center gap-2"><ActionButton type="submit">Submit demo report</ActionButton><ActionButton type="button" tone="text" onClick={() => setOpen(false)}>Cancel</ActionButton></div>
-  </form>;
 }
