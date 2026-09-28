@@ -1,20 +1,27 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ListPagination } from '@/components/ui/list-pagination';
 import { useAlong } from './context';
 import { ActionButton, EmptyState, PageHeading, PersonAvatar } from './shared';
+
+const PAGE_SIZE = 8;
 
 export function PlansScreen() {
   const { data, navigate, openPlan, openChat, cancelRequest, busy } = useAlong();
   const [tab, setTab] = useState('upcoming');
+  const [page, setPage] = useState(1);
+  const listTop = useRef(null);
   const related = new Set([...data.joined, ...data.requests, ...data.plans.filter((plan) => plan.host === 'You').map((plan) => plan.id)]);
   const ids = tab === 'past' ? data.completed : [...related].filter((id) => !data.completed.includes(id));
   const plans = ids.map((id) => data.plans.find((plan) => plan.id === id)).filter(Boolean);
+  const currentPage = Math.min(page, Math.max(1, Math.ceil(plans.length / PAGE_SIZE)));
+  const visible = plans.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   return <><PageHeading title="My plans" description="Your next steps, all in one place." />
-    <Tabs value={tab} onValueChange={setTab} className="mb-5"><TabsList className="h-10 rounded-xl bg-soft-green p-1"><TabsTrigger className="h-8 px-3 font-bold data-active:bg-card data-active:text-primary" value="upcoming">Upcoming</TabsTrigger><TabsTrigger className="h-8 px-3 font-bold data-active:bg-card data-active:text-primary" value="past">Past</TabsTrigger></TabsList></Tabs>
-    {plans.length ? plans.map((plan) => {
+    <div ref={listTop} className="scroll-mt-20"><Tabs value={tab} onValueChange={(next) => { setTab(next); setPage(1); }} className="mb-5"><TabsList className="h-10 rounded-xl bg-soft-green p-1"><TabsTrigger className="h-8 px-3 font-bold data-active:bg-card data-active:text-primary" value="upcoming">Upcoming</TabsTrigger><TabsTrigger className="h-8 px-3 font-bold data-active:bg-card data-active:text-primary" value="past">Past</TabsTrigger></TabsList></Tabs></div>
+    {plans.length ? visible.map((plan) => {
       const joined = data.joined.includes(plan.id);
       const mine = plan.host === 'You';
       const done = data.completed.includes(plan.id);
@@ -33,5 +40,6 @@ export function PlansScreen() {
         </div>
       </article>;
     }) : <EmptyState title={tab === 'past' ? 'No past plans yet' : 'Nothing on your calendar yet'} description={tab === 'past' ? 'Your completed meetups will appear here.' : 'Find a plan that makes you want to go.'} action="Explore plans" onAction={() => navigate('explore')} />}
+    <ListPagination page={currentPage} pageSize={PAGE_SIZE} total={plans.length} onPageChange={(next) => { setPage(next); listTop.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }} />
   </>;
 }
