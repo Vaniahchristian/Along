@@ -2,8 +2,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "./along.css";
-@import "./react-ui.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -124,4 +122,8 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html { @apply scroll-smooth; }
+  body { @apply bg-background font-sans text-foreground antialiased; }
+  button:not(:disabled) { cursor: pointer; }
+  ::selection { background: #f7d9c8; color: #20332d; }
 }

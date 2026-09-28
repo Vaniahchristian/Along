@@ -11,7 +11,7 @@ import { useAlong } from './context';
 import { ActionButton, BackButton, PageHeading, Panel } from './shared';
 
 function SelectField({ id, label, value, onChange, options }) {
-  return <div className="field"><Label htmlFor={id}>{label}</Label><Select value={value} onValueChange={onChange}><SelectTrigger id={id} className="along-select"><SelectValue /></SelectTrigger><SelectContent>{options.map(([optionValue, text]) => <SelectItem key={optionValue} value={optionValue}>{text}</SelectItem>)}</SelectContent></Select></div>;
+  return <div className="mb-4 grid gap-2"><Label htmlFor={id} className="text-[13px] font-extrabold">{label}</Label><Select value={value} onValueChange={onChange}><SelectTrigger id={id} className="h-11 w-full rounded-xl border-border bg-card px-3"><SelectValue /></SelectTrigger><SelectContent>{options.map(([optionValue, text]) => <SelectItem key={optionValue} value={optionValue}>{text}</SelectItem>)}</SelectContent></Select></div>;
 }
 
 export function CreateScreen() {
@@ -35,16 +35,16 @@ export function CreateScreen() {
     });
   }
 
-  return <><BackButton /><PageHeading title="Make a plan" description="Give people a clear reason to say “I’m in.”" /><div className="form-layout">
-    <Panel><form className="create-form" onSubmit={submit}>
-      <div className="field"><Label htmlFor="activity">What do you want to do?</Label><Input id="activity" name="title" required maxLength={80} placeholder="e.g. Try the Saturday beginner swim class" /><small>Make it specific enough to picture the outing.</small></div>
-      <div className="two-fields"><SelectField id="category" label="Category" value={category} onChange={setCategory} options={['Fitness', 'Outings', 'Learning'].map((value) => [value, value])} /><SelectField id="size" label="Group size" value={size} onChange={setSize} options={[["2", 'Me + 1 person'], ["3", '3 people'], ["4", '4 people'], ["5", '5 people']]} /></div>
-      <div className="field"><Label htmlFor="venue">Public venue</Label><Input id="venue" name="venue" required maxLength={90} placeholder="Venue name and neighbourhood" /></div>
-      <div className="two-fields"><div className="field"><Label htmlFor="date">Date</Label><Input id="date" name="date" type="date" required /></div><div className="field"><Label htmlFor="time">Time</Label><Input id="time" name="time" type="time" required /></div></div>
-      <div className="field"><Label htmlFor="intro">What should people know?</Label><Textarea id="intro" name="intro" required maxLength={320} placeholder="The pace, vibe, and why you'd like company" /></div>
-      <div className="two-fields"><div className="field"><Label htmlFor="meet">Where exactly will you meet?</Label><Input id="meet" name="meet" required placeholder="e.g. At the front entrance" /></div><div className="field"><Label htmlFor="bring">What should they bring?</Label><Input id="bring" name="bring" placeholder="e.g. Comfortable shoes" /></div></div>
+  return <><BackButton /><PageHeading title="Make a plan" description="Give people a clear reason to say “I’m in.”" /><div className="grid grid-cols-[minmax(0,1.2fr)_minmax(260px,.8fr)] gap-5 max-[760px]:grid-cols-1">
+    <Panel><form onSubmit={submit}>
+      <div className="mb-4 grid gap-2"><Label htmlFor="activity" className="text-[13px] font-extrabold">What do you want to do?</Label><Input className="h-11 rounded-xl border-border bg-card" id="activity" name="title" required maxLength={80} placeholder="e.g. Try the Saturday beginner swim class" /><small className="text-xs text-muted-foreground">Make it specific enough to picture the outing.</small></div>
+      <div className="grid grid-cols-2 gap-4 max-[760px]:grid-cols-1"><SelectField id="category" label="Category" value={category} onChange={setCategory} options={['Fitness', 'Outings', 'Learning'].map((value) => [value, value])} /><SelectField id="size" label="Group size" value={size} onChange={setSize} options={[["2", 'Me + 1 person'], ["3", '3 people'], ["4", '4 people'], ["5", '5 people']]} /></div>
+      <div className="mb-4 grid gap-2"><Label htmlFor="venue" className="text-[13px] font-extrabold">Public venue</Label><Input className="h-11 rounded-xl border-border bg-card" id="venue" name="venue" required maxLength={90} placeholder="Venue name and neighbourhood" /></div>
+      <div className="grid grid-cols-2 gap-4 max-[760px]:grid-cols-1"><div className="mb-4 grid gap-2"><Label htmlFor="date" className="text-[13px] font-extrabold">Date</Label><Input className="h-11 rounded-xl border-border bg-card" id="date" name="date" type="date" required /></div><div className="mb-4 grid gap-2"><Label htmlFor="time" className="text-[13px] font-extrabold">Time</Label><Input className="h-11 rounded-xl border-border bg-card" id="time" name="time" type="time" required /></div></div>
+      <div className="mb-4 grid gap-2"><Label htmlFor="intro" className="text-[13px] font-extrabold">What should people know?</Label><Textarea className="min-h-[105px] rounded-xl border-border bg-card" id="intro" name="intro" required maxLength={320} placeholder="The pace, vibe, and why you'd like company" /></div>
+      <div className="grid grid-cols-2 gap-4 max-[760px]:grid-cols-1"><div className="mb-4 grid gap-2"><Label htmlFor="meet" className="text-[13px] font-extrabold">Where exactly will you meet?</Label><Input className="h-11 rounded-xl border-border bg-card" id="meet" name="meet" required placeholder="e.g. At the front entrance" /></div><div className="mb-4 grid gap-2"><Label htmlFor="bring" className="text-[13px] font-extrabold">What should they bring?</Label><Input className="h-11 rounded-xl border-border bg-card" id="bring" name="bring" placeholder="e.g. Comfortable shoes" /></div></div>
       <ActionButton type="submit" tone="orange">Publish plan <ArrowRight aria-hidden="true" /></ActionButton>
     </form></Panel>
-    <Panel className="form-intro"><h2>A good plan feels easy to join.</h2><p>Specific details help someone decide, show up, and find you when they arrive.</p><ol><li>Choose a public venue with a clear meeting point.</li><li>Say whether it’s beginner friendly and mention likely costs.</li><li>Keep the group small enough to coordinate easily.</li></ol></Panel>
+    <Panel className="h-fit border-0 bg-secondary"><h2 className="mb-3 font-heading text-[22px] font-extrabold">A good plan feels easy to join.</h2><p className="text-[#3d5b48]">Specific details help someone decide, show up, and find you when they arrive.</p><ol className="mt-4 list-decimal space-y-3 pl-5 text-[#3d5b48]"><li>Choose a public venue with a clear meeting point.</li><li>Say whether it’s beginner friendly and mention likely costs.</li><li>Keep the group small enough to coordinate easily.</li></ol></Panel>
   </div></>;
 }

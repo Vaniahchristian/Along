@@ -22,25 +22,27 @@ const navigation = [
 function Shell() {
   const { screen, navigate } = useAlong();
   const Screen = screens[screen] ?? ExploreScreen;
+  const navClass = (id) => `flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left font-bold transition-colors ${screen === id ? 'bg-secondary text-primary' : 'text-muted-foreground hover:bg-card hover:text-foreground'}`;
+  const mobileClass = (id) => `grid justify-items-center gap-1 px-1 py-1 text-[10px] font-extrabold ${screen === id ? 'text-destructive' : 'text-muted-foreground'}`;
 
-  return <div id="app">
-    <div className="shell">
-      <aside className="sidebar">
-        <div className="brand"><span className="brand-mark">a</span>along</div>
-        <nav className="nav" aria-label="Main navigation">
-          {navigation.map(({ id, label, icon: Icon }) => <button key={id} type="button" className={screen === id ? 'active' : ''} onClick={() => navigate(id)} aria-current={screen === id ? 'page' : undefined}><Icon aria-hidden="true" /><span>{label}</span></button>)}
+  return <div className="min-h-screen bg-background text-foreground">
+    <div className="mx-auto grid max-w-[1440px] grid-cols-[248px_minmax(0,1fr)] max-[1050px]:grid-cols-[190px_minmax(0,1fr)] max-[760px]:block">
+      <aside className="sticky top-0 flex h-screen flex-col border-r border-border px-[18px] pt-8 pb-6 pl-[30px] max-[1050px]:pl-4 max-[760px]:hidden">
+        <div className="mb-11 flex items-center gap-2.5 font-heading text-[26px] leading-none font-extrabold tracking-[-.07em]"><span className="grid size-[37px] place-items-center rounded-[13px] bg-destructive text-[23px] tracking-normal text-white">a</span>along</div>
+        <nav className="grid gap-1" aria-label="Main navigation">
+          {navigation.map(({ id, label, icon: Icon }) => <button key={id} type="button" className={navClass(id)} onClick={() => navigate(id)} aria-current={screen === id ? 'page' : undefined}><Icon className="size-5 stroke-[1.8]" aria-hidden="true" /><span>{label}</span></button>)}
         </nav>
-        <div className="sidebar-bottom"><div className="mini-profile"><PersonAvatar initials="YO" name="You" /><div><strong>You</strong><div className="small muted">Kampala, Uganda</div></div></div></div>
+        <div className="mt-auto border-t border-border px-2.5 pt-5"><div className="flex items-center gap-2.5"><PersonAvatar initials="YO" name="You" /><div><strong>You</strong><div className="text-xs text-muted-foreground">Kampala, Uganda</div></div></div></div>
       </aside>
-      <main className="content">
-        <header className="topbar"><div className="location"><MapPin aria-hidden="true" /> Kampala · demo neighbourhood</div><div className="top-actions"><span className="demo-pill">Interactive concept · sample data</span><ActionButton type="button" onClick={() => navigate('create')}><Plus aria-hidden="true" /> Make a plan</ActionButton></div></header>
+      <main className="min-w-0 px-12 pt-7 pb-20 max-[1050px]:px-6 max-[760px]:px-4 max-[760px]:pt-5 max-[760px]:pb-24">
+        <header className="mb-7 flex items-center justify-between gap-4 max-[760px]:mb-6"><div className="flex items-center gap-1.5 text-[13px] font-bold text-muted-foreground max-[420px]:text-[11px]"><MapPin className="size-4 text-destructive" aria-hidden="true" /> Kampala · demo neighbourhood</div><div className="flex items-center gap-2.5"><span className="rounded-full border border-border bg-card px-3 py-2 text-xs font-bold text-muted-foreground max-[760px]:hidden">Interactive concept · sample data</span><ActionButton className="max-[420px]:px-3 max-[420px]:text-xs" type="button" onClick={() => navigate('create')}><Plus aria-hidden="true" /> Make a plan</ActionButton></div></header>
         <Screen />
       </main>
     </div>
-    <nav className="mobile-nav" aria-label="Mobile navigation">
-      {navigation.slice(0, 2).map(({ id, label, icon: Icon }) => <button key={id} type="button" className={screen === id ? 'active' : ''} onClick={() => navigate(id)} aria-current={screen === id ? 'page' : undefined}><Icon aria-hidden="true" /><span>{label}</span></button>)}
-      <button type="button" className="create-nav" onClick={() => navigate('create')} aria-current={screen === 'create' ? 'page' : undefined}><Plus aria-hidden="true" /><span>Create</span></button>
-      {navigation.slice(2).map(({ id, label, icon: Icon }) => <button key={id} type="button" className={screen === id ? 'active' : ''} onClick={() => navigate(id)} aria-current={screen === id ? 'page' : undefined}><Icon aria-hidden="true" /><span>{label === 'Messages' ? 'Chat' : label}</span></button>)}
+    <nav className="fixed inset-x-0 bottom-0 z-10 hidden grid-cols-5 border-t border-border bg-card px-1 pt-2 pb-[calc(.5rem+env(safe-area-inset-bottom))] max-[760px]:grid" aria-label="Mobile navigation">
+      {navigation.slice(0, 2).map(({ id, label, icon: Icon }) => <button key={id} type="button" className={mobileClass(id)} onClick={() => navigate(id)} aria-current={screen === id ? 'page' : undefined}><Icon className="size-5" aria-hidden="true" /><span>{label}</span></button>)}
+      <button type="button" className={mobileClass('create')} onClick={() => navigate('create')} aria-current={screen === 'create' ? 'page' : undefined}><Plus className="size-5" aria-hidden="true" /><span>Create</span></button>
+      {navigation.slice(2).map(({ id, label, icon: Icon }) => <button key={id} type="button" className={mobileClass(id)} onClick={() => navigate(id)} aria-current={screen === id ? 'page' : undefined}><Icon className="size-5" aria-hidden="true" /><span>{label === 'Messages' ? 'Chat' : label}</span></button>)}
     </nav>
     <Toaster position="bottom-right" />
   </div>;
