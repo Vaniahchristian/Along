@@ -18,6 +18,7 @@ export function AlongProvider({ children }) {
   const [screen, setScreen] = useState('explore');
   const [selectedPlanId, setSelectedPlanId] = useState(null);
   const [chatId, setChatId] = useState(null);
+  const [chatViewOpen, setChatViewOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [notificationError, setNotificationError] = useState('');
 
@@ -48,7 +49,7 @@ export function AlongProvider({ children }) {
     let active = true;
     const { data: listener } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY') setAuthScreen('recovery');
-      if (event === 'SIGNED_OUT') { setViewer(null); setIsAdmin(false); setData(emptyAlongState()); setNotifications([]); }
+      if (event === 'SIGNED_OUT') { setViewer(null); setIsAdmin(false); setData(emptyAlongState()); setNotifications([]); setChatViewOpen(false); }
     });
     (async () => {
       const { data: authData, error } = await supabase.auth.getUser();
@@ -124,7 +125,7 @@ export function AlongProvider({ children }) {
     return withBusy(async () => {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      setViewer(null); setIsAdmin(false); setData(emptyAlongState()); setNotifications([]); setAuthScreen('welcome'); setScreen('explore');
+      setViewer(null); setIsAdmin(false); setData(emptyAlongState()); setNotifications([]); setAuthScreen('welcome'); setScreen('explore'); setChatViewOpen(false);
     });
   }
 
@@ -134,9 +135,9 @@ export function AlongProvider({ children }) {
     if (result.ok) setViewer((current) => ({ ...current, interests }));
   }
 
-  function navigate(next) { setScreen(next); window.scrollTo({ top: 0, behavior: 'instant' }); }
+  function navigate(next) { setScreen(next); setChatViewOpen(false); window.scrollTo({ top: 0, behavior: 'instant' }); }
   function openPlan(id) { setSelectedPlanId(id); navigate('detail'); }
-  function openChat(id) { setChatId(id); navigate('chat'); }
+  function openChat(id) { setChatId(id); navigate('chat'); setChatViewOpen(true); }
   async function openNotification(notification) {
     if (!viewer) return;
     if (!notification.read_at) {
@@ -167,7 +168,7 @@ export function AlongProvider({ children }) {
   function complete(id) { return runAction(() => markComplete(viewer.id, id), 'Plan completed.'); }
   function reportPlan(id, reason) { return runAction(() => submitPlanReport(viewer.id, id, reason), 'Report sent. Thank you for telling us.'); }
 
-  const value = { data, busy, hydrated, loadError, refresh, viewer, isAdmin, authScreen, setAuthScreen, signIn, finishSignup, sendPasswordReset, updatePassword, signOut, saveInterests, screen, selectedPlanId, chatId, navigate, openPlan, openChat, requestJoin, cancelRequest, approveRequest, publishPlan, sendMessage, checkIn, complete, reportPlan, notifications, notificationError, refreshNotifications, openNotification, readAllNotifications };
+  const value = { data, busy, hydrated, loadError, refresh, viewer, isAdmin, authScreen, setAuthScreen, signIn, finishSignup, sendPasswordReset, updatePassword, signOut, saveInterests, screen, selectedPlanId, chatId, chatViewOpen, setChatViewOpen, navigate, openPlan, openChat, requestJoin, cancelRequest, approveRequest, publishPlan, sendMessage, checkIn, complete, reportPlan, notifications, notificationError, refreshNotifications, openNotification, readAllNotifications };
   return <AlongContext.Provider value={value}>{children}</AlongContext.Provider>;
 }
 

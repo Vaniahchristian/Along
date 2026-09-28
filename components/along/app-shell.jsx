@@ -26,9 +26,10 @@ const navigation = [
 ];
 
 function Shell() {
-  const { screen, navigate, viewer, isAdmin, signOut, hydrated, loadError, authScreen, refresh, notifications } = useAlong();
+  const { screen, navigate, viewer, isAdmin, signOut, hydrated, loadError, authScreen, refresh, notifications, chatViewOpen } = useAlong();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const unread = notifications.filter((item) => !item.read_at).length;
+  const inMobileChat = screen === 'chat' && chatViewOpen;
   const Screen = screens[screen] ?? ExploreScreen;
   const navClass = (id) => `flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left font-bold transition-colors ${screen === id ? 'bg-secondary text-primary' : 'text-muted-foreground hover:bg-card hover:text-foreground'}`;
   const mobileClass = (id) => `grid justify-items-center gap-1 px-1 py-1 text-[10px] font-extrabold ${screen === id ? 'text-primary' : 'text-muted-foreground'}`;
@@ -46,8 +47,8 @@ function Shell() {
         </nav>
         <div className="mt-auto border-t border-border px-2.5 pt-5"><div className="flex items-center gap-2.5"><PersonAvatar initials={viewer.name.slice(0, 2).toUpperCase()} name={viewer.name} /><div><strong>{viewer.name}</strong><div className="text-xs text-muted-foreground">{viewer.email}</div></div></div></div>
       </aside>
-      <main className="min-w-0 px-12 pt-7 pb-20 max-[1050px]:px-6 max-[760px]:px-4 max-[760px]:pt-0 max-[760px]:pb-24">
-        <header className="mb-7 flex items-center justify-between gap-3 max-[760px]:sticky max-[760px]:top-0 max-[760px]:z-10 max-[760px]:-mx-4 max-[760px]:mb-6 max-[760px]:border-b max-[760px]:border-border max-[760px]:bg-background/95 max-[760px]:px-4 max-[760px]:py-3 max-[760px]:backdrop-blur-sm">
+      <main className={`min-w-0 px-12 pt-7 pb-20 max-[1050px]:px-6 max-[760px]:pt-0 ${inMobileChat ? 'max-[760px]:px-0 max-[760px]:pb-0' : 'max-[760px]:px-4 max-[760px]:pb-24'}`}>
+        <header className={`mb-7 flex items-center justify-between gap-3 max-[760px]:sticky max-[760px]:top-0 max-[760px]:z-10 max-[760px]:-mx-4 max-[760px]:mb-6 max-[760px]:border-b max-[760px]:border-border max-[760px]:bg-background/95 max-[760px]:px-4 max-[760px]:py-3 max-[760px]:backdrop-blur-sm ${inMobileChat ? 'max-[760px]:hidden' : ''}`}>
           <button type="button" onClick={() => setDrawerOpen(true)} aria-label="Open menu" className="hidden size-10 shrink-0 place-items-center rounded-xl border border-border bg-card text-forest hover:bg-secondary focus-visible:outline-2 focus-visible:outline-primary max-[760px]:grid"><Menu className="size-5" /></button>
           <button type="button" onClick={() => navigate('notifications')} aria-label={unread ? `Notifications, ${unread} unread` : 'Notifications'} className="relative ml-auto grid size-10 shrink-0 place-items-center rounded-xl border border-border bg-card text-forest hover:bg-secondary focus-visible:outline-2 focus-visible:outline-primary"><Bell className="size-5" />{unread > 0 && <span className="absolute -right-1 -top-1 grid min-w-5 h-5 place-items-center rounded-full bg-[#ec4899] px-1 text-[10px] font-bold text-white">{unread > 99 ? '99+' : unread}</span>}</button>
         </header>
@@ -55,7 +56,7 @@ function Shell() {
         <Screen />
       </main>
     </div>
-    <nav className="fixed inset-x-0 bottom-0 z-10 hidden grid-cols-5 border-t border-border bg-card px-1 pt-2 pb-[calc(.5rem+env(safe-area-inset-bottom))] max-[760px]:grid" aria-label="Mobile navigation">
+    <nav className={`fixed inset-x-0 bottom-0 z-10 hidden grid-cols-5 border-t border-border bg-card px-1 pt-2 pb-[calc(.5rem+env(safe-area-inset-bottom))] ${inMobileChat ? '' : 'max-[760px]:grid'}`} aria-label="Mobile navigation">
       {navigation.slice(0, 2).map(({ id, label, icon: Icon }) => <button key={id} type="button" className={mobileClass(id)} onClick={() => navigate(id)} aria-current={screen === id ? 'page' : undefined}><Icon className="size-5" aria-hidden="true" /><span>{label}</span></button>)}
       <button type="button" className={mobileClass('create')} onClick={() => navigate('create')} aria-current={screen === 'create' ? 'page' : undefined}><Plus className="size-5" aria-hidden="true" /><span>Create</span></button>
       {navigation.slice(2).map(({ id, label, icon: Icon }) => <button key={id} type="button" className={mobileClass(id)} onClick={() => navigate(id)} aria-current={screen === id ? 'page' : undefined}><Icon className="size-5" aria-hidden="true" /><span>{label === 'Messages' ? 'Chat' : label}</span></button>)}
