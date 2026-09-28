@@ -2,6 +2,13 @@ const assert = require('node:assert/strict');
 
 async function main() {
   const { initialDemoData, demoReducer, restoreDemoData } = await import('./lib/demo-state.mjs');
+  const { DEMO_EMAIL, DEMO_PASSWORD, isDemoLogin, demoViewer, restoreDemoViewer } = await import('./lib/demo-auth.mjs');
+  assert.equal(isDemoLogin(DEMO_EMAIL, DEMO_PASSWORD), true);
+  assert.equal(isDemoLogin(DEMO_EMAIL, 'wrongpass'), false);
+  const viewer = demoViewer({ name: 'Amina', email: 'AMINA@example.com', interests: ['Swimming'] });
+  assert.equal(viewer.email, 'amina@example.com');
+  assert.equal('password' in viewer, false);
+  assert.deepEqual(restoreDemoViewer(JSON.parse(JSON.stringify(viewer))), viewer);
   let data = initialDemoData();
   assert.equal(data.plans.length, 5);
   assert.equal(data.requests.length, 0);

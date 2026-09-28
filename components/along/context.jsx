@@ -3,12 +3,15 @@
 import { createContext, useContext, useEffect, useReducer, useState } from 'react';
 import { toast } from 'sonner';
 import { demoReducer, initialDemoData, restoreDemoData, STORAGE_KEY } from '@/lib/demo-state.mjs';
+import { AUTH_STORAGE_KEY, demoViewer, isDemoLogin, restoreDemoViewer } from '@/lib/demo-auth.mjs';
 
 const AlongContext = createContext(null);
 
 export function AlongProvider({ children }) {
   const [data, dispatch] = useReducer(demoReducer, undefined, initialDemoData);
   const [hydrated, setHydrated] = useState(false);
+  const [viewer, setViewer] = useState(null);
+  const [authScreen, setAuthScreen] = useState('welcome');
   const [screen, setScreen] = useState('explore');
   const [selectedPlanId, setSelectedPlanId] = useState(1);
   const [chatId, setChatId] = useState(1);
@@ -20,12 +23,47 @@ export function AlongProvider({ children }) {
     } catch {
       // Corrupt demo storage should never prevent the UI from loading.
     }
+    try {
+      const savedViewer = window.localStorage.getItem(AUTH_STORAGE_KEY);
+      if (savedViewer) setViewer(restoreDemoViewer(JSON.parse(savedViewer)));
+    } catch {
+      // Account preview state is independent from plan data.
+    }
     setHydrated(true);
   }, []);
 
   useEffect(() => {
     if (hydrated) window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   }, [data, hydrated]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    if (viewer) window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(viewer));
+    else window.localStorage.removeItem(AUTH_STORAGE_KEY);
+  }, [viewer, hydrated]);
+
+  function continueAsGuest() {
+    setViewer(demoViewer({ guest: true }));
+    toast.info('You’re exploring a demo with sample plans.');
+  }
+
+  function signIn(email, password) {
+    if (!isDemoLogin(email, password)) return false;
+    setViewer(demoViewer({ name: 'You', email }));
+    return true;
+  }
+
+  function finishSignup({ name, email, interests }) {
+    setViewer(demoViewer({ name, email, interests }));
+    toast.success('Welcome to Along. Your demo profile is ready.');
+  }
+
+  function signOut() {
+    setViewer(null);
+    setAuthScreen('welcome');
+    setScreen('explore');
+    toast.info('You’ve left the demo session.');
+  }
 
   function navigate(next) {
     setScreen(next);
@@ -90,7 +128,7 @@ export function AlongProvider({ children }) {
     toast.success('Sample data reset.');
   }
 
-  const value = { data, dispatch, screen, selectedPlanId, chatId, navigate, openPlan, openChat, requestJoin, acceptRequest, acceptHostRequest, publishPlan, sendMessage, checkIn, complete, reset };
+  const value = { data, dispatch, hydrated, viewer, authScreen, setAuthScreen, continueAsGuest, signIn, finishSignup, signOut, screen, selectedPlanId, chatId, navigate, openPlan, openChat, requestJoin, acceptRequest, acceptHostRequest, publishPlan, sendMessage, checkIn, complete, reset };
   return <AlongContext.Provider value={value}>{children}</AlongContext.Provider>;
 }
 
