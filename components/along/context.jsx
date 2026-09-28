@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase/client';
-import { emptyAlongState, ensureViewerProfile, updateInterests, loadAlongState, requestJoinPlan, acceptHostRequest as dbAcceptHostRequest, publishPlan as dbPublishPlan, sendPlanMessage, markCheckIn, markComplete } from '@/lib/along-db';
+import { emptyAlongState, ensureViewerProfile, updateInterests, loadAlongState, requestJoinPlan, acceptHostRequest as dbAcceptHostRequest, publishPlan as dbPublishPlan, sendPlanMessage, markCheckIn, markComplete, submitPlanReport } from '@/lib/along-db';
 
 const AlongContext = createContext(null);
 
@@ -13,6 +13,7 @@ export function AlongProvider({ children }) {
   const [busy, setBusy] = useState(false);
   const [loadError, setLoadError] = useState('');
   const [viewer, setViewer] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [authScreen, setAuthScreen] = useState('welcome');
   const [screen, setScreen] = useState('explore');
   const [selectedPlanId, setSelectedPlanId] = useState(null);
@@ -29,6 +30,8 @@ export function AlongProvider({ children }) {
   const activate = useCallback(async (user) => {
     const profile = await ensureViewerProfile(user);
     setViewer(profile);
+    const admin = await supabase.from('along_admins').select('user_id').eq('user_id', user.id).maybeSingle();
+    setIsAdmin(!admin.error && Boolean(admin.data));
     try { await refresh(profile.id); }
     catch (error) { setLoadError(error.message || 'Could not load plans.'); }
   }, [refresh]);
@@ -37,7 +40,7 @@ export function AlongProvider({ children }) {
     let active = true;
     const { data: listener } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY') setAuthScreen('recovery');
-      if (event === 'SIGNED_OUT') { setViewer(null); setData(emptyAlongState()); }
+      if (event === 'SIGNED_OUT') { setViewer(null); setIsAdmin(false); setData(emptyAlongState()); }
     });
     (async () => {
       const { data: authData, error } = await supabase.auth.getUser();
@@ -101,7 +104,7 @@ export function AlongProvider({ children }) {
     return withBusy(async () => {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      setViewer(null); setData(emptyAlongState()); setAuthScreen('welcome'); setScreen('explore');
+      setViewer(null); setIsAdmin(false); setData(emptyAlongState()); setAuthScreen('welcome'); setScreen('explore');
     });
   }
 
@@ -121,8 +124,9 @@ export function AlongProvider({ children }) {
   function sendMessage(id, text) { return runAction(() => sendPlanMessage(viewer.id, id, text)); }
   function checkIn(id) { return runAction(() => markCheckIn(viewer.id, id), 'You’re checked in.'); }
   function complete(id) { return runAction(() => markComplete(viewer.id, id), 'Plan completed.'); }
+  function reportPlan(id, reason) { return runAction(() => submitPlanReport(viewer.id, id, reason), 'Report sent. Thank you for telling us.'); }
 
-  const value = { data, busy, hydrated, loadError, refresh, viewer, authScreen, setAuthScreen, signIn, finishSignup, sendPasswordReset, updatePassword, signOut, saveInterests, screen, selectedPlanId, chatId, navigate, openPlan, openChat, requestJoin, approveRequest, publishPlan, sendMessage, checkIn, complete };
+  const value = { data, busy, hydrated, loadError, refresh, viewer, isAdmin, authScreen, setAuthScreen, signIn, finishSignup, sendPasswordReset, updatePassword, signOut, saveInterests, screen, selectedPlanId, chatId, navigate, openPlan, openChat, requestJoin, approveRequest, publishPlan, sendMessage, checkIn, complete, reportPlan };
   return <AlongContext.Provider value={value}>{children}</AlongContext.Provider>;
 }
 

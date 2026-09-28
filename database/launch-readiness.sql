@@ -19,6 +19,8 @@ alter table public.join_requests enable row level security;
 alter table public.memberships enable row level security;
 alter table public.messages enable row level security;
 
+drop function if exists public.reset_along_demo();
+
 revoke all on public.profiles, public.plans, public.join_requests, public.memberships, public.messages from public, anon, authenticated;
 grant select on public.profiles, public.plans, public.join_requests, public.memberships, public.messages to authenticated;
 grant insert on public.profiles, public.plans, public.join_requests, public.memberships, public.messages to authenticated;

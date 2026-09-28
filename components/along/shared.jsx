@@ -1,10 +1,12 @@
 'use client';
 
-import { ArrowLeft } from 'lucide-react';
+import { useState } from 'react';
+import { ArrowLeft, Flag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { useAlong } from './context';
 
@@ -48,4 +50,23 @@ export function EmptyState({ title, description, action, onAction }) {
 export function BackButton() {
   const { navigate } = useAlong();
   return <button type="button" className="mb-5 flex items-center gap-2 py-1 font-bold text-muted-foreground hover:text-primary focus-visible:rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" onClick={() => navigate('explore')}><ArrowLeft className="size-4" aria-hidden="true" /> Back to explore</button>;
+}
+
+export function ReportForm({ planId }) {
+  const { reportPlan, busy } = useAlong();
+  const [open, setOpen] = useState(false);
+  const [reason, setReason] = useState('');
+  async function submit(event) {
+    event.preventDefault();
+    if (reason.trim().length < 10) return;
+    const result = await reportPlan(planId, reason);
+    if (result?.ok) { setReason(''); setOpen(false); }
+  }
+  if (!open) return <ActionButton tone="text" type="button" onClick={() => setOpen(true)}><Flag aria-hidden="true" /> Report a concern</ActionButton>;
+  return <form className="mt-4 grid gap-2.5" onSubmit={submit}>
+    <label className="text-sm font-bold" htmlFor={`report-${planId}`}>Tell us what concerns you</label>
+    <Textarea id={`report-${planId}`} className="min-h-24 border-border bg-card" value={reason} onChange={(event) => setReason(event.target.value)} minLength={10} maxLength={500} required placeholder="What happened or seems wrong? Include details that will help us review it." />
+    <p className="text-xs text-muted-foreground">An Along admin will review your report. If you are in immediate danger, contact local emergency services.</p>
+    <div className="flex flex-wrap gap-2"><ActionButton type="submit" disabled={busy || reason.trim().length < 10}>{busy ? 'Sending…' : 'Send report'}</ActionButton><ActionButton type="button" tone="text" onClick={() => setOpen(false)}>Cancel</ActionButton></div>
+  </form>;
 }

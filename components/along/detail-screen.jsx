@@ -2,7 +2,7 @@
 
 import { CalendarDays, MapPin, ShieldCheck, UsersRound } from 'lucide-react';
 import { useAlong } from './context';
-import { ActionButton, BackButton, BeginnerBadge, CategoryBadge, Panel, PersonAvatar } from './shared';
+import { ActionButton, BackButton, BeginnerBadge, CategoryBadge, Panel, PersonAvatar, ReportForm } from './shared';
 
 export function DetailScreen() {
   const { data, selectedPlanId, openChat, requestJoin, approveRequest, busy } = useAlong();
@@ -28,7 +28,7 @@ export function DetailScreen() {
         {mine || joined ? <ActionButton type="button" className="mt-4 w-full" onClick={() => openChat(plan.id)}>Open group chat</ActionButton> : requested ? <><ActionButton className="mt-4 w-full" disabled>Request sent</ActionButton><p className="mt-2 text-xs text-muted-foreground">You’ll see this in My plans until the host responds.</p></> : plan.spots > 0 ? <><ActionButton type="button" className="mt-4 w-full" onClick={() => requestJoin(plan.id)}>Ask to join</ActionButton><p className="mt-2 text-xs text-muted-foreground">The host will review your request before chat opens.</p></> : <p className="mt-4 text-xs text-muted-foreground">This plan is full.</p>}
       </Panel>
       {mine && <Panel><h2 className="mb-3 font-heading text-lg font-extrabold">Join requests</h2>{incoming.length ? <div className="grid gap-4">{incoming.map((request) => <div key={request.id} className="flex flex-wrap items-center gap-3"><PersonAvatar initials={request.initials} name={request.name} tone="pink" large /><div className="min-w-0 flex-1"><strong className="block">{request.name}</strong><span className="text-xs text-muted-foreground">Interested in joining</span></div><ActionButton type="button" disabled={busy} onClick={() => approveRequest(plan.id, request.id)}>Accept</ActionButton></div>)}</div> : <p className="text-xs text-muted-foreground">No requests are waiting.</p>}</Panel>}
-      <Panel><h2 className="mb-3 font-heading text-lg font-extrabold">Before you meet</h2><p className="text-xs text-muted-foreground">Keep first meetups in public places. Share the details with someone you trust.</p></Panel>
+      <Panel><h2 className="mb-3 font-heading text-lg font-extrabold">Before you meet</h2><p className="text-xs text-muted-foreground">Keep first meetups in public places. Share the details with someone you trust.</p><ReportForm planId={plan.id} /></Panel>
     </div>
   </div></>;
 }
