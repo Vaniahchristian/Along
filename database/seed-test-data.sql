@@ -80,7 +80,8 @@ insert into public.plans (id, host_id, category, title, venue, date_label, time_
   ('b0000000-0000-4000-8000-000000000004', 'a0000000-0000-4000-8000-000000000004', 'Outings', 'A slow walk through the botanical gardens', 'Entebbe Botanical Gardens', 'Sat, 11 Oct', '9:00 AM', 2, 5, 'Easy morning walk on the main paths, fresh air and conversation.', 'Comfortable shoes, water, entry fee', 'Main entrance ticket office', false, 'open', now() - interval '12 hours'),
   ('b0000000-0000-4000-8000-000000000005', 'a0000000-0000-4000-8000-000000000005', 'Learning', 'Sketch and sip at an art workshop', 'The Artfield, Ntinda', 'Sun, 12 Oct', '11:00 AM', 2, 3, 'No drawing skills required. Easier to walk in with company.', 'Workshop fee and curiosity', 'Outside the studio entrance', false, 'open', now() - interval '8 hours'),
   ('b0000000-0000-4000-8000-000000000006', 'a0000000-0000-4000-8000-000000000001', 'Outings', 'Lakeside stretch and sunset chat', 'Munyonyo lakeside promenade', 'Fri, 19 Sep', '5:30 PM', 0, 3, 'Past meetup used for completed-plan testing.', 'Water bottle', 'Near the main parking lot gate', true, 'open', now() - interval '10 days'),
-  ('b0000000-0000-4000-8000-000000000007', 'a0000000-0000-4000-8000-000000000002', 'Outings', 'Weekend brunch that got cancelled', 'Café Javas, Bugolobi', 'Sat, 20 Sep', '11:00 AM', 0, 4, 'Closed plan for moderation and history testing.', 'Appetite', 'Host stand inside', false, 'closed', now() - interval '9 days');
+  ('b0000000-0000-4000-8000-000000000007', 'a0000000-0000-4000-8000-000000000002', 'Outings', 'Weekend brunch that got cancelled', 'Café Javas, Bugolobi', 'Sat, 20 Sep', '11:00 AM', 0, 4, 'Closed plan for moderation and history testing.', 'Appetite', 'Host stand inside', false, 'closed', now() - interval '9 days'),
+  ('b0000000-0000-4000-8000-000000000008', 'a0000000-0000-4000-8000-000000000008', 'Fitness', 'Evening stretch class at Acacia Mall', 'Anytime Fitness near Acacia Mall, Kololo', 'Wed, 8 Oct', '7:00 PM', 1, 3, 'Light stretch after work. Beginners welcome — we will figure out the machines together.', 'Workout clothes, water, day pass fee', 'Mall entrance by Java House', true, 'open', now() - interval '5 hours');
 
 -- Host memberships for every plan
 insert into public.memberships (plan_id, profile_id, role, checked_in, completed, created_at) values
@@ -90,14 +91,25 @@ insert into public.memberships (plan_id, profile_id, role, checked_in, completed
   ('b0000000-0000-4000-8000-000000000004', 'a0000000-0000-4000-8000-000000000004', 'host', false, false, now() - interval '12 hours'),
   ('b0000000-0000-4000-8000-000000000005', 'a0000000-0000-4000-8000-000000000005', 'host', false, false, now() - interval '8 hours'),
   ('b0000000-0000-4000-8000-000000000006', 'a0000000-0000-4000-8000-000000000001', 'host', true, true, now() - interval '10 days'),
-  ('b0000000-0000-4000-8000-000000000007', 'a0000000-0000-4000-8000-000000000002', 'host', false, false, now() - interval '9 days');
+  ('b0000000-0000-4000-8000-000000000007', 'a0000000-0000-4000-8000-000000000002', 'host', false, false, now() - interval '9 days'),
+  ('b0000000-0000-4000-8000-000000000008', 'a0000000-0000-4000-8000-000000000008', 'host', false, false, now() - interval '5 hours');
 
--- Confirmed members (chat + check-in + completed flows)
+-- Confirmed members (chat + check-in + completed flows), including several chats for Alex P.
 insert into public.memberships (plan_id, profile_id, role, checked_in, completed, created_at) values
   ('b0000000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000007', 'member', false, false, now() - interval '1 day'),
+  ('b0000000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000008', 'member', false, false, now() - interval '18 hours'),
   ('b0000000-0000-4000-8000-000000000002', 'a0000000-0000-4000-8000-000000000006', 'member', false, false, now() - interval '10 hours'),
+  ('b0000000-0000-4000-8000-000000000002', 'a0000000-0000-4000-8000-000000000008', 'member', false, false, now() - interval '6 hours'),
+  ('b0000000-0000-4000-8000-000000000005', 'a0000000-0000-4000-8000-000000000008', 'member', false, false, now() - interval '4 hours'),
   ('b0000000-0000-4000-8000-000000000006', 'a0000000-0000-4000-8000-000000000007', 'member', true, true, now() - interval '9 days'),
-  ('b0000000-0000-4000-8000-000000000006', 'a0000000-0000-4000-8000-000000000006', 'member', true, true, now() - interval '9 days');
+  ('b0000000-0000-4000-8000-000000000006', 'a0000000-0000-4000-8000-000000000006', 'member', true, true, now() - interval '9 days'),
+  ('b0000000-0000-4000-8000-000000000006', 'a0000000-0000-4000-8000-000000000008', 'member', true, true, now() - interval '9 days'),
+  ('b0000000-0000-4000-8000-000000000008', 'a0000000-0000-4000-8000-000000000003', 'member', false, false, now() - interval '3 hours');
+
+-- Keep spots in sync with Alex joining swim / coffee / art
+update public.plans set spots = 0 where id = 'b0000000-0000-4000-8000-000000000001';
+update public.plans set spots = 1 where id = 'b0000000-0000-4000-8000-000000000002';
+update public.plans set spots = 1 where id = 'b0000000-0000-4000-8000-000000000005';
 
 -- Pending join requests (host approval flow)
 insert into public.join_requests (id, plan_id, requester_id, status, created_at) values
@@ -113,7 +125,12 @@ insert into public.join_requests (id, plan_id, requester_id, status, created_at)
   ('c0000000-0000-4000-8000-000000000010', 'b0000000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000007', 'accepted', now() - interval '1 day'),
   ('c0000000-0000-4000-8000-000000000011', 'b0000000-0000-4000-8000-000000000002', 'a0000000-0000-4000-8000-000000000006', 'accepted', now() - interval '10 hours'),
   ('c0000000-0000-4000-8000-000000000012', 'b0000000-0000-4000-8000-000000000006', 'a0000000-0000-4000-8000-000000000007', 'accepted', now() - interval '9 days'),
-  ('c0000000-0000-4000-8000-000000000013', 'b0000000-0000-4000-8000-000000000006', 'a0000000-0000-4000-8000-000000000006', 'accepted', now() - interval '9 days');
+  ('c0000000-0000-4000-8000-000000000013', 'b0000000-0000-4000-8000-000000000006', 'a0000000-0000-4000-8000-000000000006', 'accepted', now() - interval '9 days'),
+  ('c0000000-0000-4000-8000-000000000020', 'b0000000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000008', 'accepted', now() - interval '18 hours'),
+  ('c0000000-0000-4000-8000-000000000021', 'b0000000-0000-4000-8000-000000000002', 'a0000000-0000-4000-8000-000000000008', 'accepted', now() - interval '6 hours'),
+  ('c0000000-0000-4000-8000-000000000022', 'b0000000-0000-4000-8000-000000000005', 'a0000000-0000-4000-8000-000000000008', 'accepted', now() - interval '4 hours'),
+  ('c0000000-0000-4000-8000-000000000023', 'b0000000-0000-4000-8000-000000000006', 'a0000000-0000-4000-8000-000000000008', 'accepted', now() - interval '9 days'),
+  ('c0000000-0000-4000-8000-000000000024', 'b0000000-0000-4000-8000-000000000008', 'a0000000-0000-4000-8000-000000000003', 'accepted', now() - interval '3 hours');
 alter table public.join_requests enable trigger notify_join_request;
 
 -- Group chat messages (message notifications are useful for testing)
@@ -122,10 +139,23 @@ insert into public.messages (plan_id, sender_id, body, created_at) values
   ('b0000000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000001', 'Hi! The pool opens at 9, so 10 should be nice and calm.', now() - interval '22 hours'),
   ('b0000000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000007', 'Perfect. I will bring an extra towel just in case.', now() - interval '21 hours'),
   ('b0000000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000001', 'Great. Meet at the café entrance and we can walk in together.', now() - interval '20 hours'),
+  ('b0000000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000008', 'Looking forward to this. Do we pay at the café or the pool desk?', now() - interval '17 hours'),
+  ('b0000000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000001', 'Pool desk takes the entry fee. See you at the café entrance.', now() - interval '16 hours'),
   ('b0000000-0000-4000-8000-000000000002', 'a0000000-0000-4000-8000-000000000002', 'I grabbed the long table near the window. Power sockets are free.', now() - interval '8 hours'),
   ('b0000000-0000-4000-8000-000000000002', 'a0000000-0000-4000-8000-000000000006', 'On my way. Ordering a flat white when I arrive.', now() - interval '7 hours'),
+  ('b0000000-0000-4000-8000-000000000002', 'a0000000-0000-4000-8000-000000000008', 'I’ll be about 10 minutes late — traffic from Ntinda.', now() - interval '5 hours'),
+  ('b0000000-0000-4000-8000-000000000002', 'a0000000-0000-4000-8000-000000000002', 'No rush. I’ll hold the table.', now() - interval '4 hours 45 minutes'),
+  ('b0000000-0000-4000-8000-000000000002', 'a0000000-0000-4000-8000-000000000006', 'Already here with a latte. See you both soon.', now() - interval '4 hours 30 minutes'),
+  ('b0000000-0000-4000-8000-000000000005', 'a0000000-0000-4000-8000-000000000005', 'Materials are included. Just bring yourself and curiosity.', now() - interval '3 hours'),
+  ('b0000000-0000-4000-8000-000000000005', 'a0000000-0000-4000-8000-000000000008', 'Perfect. First time drawing in years — go easy on me.', now() - interval '2 hours 40 minutes'),
+  ('b0000000-0000-4000-8000-000000000005', 'a0000000-0000-4000-8000-000000000005', 'Same energy. We’ll sit near the front so we can ask questions.', now() - interval '2 hours 20 minutes'),
   ('b0000000-0000-4000-8000-000000000006', 'a0000000-0000-4000-8000-000000000001', 'Thanks for coming. That sunset was worth it.', now() - interval '9 days'),
-  ('b0000000-0000-4000-8000-000000000006', 'a0000000-0000-4000-8000-000000000007', 'Same here. Let’s do another walk soon.', now() - interval '9 days' + interval '10 minutes');
+  ('b0000000-0000-4000-8000-000000000006', 'a0000000-0000-4000-8000-000000000007', 'Same here. Let’s do another walk soon.', now() - interval '9 days' + interval '10 minutes'),
+  ('b0000000-0000-4000-8000-000000000006', 'a0000000-0000-4000-8000-000000000008', 'That lakeside walk was lovely. Thanks for hosting, Maya.', now() - interval '8 days 20 hours'),
+  ('b0000000-0000-4000-8000-000000000006', 'a0000000-0000-4000-8000-000000000001', 'Glad you made it, Alex. Let’s do another soon.', now() - interval '8 days 19 hours'),
+  ('b0000000-0000-4000-8000-000000000008', 'a0000000-0000-4000-8000-000000000008', 'Hey Brenda — day pass is about 40k. Meet at Java House entrance?', now() - interval '2 hours'),
+  ('b0000000-0000-4000-8000-000000000008', 'a0000000-0000-4000-8000-000000000003', 'Works for me. I’ll wear a green jacket so I’m easy to spot.', now() - interval '90 minutes'),
+  ('b0000000-0000-4000-8000-000000000008', 'a0000000-0000-4000-8000-000000000008', 'Great. See you at 6:50 so we are not rushing.', now() - interval '60 minutes');
 alter table public.messages enable trigger notify_message;
 
 -- Admin moderation: open + resolved reports

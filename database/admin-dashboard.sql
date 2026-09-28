@@ -16,7 +16,7 @@ create table if not exists public.plan_reports (
   id uuid primary key default gen_random_uuid(),
   plan_id uuid not null references public.plans(id) on delete cascade,
   reporter_id uuid not null references public.profiles(id) on delete cascade,
-  reason text not null check (length(trim(reason)) between 10 and 500),
+  reason text not null check (length(trim(reason)) between 1 and 500),
   status text not null default 'open' check (status in ('open', 'resolved')),
   review_note text,
   reviewed_by uuid references auth.users(id),
