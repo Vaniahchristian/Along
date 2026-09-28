@@ -2,13 +2,13 @@
 
 Along helps someone turn a specific activity into a small public plan with company. This is a responsive Next.js App Router prototype built from the Stitch concepts in `stitch_activity_buddy_finder_ui/`.
 
-Run `npm install` and `npm run dev`, then open `http://localhost:3000` for the public landing page. Its calls to action open the interactive demo at `/app`. The entry screens use the supplied Along logo in `public/along-logo.png`. Sign in with `demo@along.app` / `along123`, create a demo profile, or continue as a guest. All people, plans, messages, and outcomes are sample data. Changes persist in browser storage until **Profile → Reset sample data**.
+Run `npm install` and `npm run dev`, then open `http://localhost:3000` for the public landing page. Its calls to action open the interactive demo at `/app`. The entry screens use the supplied Along logo in `public/along-logo.png`. Sign in with `demo@along.app` / `along123`, create a demo profile, or continue as a guest. Plans, requests, memberships, and messages live in the Supabase project **along**. Copy `.env.example` to `.env.local` with your project URL and anon key. Use **Profile → Reset sample data** to reseed the database.
 
-The route and metadata live in `app/`. Each screen is a React component in `components/along/`, styled with Tailwind utilities and the installed shadcn controls. `app/globals.css` contains only the Tailwind imports, theme tokens, and browser base styles. Demo actions are managed by a React provider and a pure reducer in `lib/demo-state.mjs`; browser storage keeps the data between visits.
+The route and metadata live in `app/`. Each screen is a React component in `components/along/`, styled with Tailwind utilities and the installed shadcn controls. `lib/along-db.js` talks to Supabase; `lib/demo-state.mjs` still holds the pure reducer used by smoke tests.
 
 ## The main journey
 
-0. **Enter:** Welcome, sign in, sign up, interest selection, and password-reset preview are interactive. Sign-up saves only name, email, and selected interests in browser storage. It discards passwords. Password reset sends no email.
+0. **Enter:** Welcome, sign in, sign up, interest selection, and password-reset preview are interactive. Sign-up saves name, email, and selected interests as a `profiles` row in Supabase. It discards passwords. Password reset sends no email.
 1. **Explore:** Search or filter small plans around Kampala. Cards show the activity, place, time, host, and remaining spots.
 2. **Review:** Open a plan to see the meeting point, what to bring, likely costs, group size, and public-place guidance.
 3. **Ask to join:** The plan enters **My plans** as pending. In **Profile → Demo controls**, simulate the host accepting it.

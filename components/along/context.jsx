@@ -1,40 +1,67 @@
 'use client';
 
-import { createContext, useContext, useEffect, useReducer, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { demoReducer, initialDemoData, restoreDemoData, STORAGE_KEY } from '@/lib/demo-state.mjs';
+import { initialDemoData } from '@/lib/demo-state.mjs';
 import { AUTH_STORAGE_KEY, demoViewer, isDemoLogin, restoreDemoViewer } from '@/lib/demo-auth.mjs';
+import {
+  FIRST_SEED_PLAN_ID,
+  acceptHostRequest as dbAcceptHostRequest,
+  acceptJoinRequest,
+  ensureViewerProfile,
+  loadAlongState,
+  markCheckIn,
+  markComplete,
+  publishPlan as dbPublishPlan,
+  requestJoinPlan,
+  resetAlongDemo,
+  sendPlanMessage
+} from '@/lib/along-db';
 
 const AlongContext = createContext(null);
 
 export function AlongProvider({ children }) {
-  const [data, dispatch] = useReducer(demoReducer, undefined, initialDemoData);
+  const [data, setData] = useState(initialDemoData);
   const [hydrated, setHydrated] = useState(false);
+  const [busy, setBusy] = useState(false);
   const [viewer, setViewer] = useState(null);
   const [authScreen, setAuthScreen] = useState('welcome');
   const [screen, setScreen] = useState('explore');
-  const [selectedPlanId, setSelectedPlanId] = useState(1);
-  const [chatId, setChatId] = useState(1);
+  const [selectedPlanId, setSelectedPlanId] = useState(FIRST_SEED_PLAN_ID);
+  const [chatId, setChatId] = useState(FIRST_SEED_PLAN_ID);
 
-  useEffect(() => {
-    try {
-      const saved = window.localStorage.getItem(STORAGE_KEY);
-      if (saved) dispatch({ type: 'hydrate', value: restoreDemoData(JSON.parse(saved)) });
-    } catch {
-      // Corrupt demo storage should never prevent the UI from loading.
+  const refresh = useCallback(async (profileId) => {
+    if (!profileId) {
+      setData(initialDemoData());
+      return;
     }
-    try {
-      const savedViewer = window.localStorage.getItem(AUTH_STORAGE_KEY);
-      if (savedViewer) setViewer(restoreDemoViewer(JSON.parse(savedViewer)));
-    } catch {
-      // Account preview state is independent from plan data.
-    }
-    setHydrated(true);
+    const next = await loadAlongState(profileId);
+    setData(next);
+    setSelectedPlanId((current) => (next.plans.some((plan) => plan.id === current) ? current : (next.plans[0]?.id ?? FIRST_SEED_PLAN_ID)));
+    setChatId((current) => (next.plans.some((plan) => plan.id === current) ? current : (next.plans[0]?.id ?? FIRST_SEED_PLAN_ID)));
   }, []);
 
   useEffect(() => {
-    if (hydrated) window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  }, [data, hydrated]);
+    let cancelled = false;
+    (async () => {
+      try {
+        const savedViewer = window.localStorage.getItem(AUTH_STORAGE_KEY);
+        if (!savedViewer) return;
+        const restored = restoreDemoViewer(JSON.parse(savedViewer));
+        if (!restored) return;
+        const profile = await ensureViewerProfile(restored);
+        if (cancelled) return;
+        setViewer(profile);
+        await refresh(profile.id);
+      } catch (error) {
+        console.error(error);
+        toast.error('Could not restore your Along session from Supabase.');
+      } finally {
+        if (!cancelled) setHydrated(true);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [refresh]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -42,26 +69,52 @@ export function AlongProvider({ children }) {
     else window.localStorage.removeItem(AUTH_STORAGE_KEY);
   }, [viewer, hydrated]);
 
-  function continueAsGuest() {
-    setViewer(demoViewer({ guest: true }));
-    toast.info('You’re exploring a demo with sample plans.');
+  async function withBusy(work, successMessage) {
+    setBusy(true);
+    try {
+      await work();
+      if (successMessage) toast.success(successMessage);
+      return true;
+    } catch (error) {
+      console.error(error);
+      toast.error(error.message || 'Something went wrong talking to Supabase.');
+      return false;
+    } finally {
+      setBusy(false);
+    }
   }
 
-  function signIn(email, password) {
+  async function activateViewer(draft) {
+    const profile = await ensureViewerProfile(draft);
+    setViewer(profile);
+    await refresh(profile.id);
+    return profile;
+  }
+
+  function continueAsGuest() {
+    withBusy(async () => {
+      await activateViewer(demoViewer({ name: 'Guest', guest: true }));
+    }, 'You’re exploring with live sample plans from Supabase.');
+  }
+
+  async function signIn(email, password) {
     if (!isDemoLogin(email, password)) return false;
-    setViewer(demoViewer({ name: 'You', email }));
-    return true;
+    return withBusy(async () => {
+      await activateViewer(demoViewer({ name: 'You', email }));
+    }, 'Signed in. Your plans sync to Supabase.');
   }
 
   function finishSignup({ name, email, interests }) {
-    setViewer(demoViewer({ name, email, interests }));
-    toast.success('Welcome to Along. Your demo profile is ready.');
+    withBusy(async () => {
+      await activateViewer(demoViewer({ name, email, interests }));
+    }, 'Welcome to Along. Your profile is saved in Supabase.');
   }
 
   function signOut() {
     setViewer(null);
     setAuthScreen('welcome');
     setScreen('explore');
+    setData(initialDemoData());
     toast.info('You’ve left the demo session.');
   }
 
@@ -81,54 +134,106 @@ export function AlongProvider({ children }) {
   }
 
   function requestJoin(id) {
-    dispatch({ type: 'request', id });
-    toast.success('Request sent. Track it in My plans.');
+    if (!viewer?.id) return;
+    withBusy(async () => {
+      await requestJoinPlan(viewer.id, id);
+      await refresh(viewer.id);
+    }, 'Request sent. Track it in My plans.');
   }
 
   function acceptRequest() {
+    if (!viewer?.id) return;
     const id = data.requests[0];
     if (!id) return;
-    dispatch({ type: 'accept-request', id });
-    setChatId(id);
-    toast.success('Request accepted. Your group chat is ready.');
+    withBusy(async () => {
+      await acceptJoinRequest(viewer.id, id);
+      setChatId(id);
+      await refresh(viewer.id);
+    }, 'Request accepted. Your group chat is ready.');
   }
 
   function acceptHostRequest(id) {
-    dispatch({ type: 'accept-host', id });
-    toast.success('Nina is in. Your group chat is ready.');
+    if (!viewer?.id) return;
+    withBusy(async () => {
+      await dbAcceptHostRequest(id);
+      await refresh(viewer.id);
+    }, 'Nina is in. Your group chat is ready.');
   }
 
   function publishPlan(plan) {
-    dispatch({ type: 'publish', plan });
-    setSelectedPlanId(plan.id);
-    navigate('detail');
-    toast.success('Your plan is live. A sample join request is ready to review.');
+    if (!viewer?.id) return;
+    withBusy(async () => {
+      const id = await dbPublishPlan(viewer.id, plan);
+      setSelectedPlanId(id);
+      await refresh(viewer.id);
+      navigate('detail');
+    }, 'Your plan is live in Supabase. A sample join request is ready to review.');
   }
 
   function sendMessage(id, text) {
-    dispatch({ type: 'message', id, text });
+    if (!viewer?.id) return;
+    withBusy(async () => {
+      await sendPlanMessage(viewer.id, id, text);
+      await refresh(viewer.id);
+    });
   }
 
   function checkIn(id) {
-    dispatch({ type: 'checkin', id });
-    toast.success('Check-in recorded for this demo.');
+    if (!viewer?.id) return;
+    withBusy(async () => {
+      await markCheckIn(viewer.id, id);
+      await refresh(viewer.id);
+    }, 'Check-in recorded in Supabase.');
   }
 
   function complete(id) {
-    dispatch({ type: 'complete', id });
-    toast.success('Plan completed. Thanks for showing up!');
+    if (!viewer?.id) return;
+    withBusy(async () => {
+      await markComplete(viewer.id, id);
+      await refresh(viewer.id);
+    }, 'Plan completed. Thanks for showing up!');
   }
 
   function reset() {
-    dispatch({ type: 'reset' });
-    window.localStorage.removeItem(STORAGE_KEY);
-    setScreen('explore');
-    setSelectedPlanId(1);
-    setChatId(1);
-    toast.success('Sample data reset.');
+    if (!viewer?.id) return;
+    withBusy(async () => {
+      await resetAlongDemo();
+      const profile = await ensureViewerProfile(viewer);
+      setViewer(profile);
+      setScreen('explore');
+      setSelectedPlanId(FIRST_SEED_PLAN_ID);
+      setChatId(FIRST_SEED_PLAN_ID);
+      await refresh(profile.id);
+    }, 'Sample data reset in Supabase.');
   }
 
-  const value = { data, dispatch, hydrated, viewer, authScreen, setAuthScreen, continueAsGuest, signIn, finishSignup, signOut, screen, selectedPlanId, chatId, navigate, openPlan, openChat, requestJoin, acceptRequest, acceptHostRequest, publishPlan, sendMessage, checkIn, complete, reset };
+  const value = {
+    data,
+    busy,
+    hydrated,
+    viewer,
+    authScreen,
+    setAuthScreen,
+    continueAsGuest,
+    signIn,
+    finishSignup,
+    signOut,
+    screen,
+    selectedPlanId,
+    chatId,
+    navigate,
+    openPlan,
+    openChat,
+    requestJoin,
+    acceptRequest,
+    acceptHostRequest,
+    publishPlan,
+    sendMessage,
+    checkIn,
+    complete,
+    reset
+  };
+
   return <AlongContext.Provider value={value}>{children}</AlongContext.Provider>;
 }
 
