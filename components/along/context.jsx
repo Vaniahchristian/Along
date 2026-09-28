@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase/client';
-import { emptyAlongState, ensureViewerProfile, updateInterests, loadAlongState, requestJoinPlan, cancelJoinRequest, acceptHostRequest as dbAcceptHostRequest, publishPlan as dbPublishPlan, sendPlanMessage, markCheckIn, markComplete, submitPlanReport, loadNotifications, markNotificationRead, markAllNotificationsRead } from '@/lib/along-db';
+import { emptyAlongState, ensureViewerProfile, updateInterests, loadAlongState, requestJoinPlan, cancelJoinRequest, acceptHostRequest as dbAcceptHostRequest, publishPlan as dbPublishPlan, sendPlanMessage, markCheckIn, markComplete, submitPlanReport, loadNotifications, markNotificationRead, markAllNotificationsRead, deleteNotification as dbDeleteNotification, clearNotifications as dbClearNotifications } from '@/lib/along-db';
 
 const AlongContext = createContext(null);
 
@@ -158,6 +158,20 @@ export function AlongProvider({ children }) {
     try { await markAllNotificationsRead(viewer.id); }
     catch (error) { setNotifications(previous); toast.error(error.message || 'Could not mark notifications as read.'); }
   }
+  async function deleteNotification(id) {
+    if (!viewer) return;
+    const previous = notifications;
+    setNotifications((current) => current.filter((item) => item.id !== id));
+    try { await dbDeleteNotification(viewer.id, id); toast.success('Notification removed.'); }
+    catch (error) { setNotifications(previous); toast.error(error.message || 'Could not delete notification.'); }
+  }
+  async function clearNotifications() {
+    if (!viewer || !notifications.length) return;
+    const previous = notifications;
+    setNotifications([]);
+    try { await dbClearNotifications(viewer.id); toast.success('Notifications cleared.'); }
+    catch (error) { setNotifications(previous); toast.error(error.message || 'Could not clear notifications.'); }
+  }
   function runAction(work, message) { if (viewer?.id) return withBusy(async () => { await work(); await refresh(viewer.id); }, message); }
   function requestJoin(id) { return runAction(() => requestJoinPlan(viewer.id, id), 'Request sent.'); }
   function cancelRequest(id) { return runAction(() => cancelJoinRequest(viewer.id, id), 'Request cancelled.'); }
@@ -168,7 +182,7 @@ export function AlongProvider({ children }) {
   function complete(id) { return runAction(() => markComplete(viewer.id, id), 'Plan completed.'); }
   function reportPlan(id, reason) { return runAction(() => submitPlanReport(viewer.id, id, reason), 'Report sent. Thank you for telling us.'); }
 
-  const value = { data, busy, hydrated, loadError, refresh, viewer, isAdmin, authScreen, setAuthScreen, signIn, finishSignup, sendPasswordReset, updatePassword, signOut, saveInterests, screen, selectedPlanId, chatId, chatViewOpen, setChatViewOpen, navigate, openPlan, openChat, requestJoin, cancelRequest, approveRequest, publishPlan, sendMessage, checkIn, complete, reportPlan, notifications, notificationError, refreshNotifications, openNotification, readAllNotifications };
+  const value = { data, busy, hydrated, loadError, refresh, viewer, isAdmin, authScreen, setAuthScreen, signIn, finishSignup, sendPasswordReset, updatePassword, signOut, saveInterests, screen, selectedPlanId, chatId, chatViewOpen, setChatViewOpen, navigate, openPlan, openChat, requestJoin, cancelRequest, approveRequest, publishPlan, sendMessage, checkIn, complete, reportPlan, notifications, notificationError, refreshNotifications, openNotification, readAllNotifications, deleteNotification, clearNotifications };
   return <AlongContext.Provider value={value}>{children}</AlongContext.Provider>;
 }
 

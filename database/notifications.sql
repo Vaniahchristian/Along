@@ -21,6 +21,7 @@ alter table public.notifications enable row level security;
 revoke all on public.notifications from public, anon, authenticated;
 grant select on public.notifications to authenticated;
 grant update (read_at) on public.notifications to authenticated;
+grant delete on public.notifications to authenticated;
 
 drop policy if exists "members read own notifications" on public.notifications;
 create policy "members read own notifications" on public.notifications for select to authenticated
@@ -28,6 +29,9 @@ create policy "members read own notifications" on public.notifications for selec
 drop policy if exists "members mark own notifications read" on public.notifications;
 create policy "members mark own notifications read" on public.notifications for update to authenticated
   using (recipient_id = (select auth.uid())) with check (recipient_id = (select auth.uid()));
+drop policy if exists "members delete own notifications" on public.notifications;
+create policy "members delete own notifications" on public.notifications for delete to authenticated
+  using (recipient_id = (select auth.uid()));
 
 create or replace function public.create_along_notifications()
 returns trigger language plpgsql security definer set search_path = '' as $$
