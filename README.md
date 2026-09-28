@@ -2,7 +2,7 @@
 
 Along helps someone turn a specific activity into a small public plan with company. This is a responsive Next.js App Router prototype built from the Stitch concepts in `stitch_activity_buddy_finder_ui/`.
 
-Run `npm install` and `npm run dev`, then open `http://localhost:3000`. The entry screens use the supplied Along logo in `public/along-logo.png`. Sign in with `demo@along.app` / `along123`, create a demo profile, or continue as a guest. All people, plans, messages, and outcomes are sample data. Changes persist in browser storage until **Profile → Reset sample data**.
+Run `npm install` and `npm run dev`, then open `http://localhost:3000` for the public landing page. Its calls to action open the interactive demo at `/app`. The entry screens use the supplied Along logo in `public/along-logo.png`. Sign in with `demo@along.app` / `along123`, create a demo profile, or continue as a guest. All people, plans, messages, and outcomes are sample data. Changes persist in browser storage until **Profile → Reset sample data**.
 
 The route and metadata live in `app/`. Each screen is a React component in `components/along/`, styled with Tailwind utilities and the installed shadcn controls. `app/globals.css` contains only the Tailwind imports, theme tokens, and browser base styles. Demo actions are managed by a React provider and a pure reducer in `lib/demo-state.mjs`; browser storage keeps the data between visits.
 

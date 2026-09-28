@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { ArrowLeft, ArrowRight, CalendarDays, Coffee, Dumbbell, Eye, EyeOff, Footprints, MapPin, Palette, UsersRound, Waves } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -73,7 +74,7 @@ export function AuthScreen() {
         <p className="mt-5 mb-8 text-base leading-relaxed text-muted-foreground">Meet people around a specific plan, at a real place and time. Start small. Show up together.</p>
         <div className="grid gap-3"><ActionButton type="button" className="w-full justify-between" onClick={() => changeScreen('signup')}>Create a demo profile <ArrowRight aria-hidden="true" /></ActionButton><ActionButton type="button" tone="secondary" className="w-full" onClick={() => changeScreen('signin')}>I already have an account</ActionButton></div>
         <button type="button" onClick={continueAsGuest} className="mt-6 w-full py-2 text-sm font-bold text-primary underline decoration-primary/40 underline-offset-4 hover:decoration-primary">Explore the demo as a guest</button>
-        <p className="mt-7 border-t border-border pt-5 text-xs leading-relaxed text-muted-foreground">This is a product preview with sample people and plans. No real account is created.</p>
+        <p className="mt-7 border-t border-border pt-5 text-xs leading-relaxed text-muted-foreground">This is a product preview with sample people and plans. No real account is created.</p><Link href="/" className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-primary hover:underline"><ArrowLeft className="size-4" /> About Along</Link>
       </>}
       {authScreen === 'signin' && <>
         <h2 className="font-heading text-[clamp(2.25rem,4vw,3.2rem)] leading-tight font-extrabold tracking-[-.05em]">Welcome back.</h2><p className="mt-2 mb-7 text-muted-foreground">Pick up where your plans left off.</p>
