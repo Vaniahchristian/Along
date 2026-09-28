@@ -147,7 +147,7 @@ export function AlongProvider({ children }) {
     }
     if (notification.plan_id) {
       try { await refresh(viewer.id); } catch (error) { toast.error(error.message || 'Could not load the plan.'); }
-      if (notification.kind === 'message' || notification.kind === 'request_accepted') openChat(notification.plan_id);
+      if (notification.kind === 'message' || notification.kind === 'request_accepted' || notification.kind === 'check_in' || notification.kind === 'plan_completed') openChat(notification.plan_id);
       else openPlan(notification.plan_id);
     }
   }
