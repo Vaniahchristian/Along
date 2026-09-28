@@ -27,6 +27,7 @@ grant insert on public.profiles, public.plans, public.join_requests, public.memb
 grant update (display_name, initials, tone, interests) on public.profiles to authenticated;
 grant update (spots) on public.plans to authenticated;
 grant update (status) on public.join_requests to authenticated;
+grant delete on public.join_requests to authenticated;
 grant update (checked_in, completed) on public.memberships to authenticated;
 
 create policy "members see real profiles" on public.profiles for select to authenticated
@@ -52,6 +53,8 @@ create policy "members ask to join" on public.join_requests for insert to authen
 create policy "hosts decide requests" on public.join_requests for update to authenticated
   using (exists (select 1 from public.plans p where p.id = plan_id and p.host_id = (select auth.uid())))
   with check (exists (select 1 from public.plans p where p.id = plan_id and p.host_id = (select auth.uid())));
+create policy "members cancel own pending requests" on public.join_requests for delete to authenticated
+  using (requester_id = (select auth.uid()) and status = 'pending');
 
 create policy "members and hosts see memberships" on public.memberships for select to authenticated
   using (profile_id = (select auth.uid()) or exists (select 1 from public.plans p where p.id = plan_id and p.host_id = (select auth.uid())));

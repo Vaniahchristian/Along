@@ -6,7 +6,7 @@ import { useAlong } from './context';
 import { ActionButton, EmptyState, PageHeading, PersonAvatar } from './shared';
 
 export function PlansScreen() {
-  const { data, navigate, openPlan, openChat } = useAlong();
+  const { data, navigate, openPlan, openChat, cancelRequest, busy } = useAlong();
   const [tab, setTab] = useState('upcoming');
   const related = new Set([...data.joined, ...data.requests, ...data.plans.filter((plan) => plan.host === 'You').map((plan) => plan.id)]);
   const ids = tab === 'past' ? data.completed : [...related].filter((id) => !data.completed.includes(id));
@@ -18,6 +18,7 @@ export function PlansScreen() {
       const joined = data.joined.includes(plan.id);
       const mine = plan.host === 'You';
       const done = data.completed.includes(plan.id);
+      const pending = data.requests.includes(plan.id);
       const status = done ? 'Completed' : mine ? 'Hosting' : joined ? 'Confirmed' : 'Request pending';
       return <article className="mb-3 flex min-w-0 flex-col gap-4 rounded-[18px] border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between" key={plan.id}>
         <div className="flex min-w-0 items-start gap-3 sm:flex-1 sm:items-center">
@@ -27,6 +28,7 @@ export function PlansScreen() {
         <div className="flex flex-wrap items-center gap-2 pl-[52px] sm:justify-end sm:pl-0">
           <span className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-extrabold ${status === 'Request pending' ? 'bg-amber/15 text-forest' : 'bg-soft-green text-forest'}`}><span className={`size-1.5 rounded-full ${status === 'Request pending' ? 'bg-amber' : status === 'Hosting' ? 'bg-primary' : 'bg-success'}`} />{status}</span>
           <ActionButton type="button" tone="secondary" onClick={() => openPlan(plan.id)}>Details</ActionButton>
+          {pending && <ActionButton type="button" tone="secondary" disabled={busy} onClick={() => cancelRequest(plan.id)}>{busy ? 'Cancelling…' : 'Cancel'}</ActionButton>}
           {(joined || mine) && <ActionButton type="button" onClick={() => openChat(plan.id)}>Chat</ActionButton>}
         </div>
       </article>;
