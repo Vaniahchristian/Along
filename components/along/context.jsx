@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase/client';
-import { emptyAlongState, ensureViewerProfile, updateInterests, loadAlongState, requestJoinPlan, acceptHostRequest as dbAcceptHostRequest, publishPlan as dbPublishPlan, sendPlanMessage, markCheckIn, markComplete, submitPlanReport } from '@/lib/along-db';
+import { emptyAlongState, ensureViewerProfile, updateInterests, loadAlongState, requestJoinPlan, acceptHostRequest as dbAcceptHostRequest, publishPlan as dbPublishPlan, sendPlanMessage, markCheckIn, markComplete, submitPlanReport, loadNotifications, markNotificationRead, markAllNotificationsRead } from '@/lib/along-db';
 
 const AlongContext = createContext(null);
 
@@ -18,6 +18,13 @@ export function AlongProvider({ children }) {
   const [screen, setScreen] = useState('explore');
   const [selectedPlanId, setSelectedPlanId] = useState(null);
   const [chatId, setChatId] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [notificationError, setNotificationError] = useState('');
+
+  const refreshNotifications = useCallback(async (profileId) => {
+    try { setNotifications(await loadNotifications(profileId)); setNotificationError(''); }
+    catch (error) { setNotificationError(error.message || 'Notifications could not load.'); }
+  }, []);
 
   const refresh = useCallback(async (profileId) => {
     const next = await loadAlongState(profileId);
@@ -25,7 +32,8 @@ export function AlongProvider({ children }) {
     setLoadError('');
     setSelectedPlanId((current) => next.plans.some((plan) => plan.id === current) ? current : next.plans[0]?.id || null);
     setChatId((current) => next.plans.some((plan) => plan.id === current) ? current : next.plans[0]?.id || null);
-  }, []);
+    await refreshNotifications(profileId);
+  }, [refreshNotifications]);
 
   const activate = useCallback(async (user) => {
     const profile = await ensureViewerProfile(user);
@@ -40,7 +48,7 @@ export function AlongProvider({ children }) {
     let active = true;
     const { data: listener } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY') setAuthScreen('recovery');
-      if (event === 'SIGNED_OUT') { setViewer(null); setIsAdmin(false); setData(emptyAlongState()); }
+      if (event === 'SIGNED_OUT') { setViewer(null); setIsAdmin(false); setData(emptyAlongState()); setNotifications([]); }
     });
     (async () => {
       const { data: authData, error } = await supabase.auth.getUser();
@@ -55,6 +63,18 @@ export function AlongProvider({ children }) {
     })();
     return () => { active = false; listener.subscription.unsubscribe(); };
   }, [activate]);
+
+  useEffect(() => {
+    if (!viewer?.id) return;
+    const refreshOnFocus = () => { if (document.visibilityState === 'visible') refreshNotifications(viewer.id); };
+    const channel = supabase.channel(`along-notifications-${viewer.id}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `recipient_id=eq.${viewer.id}` }, () => refreshNotifications(viewer.id))
+      .subscribe();
+    const interval = window.setInterval(refreshOnFocus, 30000);
+    document.addEventListener('visibilitychange', refreshOnFocus);
+    window.addEventListener('focus', refreshOnFocus);
+    return () => { supabase.removeChannel(channel); window.clearInterval(interval); document.removeEventListener('visibilitychange', refreshOnFocus); window.removeEventListener('focus', refreshOnFocus); };
+  }, [viewer?.id, refreshNotifications]);
 
   async function withBusy(work, successMessage) {
     setBusy(true);
@@ -104,7 +124,7 @@ export function AlongProvider({ children }) {
     return withBusy(async () => {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      setViewer(null); setIsAdmin(false); setData(emptyAlongState()); setAuthScreen('welcome'); setScreen('explore');
+      setViewer(null); setIsAdmin(false); setData(emptyAlongState()); setNotifications([]); setAuthScreen('welcome'); setScreen('explore');
     });
   }
 
@@ -117,6 +137,26 @@ export function AlongProvider({ children }) {
   function navigate(next) { setScreen(next); window.scrollTo({ top: 0, behavior: 'instant' }); }
   function openPlan(id) { setSelectedPlanId(id); navigate('detail'); }
   function openChat(id) { setChatId(id); navigate('chat'); }
+  async function openNotification(notification) {
+    if (!viewer) return;
+    if (!notification.read_at) {
+      setNotifications((current) => current.map((item) => item.id === notification.id ? { ...item, read_at: new Date().toISOString() } : item));
+      try { await markNotificationRead(viewer.id, notification.id); }
+      catch (error) { toast.error(error.message || 'Could not mark notification as read.'); await refreshNotifications(viewer.id); }
+    }
+    if (notification.plan_id) {
+      try { await refresh(viewer.id); } catch (error) { toast.error(error.message || 'Could not load the plan.'); }
+      if (notification.kind === 'message' || notification.kind === 'request_accepted') openChat(notification.plan_id);
+      else openPlan(notification.plan_id);
+    }
+  }
+  async function readAllNotifications() {
+    if (!viewer) return;
+    const previous = notifications;
+    setNotifications((current) => current.map((item) => ({ ...item, read_at: item.read_at || new Date().toISOString() })));
+    try { await markAllNotificationsRead(viewer.id); }
+    catch (error) { setNotifications(previous); toast.error(error.message || 'Could not mark notifications as read.'); }
+  }
   function runAction(work, message) { if (viewer?.id) return withBusy(async () => { await work(); await refresh(viewer.id); }, message); }
   function requestJoin(id) { return runAction(() => requestJoinPlan(viewer.id, id), 'Request sent.'); }
   function approveRequest(planId, requestId) { return runAction(() => dbAcceptHostRequest(planId, requestId), 'Request accepted.'); }
@@ -126,7 +166,7 @@ export function AlongProvider({ children }) {
   function complete(id) { return runAction(() => markComplete(viewer.id, id), 'Plan completed.'); }
   function reportPlan(id, reason) { return runAction(() => submitPlanReport(viewer.id, id, reason), 'Report sent. Thank you for telling us.'); }
 
-  const value = { data, busy, hydrated, loadError, refresh, viewer, isAdmin, authScreen, setAuthScreen, signIn, finishSignup, sendPasswordReset, updatePassword, signOut, saveInterests, screen, selectedPlanId, chatId, navigate, openPlan, openChat, requestJoin, approveRequest, publishPlan, sendMessage, checkIn, complete, reportPlan };
+  const value = { data, busy, hydrated, loadError, refresh, viewer, isAdmin, authScreen, setAuthScreen, signIn, finishSignup, sendPasswordReset, updatePassword, signOut, saveInterests, screen, selectedPlanId, chatId, navigate, openPlan, openChat, requestJoin, approveRequest, publishPlan, sendMessage, checkIn, complete, reportPlan, notifications, notificationError, refreshNotifications, openNotification, readAllNotifications };
   return <AlongContext.Provider value={value}>{children}</AlongContext.Provider>;
 }
 
