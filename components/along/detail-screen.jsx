@@ -2,7 +2,7 @@
 
 import { CalendarDays, MapPin, ShieldCheck, UsersRound } from 'lucide-react';
 import { useAlong } from './context';
-import { ActionButton, BackButton, CategoryBadge, Panel, PersonAvatar, ReportForm } from './shared';
+import { ActionButton, BackButton, BeginnerBadge, CategoryBadge, Panel, PersonAvatar, ReportForm } from './shared';
 
 export function DetailScreen() {
   const { data, selectedPlanId, openChat, requestJoin, acceptHostRequest } = useAlong();
@@ -15,11 +15,11 @@ export function DetailScreen() {
   const incoming = data.hostRequests.includes(plan.id);
 
   return <><BackButton /><div className="grid grid-cols-[minmax(0,1.3fr)_minmax(290px,.7fr)] gap-5 max-[760px]:grid-cols-1">
-    <Panel><CategoryBadge category={plan.category} /><h1 className="mt-4 mb-4 font-heading text-[clamp(1.8rem,3.3vw,2.7rem)] leading-[1.14] font-extrabold tracking-[-.04em]">{plan.title}</h1><p className="max-w-[65ch] text-muted-foreground">{plan.intro}</p>
+    <Panel><div className="flex flex-wrap gap-1.5"><CategoryBadge category={plan.category} />{plan.beginnerFriendly && <BeginnerBadge />}</div><h1 className="mt-4 mb-4 font-heading text-[clamp(1.8rem,3.3vw,2.7rem)] leading-[1.14] font-extrabold tracking-[-.04em]">{plan.title}</h1><p className="max-w-[65ch] text-muted-foreground">{plan.intro}</p>
       <div className="my-6 grid gap-3 border-y border-border py-5">
-        <div className="flex items-start gap-3"><CalendarDays className="mt-0.5 size-5 shrink-0 text-destructive" aria-hidden="true" /><div><strong className="block">{plan.date} at {plan.time}</strong><span className="block text-[13px] text-muted-foreground">Confirm details in chat before you go</span></div></div>
-        <div className="flex items-start gap-3"><MapPin className="mt-0.5 size-5 shrink-0 text-destructive" aria-hidden="true" /><div><strong className="block">{plan.venue}</strong><span className="block text-[13px] text-muted-foreground">Meet at a public venue</span></div></div>
-        <div className="flex items-start gap-3"><UsersRound className="mt-0.5 size-5 shrink-0 text-destructive" aria-hidden="true" /><div><strong className="block">{plan.size - plan.spots} going · {plan.spots} {plan.spots === 1 ? 'spot' : 'spots'} open</strong><span className="block text-[13px] text-muted-foreground">Small group · {plan.size} people maximum</span></div></div>
+        <div className="flex items-start gap-3"><CalendarDays className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" /><div><strong className="block">{plan.date} at {plan.time}</strong><span className="block text-[13px] text-muted-foreground">Confirm details in chat before you go</span></div></div>
+        <div className="flex items-start gap-3"><MapPin className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" /><div><strong className="block">{plan.venue}</strong><span className="block text-[13px] text-muted-foreground">Meet at a public venue</span></div></div>
+        <div className="flex items-start gap-3"><UsersRound className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" /><div><strong className="block">{plan.size - plan.spots} going · {plan.spots} {plan.spots === 1 ? 'spot' : 'spots'} open</strong><span className="block text-[13px] text-muted-foreground">Small group · {plan.size} people maximum</span></div></div>
       </div>
       <h2 className="mb-3 font-heading text-lg font-extrabold">The plan</h2><ul className="list-disc space-y-2 pl-5 text-muted-foreground"><li><strong>Meet:</strong> {plan.meet}</li><li><strong>Bring:</strong> {plan.bring}</li><li><strong>Cost:</strong> Everyone covers their own venue costs unless the group agrees otherwise.</li></ul>
     </Panel>
@@ -32,3 +32,4 @@ export function DetailScreen() {
     </div>
   </div></>;
 }
+

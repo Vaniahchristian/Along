@@ -33,6 +33,9 @@ async function main() {
   assert.match(data.messages[42][0].text, /Thanks for accepting/);
 
   assert.deepEqual(restoreDemoData(JSON.parse(JSON.stringify(data))), data);
+  const legacy = initialDemoData();
+  delete legacy.plans[0].beginnerFriendly;
+  assert.equal(restoreDemoData(legacy).plans[0].beginnerFriendly, true);
   data = demoReducer(data, { type: 'reset' });
   assert.equal(data.plans.length, 5);
   assert.deepEqual(data.joined, []);

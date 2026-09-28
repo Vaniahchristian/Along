@@ -13,9 +13,8 @@ import { useAlong } from './context';
 
 export function ActionButton({ tone = 'primary', className, children, ...props }) {
   const tones = {
-    primary: 'bg-primary text-primary-foreground hover:bg-[#193c2e]',
+    primary: 'bg-primary text-primary-foreground hover:bg-forest',
     secondary: 'border border-border bg-card text-primary hover:bg-secondary',
-    orange: 'bg-destructive text-white hover:bg-[#bc4d2d]',
     text: 'min-h-0 bg-transparent px-2 py-2 text-primary hover:bg-secondary'
   };
   return <Button variant={tone === 'secondary' ? 'outline' : tone === 'text' ? 'ghost' : 'default'} className={cn('min-h-11 gap-2 rounded-xl px-4 text-sm font-bold [&_svg]:size-4', tones[tone], className)} {...props}>{children}</Button>;
@@ -26,15 +25,19 @@ export function Panel({ className, children, ...props }) {
 }
 
 export function PersonAvatar({ initials, name, tone = '', small = false, large = false }) {
-  const colors = { green: 'bg-[#d2e5d8] text-[#28513e]', pink: 'bg-[#f0d5d8] text-[#7b4051]' };
-  return <Avatar className={cn('flex shrink-0 items-center justify-center rounded-full border-0 after:hidden', small ? 'size-8' : large ? 'size-[53px]' : 'size-10', colors[tone] ?? 'bg-[#eac8aa] text-[#6a382a]')} aria-label={name}>
+  const colors = { green: 'bg-soft-green text-forest', pink: 'bg-accent text-accent-foreground' };
+  return <Avatar className={cn('flex shrink-0 items-center justify-center rounded-full border-0 after:hidden', small ? 'size-8' : large ? 'size-[53px]' : 'size-10', colors[tone] ?? 'bg-muted text-forest')} aria-label={name}>
     <AvatarFallback className="size-full bg-transparent text-xs font-extrabold text-inherit">{initials}</AvatarFallback>
   </Avatar>;
 }
 
 export function CategoryBadge({ category }) {
-  const colors = { Fitness: 'bg-[#e2e8d3] text-[#475935]', Outings: 'bg-[#f8e4d8] text-[#8c4b33]', Learning: 'bg-[#e5e2ee] text-[#5b507a]' };
+  const colors = { Fitness: 'bg-soft-green text-forest', Outings: 'bg-muted text-forest', Learning: 'bg-accent text-accent-foreground' };
   return <Badge className={cn('h-auto rounded-full border-0 px-2.5 py-1 text-[11px] font-extrabold tracking-[.02em]', colors[category] ?? 'bg-muted text-foreground')}>{category}</Badge>;
+}
+
+export function BeginnerBadge() {
+  return <Badge className="h-auto gap-1.5 rounded-full border-0 bg-accent px-2.5 py-1 text-[11px] font-extrabold text-accent-foreground"><span className="size-1.5 rounded-full bg-pink" /> Beginner friendly</Badge>;
 }
 
 export function PageHeading({ title, description }) {
@@ -47,7 +50,7 @@ export function EmptyState({ title, description, action, onAction }) {
 
 export function BackButton() {
   const { navigate } = useAlong();
-  return <button type="button" className="mb-5 flex items-center gap-2 py-1 font-bold text-muted-foreground hover:text-primary focus-visible:rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-destructive" onClick={() => navigate('explore')}><ArrowLeft className="size-4" aria-hidden="true" /> Back to explore</button>;
+  return <button type="button" className="mb-5 flex items-center gap-2 py-1 font-bold text-muted-foreground hover:text-primary focus-visible:rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" onClick={() => navigate('explore')}><ArrowLeft className="size-4" aria-hidden="true" /> Back to explore</button>;
 }
 
 export function ReportForm({ planId }) {

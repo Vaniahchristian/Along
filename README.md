@@ -18,7 +18,7 @@ The demo includes empty search results, pending and confirmed states, form valid
 
 ## Design direction
 
-The visual concept is **a friendly field guide for getting out of the house**. Deep evergreen (`#244D3D`) provides a grounded, trustworthy base; warm paper (`#F6F3EC`) keeps the browsing experience calm; terracotta (`#D9633F`) marks invitations and important actions. Soft mint (`#DCECDF`) communicates confirmation. Ink (`#20332D`) carries the main text. This is warmer and more distinctive than the Stitch screens' pale lavender system while retaining their approachable intent.
+The visual concept is **a friendly field guide for getting out of the house**. White (`#FFFFFF`) keeps the main screens quiet; YoTip green (`#3B793F`) leads actions and navigation; forest (`#0F2218`) anchors the welcome panel. Vivid green (`#22C55E`) marks confirmed outcomes, pink (`#EC4899`) appears in small interest cues, and amber (`#FFB900`) signals pending states. Text and borders use `#0A0A0A`, `#636C61`, and `#DEE3DE`.
 
 Activity cards prioritize the decision facts: what, when, where, who, and whether there is room. Details are written as human instructions rather than generic social-app labels. The demo's date and location are fixed sample content, not a live location service.
 
