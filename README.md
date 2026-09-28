@@ -4,9 +4,11 @@ Along helps people make a specific public activity plan and find someone to join
 
 ## Run locally
 
-1. Copy `.env.example` to `.env.local` and set the Along project's URL and publishable key.
+1. Copy `.env.example` to `.env.local` and set the Along project's URL, publishable key, and site URL.
 2. Run `npm install` and `npm run dev`.
 3. Open `http://localhost:3000` for the public home page or `/app` for the product.
+
+Along is set up as a Progressive Web App. Production builds register a service worker (`@ducanh2912/next-pwa`), expose `/manifest.webmanifest`, and include install icons under `public/icons/`. The service worker is disabled in development. After `npm run build && npm start`, you can install Along from a supporting browser. An `/offline` fallback is shown when navigation fails without a network.
 
 The browser client uses Supabase Auth for email signup, confirmation, sign in, password recovery, session restore, and sign out. It never stores passwords in local storage. User profiles, plans, join requests, memberships, and messages use the project's database.
 

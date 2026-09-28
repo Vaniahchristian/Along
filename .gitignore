@@ -3,3 +3,14 @@ node_modules/
 out/
 .env*.local
 npm-debug.log*
+
+# Generated PWA service worker files
+public/sw.js
+public/sw.js.map
+public/sw-*.js
+public/sw-*.js.map
+public/workbox-*.js
+public/workbox-*.js.map
+public/swe-worker-*.js
+public/fallback-*.js
+public/fallback-*.js.map
