@@ -19,12 +19,16 @@ export function PlansScreen() {
       const mine = plan.host === 'You';
       const done = data.completed.includes(plan.id);
       const status = done ? 'Completed' : mine ? 'Hosting' : joined ? 'Confirmed' : 'Request pending';
-      return <article className="mb-2.5 flex items-center gap-4 rounded-[17px] border border-border bg-card p-4 max-[420px]:flex-wrap" key={plan.id}>
-        <PersonAvatar initials={plan.initials} name={plan.host} tone={plan.tone} />
-        <div className="min-w-0 flex-1"><h3 className="font-heading font-extrabold">{plan.title}</h3><p className="text-xs text-muted-foreground">{plan.date} · {plan.time} · {plan.venue}</p></div>
-        <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-extrabold ${status === 'Request pending' ? 'bg-amber/15 text-forest' : 'bg-soft-green text-forest'}`}><span className={`size-1.5 rounded-full ${status === 'Request pending' ? 'bg-amber' : status === 'Hosting' ? 'bg-primary' : 'bg-success'}`} />{status}</span>
-        <ActionButton type="button" tone="secondary" className="max-[420px]:flex-1" onClick={() => openPlan(plan.id)}>Details</ActionButton>
-        {(joined || mine) && <ActionButton type="button" className="max-[420px]:flex-1" onClick={() => openChat(plan.id)}>Chat</ActionButton>}
+      return <article className="mb-3 flex min-w-0 flex-col gap-4 rounded-[18px] border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between" key={plan.id}>
+        <div className="flex min-w-0 items-start gap-3 sm:flex-1 sm:items-center">
+          <PersonAvatar initials={plan.initials} name={plan.host} tone={plan.tone} />
+          <div className="min-w-0 flex-1"><h3 className="font-heading text-base font-extrabold leading-snug text-forest">{plan.title}</h3><p className="mt-1 text-xs leading-relaxed text-muted-foreground">{plan.date} · {plan.time}<span className="block sm:inline"> · {plan.venue}</span></p></div>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 pl-[52px] sm:justify-end sm:pl-0">
+          <span className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-extrabold ${status === 'Request pending' ? 'bg-amber/15 text-forest' : 'bg-soft-green text-forest'}`}><span className={`size-1.5 rounded-full ${status === 'Request pending' ? 'bg-amber' : status === 'Hosting' ? 'bg-primary' : 'bg-success'}`} />{status}</span>
+          <ActionButton type="button" tone="secondary" onClick={() => openPlan(plan.id)}>Details</ActionButton>
+          {(joined || mine) && <ActionButton type="button" onClick={() => openChat(plan.id)}>Chat</ActionButton>}
+        </div>
       </article>;
     }) : <EmptyState title={tab === 'past' ? 'No past plans yet' : 'Nothing on your calendar yet'} description={tab === 'past' ? 'Your completed meetups will appear here.' : 'Find a plan that makes you want to go.'} action="Explore plans" onAction={() => navigate('explore')} />}
   </>;
