@@ -2,10 +2,10 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { Bell, CalendarDays, Compass, LogOut, MapPin, Menu, MessageCircle, Plus, ShieldCheck, UserRound } from 'lucide-react';
+import { Bell, CalendarDays, Compass, LogOut, Menu, MessageCircle, Plus, ShieldCheck, UserRound } from 'lucide-react';
 import { Toaster } from '@/components/ui/sonner';
 import { AlongProvider, useAlong } from './context';
-import { ActionButton, PersonAvatar } from './shared';
+import { PersonAvatar } from './shared';
 import { ExploreScreen } from './explore-screen';
 import { DetailScreen } from './detail-screen';
 import { PlansScreen } from './plans-screen';
@@ -48,8 +48,8 @@ function Shell() {
       </aside>
       <main className="min-w-0 px-12 pt-7 pb-20 max-[1050px]:px-6 max-[760px]:px-4 max-[760px]:pt-0 max-[760px]:pb-24">
         <header className="mb-7 flex items-center justify-between gap-3 max-[760px]:sticky max-[760px]:top-0 max-[760px]:z-10 max-[760px]:-mx-4 max-[760px]:mb-6 max-[760px]:border-b max-[760px]:border-border max-[760px]:bg-background/95 max-[760px]:px-4 max-[760px]:py-3 max-[760px]:backdrop-blur-sm">
-          <div className="flex min-w-0 items-center gap-2"><button type="button" onClick={() => setDrawerOpen(true)} aria-label="Open menu" className="hidden size-10 shrink-0 place-items-center rounded-xl border border-border bg-card text-forest hover:bg-secondary focus-visible:outline-2 focus-visible:outline-primary max-[760px]:grid"><Menu className="size-5" /></button><div className="flex min-w-0 items-center gap-1.5 whitespace-nowrap text-[13px] font-bold text-muted-foreground"><MapPin className="size-4 shrink-0 text-primary" aria-hidden="true" /><span className="hidden min-[360px]:inline">Kampala</span><span className="hidden min-[520px]:inline">, Uganda</span></div></div>
-          <div className="flex shrink-0 items-center gap-2"><button type="button" onClick={() => navigate('notifications')} aria-label={unread ? `Notifications, ${unread} unread` : 'Notifications'} className="relative grid size-10 shrink-0 place-items-center rounded-xl border border-border bg-card text-forest hover:bg-secondary focus-visible:outline-2 focus-visible:outline-primary"><Bell className="size-5" />{unread > 0 && <span className="absolute -right-1 -top-1 grid min-w-5 h-5 place-items-center rounded-full bg-[#ec4899] px-1 text-[10px] font-bold text-white">{unread > 99 ? '99+' : unread}</span>}</button><ActionButton className="max-[420px]:px-3 max-[420px]:text-xs" type="button" onClick={() => navigate('create')}><Plus aria-hidden="true" /> Make a plan</ActionButton></div>
+          <button type="button" onClick={() => setDrawerOpen(true)} aria-label="Open menu" className="hidden size-10 shrink-0 place-items-center rounded-xl border border-border bg-card text-forest hover:bg-secondary focus-visible:outline-2 focus-visible:outline-primary max-[760px]:grid"><Menu className="size-5" /></button>
+          <button type="button" onClick={() => navigate('notifications')} aria-label={unread ? `Notifications, ${unread} unread` : 'Notifications'} className="relative ml-auto grid size-10 shrink-0 place-items-center rounded-xl border border-border bg-card text-forest hover:bg-secondary focus-visible:outline-2 focus-visible:outline-primary"><Bell className="size-5" />{unread > 0 && <span className="absolute -right-1 -top-1 grid min-w-5 h-5 place-items-center rounded-full bg-[#ec4899] px-1 text-[10px] font-bold text-white">{unread > 99 ? '99+' : unread}</span>}</button>
         </header>
         {loadError && <div role="alert" className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-destructive/30 bg-red-50 p-4 text-sm text-destructive"><span>Plans could not load: {loadError}</span><button type="button" className="font-bold underline" onClick={() => refresh(viewer.id)}>Try again</button></div>}
         <Screen />

@@ -10,6 +10,23 @@ Along helps people make a specific public activity plan and find someone to join
 
 Along is set up as a Progressive Web App. Production builds register a service worker (`@ducanh2912/next-pwa`), expose `/manifest.webmanifest`, and include install icons under `public/icons/`. The service worker is disabled in development. After `npm run build && npm start`, you can install Along from a supporting browser. An `/offline` fallback is shown when navigation fails without a network.
 
+## Test accounts
+
+Re-seed with `database/seed-test-data.sql` when needed. Every seeded account uses password `along123`:
+
+| Email | Role to try |
+| --- | --- |
+| `maya@along.test` | Host with open swim plan, pending request, chat, completed past plan |
+| `david@along.test` | Host coffee plan + closed brunch for reports |
+| `brenda@along.test` | Host circuit class with a pending request |
+| `aisha@along.test` | Host walk with multiple pending requests |
+| `joel@along.test` | Host art workshop |
+| `nina@along.test` | Joiner with pending requests + accepted coffee membership |
+| `sam@along.test` | Joiner in swim chat; completed lakeside plan |
+| `alex@along.test` | Joiner with pending requests |
+
+Admin stays on your real account in `along_admins` (currently Mukisa). Open `/admin` while signed in as that admin to review seeded reports.
+
 The browser client uses Supabase Auth for email signup, confirmation, sign in, password recovery, session restore, and sign out. It never stores passwords in local storage. User profiles, plans, join requests, memberships, and messages use the project's database.
 
 ## Launch checks
