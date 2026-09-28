@@ -1,49 +1,42 @@
-const fs = require('node:fs');
-const vm = require('node:vm');
 const assert = require('node:assert/strict');
 
-const handlers = {};
-const app = { innerHTML: '', addEventListener: (name, handler) => { handlers[name] = handler; } };
-const store = new Map();
-const context = vm.createContext({
-  document: {
-    getElementById: id => id === 'app' ? app : null,
-    title: ''
-  },
-  localStorage: { getItem: key => store.get(key), setItem: (key, value) => store.set(key, value), removeItem: key => store.delete(key) },
-  window: { scrollTo() {} },
-  setTimeout() {},
-  prompt: () => '',
-  location: { reload() {} },
-  console,
-  AbortController,
-  Date,
-  FormData
-});
-vm.runInContext(fs.readFileSync('lib/prototype.js', 'utf8').replace('export function mountPrototype', 'function mountPrototype'), context);
-context.root = app;
-vm.runInContext('mountPrototype(root)', context);
-const saved = () => JSON.parse(store.get('along-demo'));
-assert.match(app.innerHTML, /Explore plans/);
+async function main() {
+  const { initialDemoData, demoReducer, restoreDemoData } = await import('./lib/demo-state.mjs');
+  let data = initialDemoData();
+  assert.equal(data.plans.length, 5);
+  assert.equal(data.requests.length, 0);
 
-function click(attribute, value) {
-  const element = {
-    dataset: { [attribute]: value },
-    hasAttribute: name => name === `data-${attribute}`
-  };
-  handlers.click({ target: { closest: () => element } });
+  data = demoReducer(data, { type: 'request', id: 1 });
+  data = demoReducer(data, { type: 'request', id: 1 });
+  assert.deepEqual(data.requests, [1], 'duplicate requests are ignored');
+
+  data = demoReducer(data, { type: 'accept-request', id: 1 });
+  assert.deepEqual(data.requests, []);
+  assert.deepEqual(data.joined, [1]);
+  assert.equal(data.plans[0].spots, 0);
+  assert.match(data.messages[1][0].text, /Happy you can join/);
+
+  data = demoReducer(data, { type: 'message', id: 1, text: '  See you there!  ' });
+  assert.equal(data.messages[1][1].text, 'See you there!');
+  data = demoReducer(data, { type: 'checkin', id: 1 });
+  data = demoReducer(data, { type: 'complete', id: 1 });
+  assert.deepEqual(data.checkins, [1]);
+  assert.deepEqual(data.completed, [1]);
+
+  const hosted = { ...data.plans[1], id: 42, host: 'You', initials: 'YO', spots: 2, size: 3 };
+  data = demoReducer(data, { type: 'publish', plan: hosted });
+  assert.equal(data.plans[0].id, 42);
+  assert.deepEqual(data.hostRequests, [42]);
+  data = demoReducer(data, { type: 'accept-host', id: 42 });
+  assert.deepEqual(data.hostRequests, []);
+  assert.equal(data.plans[0].spots, 1);
+  assert.match(data.messages[42][0].text, /Thanks for accepting/);
+
+  assert.deepEqual(restoreDemoData(JSON.parse(JSON.stringify(data))), data);
+  data = demoReducer(data, { type: 'reset' });
+  assert.equal(data.plans.length, 5);
+  assert.deepEqual(data.joined, []);
+  console.log('Along React state-flow smoke test passed');
 }
-click('detail', '1');
-assert.match(app.innerHTML, /Saturday morning swim/);
-click('request', '1');
-assert.deepEqual(saved().requests, [1]);
-click('accept', '');
-assert.deepEqual(saved().joined, [1]);
-assert.equal(saved().plans[0].spots, 0);
-click('chat', '1');
-assert.match(app.innerHTML, /Group chat is for plan details/);
-click('checkin', '1');
-assert.deepEqual(saved().checkins, [1]);
-click('complete', '1');
-assert.deepEqual(saved().completed, [1]);
-console.log('Along flow smoke test passed');
+
+main().catch((error) => { console.error(error); process.exitCode = 1; });

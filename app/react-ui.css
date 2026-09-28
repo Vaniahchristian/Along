@@ -1,0 +1,33 @@
+.person-avatar{width:40px;height:40px;border-radius:50%;background:#eac8aa;color:#6a382a;display:flex;align-items:center;justify-content:center;flex:none}
+.person-avatar.green{background:#d2e5d8;color:#28513e}
+.person-avatar.pink{background:#f0d5d8;color:#7b4051}
+.person-avatar.small{width:32px;height:32px}
+.person-avatar.large{width:53px;height:53px}
+.person-avatar-fallback{width:100%;height:100%;background:transparent;color:inherit;font-size:12px;font-weight:800}
+.person-avatar.large .person-avatar-fallback,.host-large .person-avatar-fallback{color:inherit;font-size:14px}
+.note-avatars .person-avatar{border:3px solid var(--white);margin-right:-8px}
+.panel[data-slot="card"]{gap:0;box-shadow:none;overflow:visible}
+.plan-card[data-slot="card"]{box-shadow:0 3px 12px rgba(31,55,40,.025)}
+.category[data-slot="badge"]{height:auto;min-height:21px;border:0}
+.field [data-slot="label"]{font-size:13px;font-weight:800;line-height:1.4}
+.field [data-slot="input"],.field [data-slot="textarea"],.along-select[data-slot="select-trigger"]{min-height:45px;background:var(--white);border:1px solid var(--line);border-radius:12px;padding:11px 14px;color:var(--ink);box-shadow:none}
+.field [data-slot="textarea"]{min-height:105px}
+.along-select[data-slot="select-trigger"]{width:100%}
+.create-form .field:last-of-type{margin-bottom:18px}
+.along-tabs{margin-bottom:20px}
+.along-tabs [data-slot="tabs-list"]{height:42px;background:#eaece3;padding:5px;border-radius:13px}
+.along-tabs [data-slot="tabs-trigger"]{min-height:32px;padding:7px 14px;color:var(--along-muted);font-weight:800}
+.along-tabs [data-slot="tabs-trigger"][data-active]{background:var(--white);color:var(--green)}
+.trust-note{display:flex;gap:8px;align-items:flex-start}
+.trust-note svg{width:17px;height:17px;flex:none}
+.chat-after{margin-top:16px}
+.chat-actions,.report-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.report-form{display:grid;gap:10px;margin-top:15px}
+.report-form label{font-size:13px;font-weight:800}
+.report-form [data-slot="textarea"]{background:var(--white);border:1px solid var(--line);min-height:95px}
+.report-form p{margin:0}
+.chat-panel[data-slot="card"]{overflow:hidden}
+.chat-list[data-slot="card"]{align-content:start}
+.chat-compose [data-slot="input"]{height:46px;background:var(--white)}
+.plan-card[data-slot="card"]{min-height:306px}
+@media(max-width:760px){.plan-card[data-slot="card"]{min-height:0}}

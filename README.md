@@ -4,7 +4,7 @@ Along helps someone turn a specific activity into a small public plan with compa
 
 Run `npm install` and `npm run dev`, then open `http://localhost:3000`. All people, plans, messages, and outcomes are sample data. Changes persist in browser storage until **Profile → Reset sample data**.
 
-The route and metadata live in `app/`; the interactive demo logic lives in `lib/prototype.js`. Its browser-side state is intentionally local while the user flows are being designed.
+The route and metadata live in `app/`. Each screen is a React component in `components/along/`, using the installed shadcn controls. Demo actions are managed by a React provider and a pure reducer in `lib/demo-state.mjs`; browser storage keeps the data between visits.
 
 ## The main journey
 
