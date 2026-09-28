@@ -1,19 +1,12 @@
 import Link from 'next/link';
-import Image from 'next/image';
-import { ArrowDown, ArrowRight, CalendarDays, Check, Coffee, Footprints, MapPin, MessageCircle, ShieldCheck, Sparkles, Users, Waves } from 'lucide-react';
+import { ArrowDown, ArrowRight, CalendarDays, Check, Coffee, Footprints, MapPin, MessageCircle, Sparkles, Users, Waves } from 'lucide-react';
+import { MarketingBrand, SiteFooter } from '@/components/marketing/site-chrome';
 
 const plans = [
   { icon: Waves, title: 'A slow swim, no pressure', place: 'A public pool nearby', time: 'A Saturday afternoon', tag: 'Beginner friendly', tone: 'pink' },
   { icon: Footprints, title: 'The Sunday morning trail', place: 'A favourite walking route', time: 'A Sunday morning', tag: 'Fresh air', tone: 'yellow' },
   { icon: Coffee, title: 'Coffee & a little courage', place: 'A café around Kampala', time: 'An easy Friday evening', tag: 'Good company', tone: 'green' },
 ];
-
-function Brand({ light = false }) {
-  return <Link href="/" aria-label="Along home" className={`inline-flex items-center gap-2 font-heading text-[22px] font-extrabold tracking-[-0.07em] md:text-[26px] ${light ? 'text-white' : 'text-forest'}`}>
-    <span className="relative block size-9 overflow-hidden md:size-10"><Image src="/along-logo.png" alt="" width={75} height={75} className="absolute top-[-10px] left-[-17px] h-[75px] w-[75px] max-w-none" priority /></span>
-    along<span className="text-[#f15a38]">.</span>
-  </Link>;
-}
 
 function PlanCard({ plan, className = '' }) {
   const Icon = plan.icon;
@@ -27,9 +20,9 @@ function PlanCard({ plan, className = '' }) {
 }
 
 export default function HomePage() {
-  return <main className="overflow-hidden bg-[#fbfcf8] text-forest">
+  return <main id="top" className="overflow-hidden bg-[#fbfcf8] text-forest">
     <header className="relative z-20 mx-auto flex max-w-[1340px] items-center justify-between px-6 py-5 md:px-10 md:py-7">
-      <Brand />
+      <MarketingBrand />
       <nav aria-label="Main" className="hidden items-center gap-9 text-sm font-semibold text-[#45604a] md:flex"><a href="#how-it-works" className="hover:text-[#3b793f]">How it works</a><a href="#plans" className="hover:text-[#3b793f]">The possibilities</a><a href="#why-along" className="hover:text-[#3b793f]">Why Along</a></nav>
       <Link href="/app" className="inline-flex items-center gap-2 rounded-full bg-[#3b793f] px-3 py-2.5 text-xs font-bold text-white transition hover:bg-[#2c6331] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[#3b793f] md:px-5 md:py-3 md:text-sm"><span className="md:hidden">Get started</span><span className="hidden md:inline">Join Along</span> <ArrowRight className="size-4" /></Link>
     </header>
@@ -51,6 +44,6 @@ export default function HomePage() {
     <section id="why-along" className="bg-[#fff0b5] px-6 py-24 md:px-10"><div className="mx-auto grid max-w-[1240px] items-center gap-12 md:grid-cols-[1.1fr_.9fr]"><div><h2 className="font-heading text-[clamp(2.8rem,5vw,5.5rem)] leading-[1.04] font-extrabold tracking-[-.075em]">The hard part is often just <span className="text-[#d6377f]">going alone.</span></h2><p className="mt-7 max-w-[630px] text-lg leading-relaxed text-[#4c5844]">Along is for the moment between wanting to do something and walking through the door. Small groups make it easier to begin. A clear plan makes it easier to follow through.</p></div><div className="rounded-[30px] bg-white p-7 shadow-[0_20px_60px_-36px_rgba(15,34,24,.3)]"><h3 className="mt-5 font-heading text-2xl font-extrabold tracking-[-.05em]">Comfort comes first.</h3><p className="mt-3 leading-relaxed text-[#586b5b]">Plans start at public places. See who you&apos;re meeting, agree on the details in chat, and check in when it&apos;s time. Keep the conversation in the group chat before you meet.</p><div className="mt-7 flex flex-wrap gap-2"><span className="rounded-full bg-[#e9f1e8] px-3 py-2 text-xs font-bold text-[#3b793f]">Public venues</span><span className="rounded-full bg-[#ffe0ef] px-3 py-2 text-xs font-bold text-[#9b1c62]">Small groups</span><span className="rounded-full bg-[#fff0ae] px-3 py-2 text-xs font-bold text-[#694c00]">Clear plans</span></div></div></div></section>
 
     <section className="bg-[#ec4899] px-6 py-24 text-center text-white md:py-32"><h2 className="mx-auto max-w-[900px] font-heading text-[clamp(3rem,6vw,6.2rem)] leading-[1.02] font-extrabold tracking-[-.075em]">Your next good story starts with <span className="text-[#ffdb58]">“let&apos;s go.”</span></h2><p className="mx-auto mt-6 max-w-[550px] text-lg text-white/90">Find an activity, make a plan, and invite someone to come along.</p><Link href="/app" className="mt-9 inline-flex items-center gap-3 rounded-full bg-forest px-8 py-4 font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#23452f] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-white">Take a look around <ArrowRight className="size-5" /></Link></section>
-    <footer className="flex flex-wrap items-center justify-between gap-4 bg-forest px-6 py-7 text-sm text-white/70 md:px-10"><Brand light /><p>Made for plans worth showing up for. · Made in Kampala</p><a href="#" className="hover:text-white">Back to top ↑</a></footer>
+    <SiteFooter />
   </main>;
 }
