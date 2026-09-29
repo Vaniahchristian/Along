@@ -143,13 +143,35 @@ export function AlongProvider({ children, clerkIdentity = null }) {
   function requestJoin(id) { return runAction(() => requestJoinPlan(viewer.id, id), 'Request sent.'); }
   function cancelRequest(id) { return runAction(() => cancelJoinRequest(viewer.id, id), 'Request cancelled.'); }
   function approveRequest(planId, requestId) { return runAction(() => dbAcceptHostRequest(planId, requestId), 'Request accepted.'); }
-  function publishPlan(plan) { return runAction(async () => { const id = await dbPublishPlan(viewer.id, plan); setSelectedPlanId(id); navigate('detail'); }, 'Your plan is live.'); }
+  async function imageRequest(id, method, file) {
+    const body = file ? new FormData() : undefined;
+    if (body) body.set('image', file);
+    const response = await fetch(`/api/plans/${id}/image`, { method, body, credentials: 'same-origin' });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.error || 'Could not update the plan photo.');
+  }
+  function publishPlan(plan, file) {
+    if (!viewer?.id) return;
+    return withBusy(async () => {
+      const id = await dbPublishPlan(viewer.id, plan);
+      let imageError = null;
+      if (file) try { await imageRequest(id, 'POST', file); }
+      catch (error) { imageError = error.message; }
+      await refresh(viewer.id);
+      setSelectedPlanId(id);
+      navigate('detail');
+      if (imageError) toast.error(`Your plan is live, but the photo was not saved: ${imageError}`);
+      else toast.success('Your plan is live.');
+    });
+  }
+  function replacePlanImage(id, file) { return runAction(() => imageRequest(id, 'POST', file), 'Photo updated.'); }
+  function removePlanImage(id) { return runAction(() => imageRequest(id, 'DELETE'), 'Photo removed.'); }
   function sendMessage(id, text) { return runAction(() => sendPlanMessage(viewer.id, id, text)); }
   function checkIn(id) { return runAction(() => markCheckIn(viewer.id, id), 'You’re checked in.'); }
   function complete(id) { return runAction(() => markComplete(viewer.id, id), 'Plan completed.'); }
   function reportPlan(id, reason) { return runAction(() => submitPlanReport(viewer.id, id, reason), 'Report sent. Thank you for telling us.'); }
 
-  const value = { data, busy, hydrated, loadError, refresh, viewer, clerkSignedIn: Boolean(clerkIdentity?.user), isAdmin, signOut, saveInterests, screen, selectedPlanId, chatId, chatViewOpen, setChatViewOpen, navigate, openPlan, openChat, requestJoin, cancelRequest, approveRequest, publishPlan, sendMessage, checkIn, complete, reportPlan, notifications, notificationError, refreshNotifications, openNotification, readAllNotifications, deleteNotification, clearNotifications };
+  const value = { data, busy, hydrated, loadError, refresh, viewer, clerkSignedIn: Boolean(clerkIdentity?.user), isAdmin, signOut, saveInterests, screen, selectedPlanId, chatId, chatViewOpen, setChatViewOpen, navigate, openPlan, openChat, requestJoin, cancelRequest, approveRequest, publishPlan, replacePlanImage, removePlanImage, sendMessage, checkIn, complete, reportPlan, notifications, notificationError, refreshNotifications, openNotification, readAllNotifications, deleteNotification, clearNotifications };
   return <AlongContext.Provider value={value}>{children}</AlongContext.Provider>;
 }
 

@@ -1,11 +1,15 @@
 'use client';
 
-import { CalendarDays, MapPin, ShieldCheck, UsersRound } from 'lucide-react';
+import Image from 'next/image';
+import { CalendarDays, MapPin, ShieldCheck, UsersRound, X } from 'lucide-react';
+import { toast } from 'sonner';
+import { planImage } from '@/lib/activity-image';
+import { preparePlanImage } from '@/lib/prepare-plan-image';
 import { useAlong } from './context';
 import { ActionButton, BackButton, BeginnerBadge, CategoryBadge, Panel, PersonAvatar, ReportForm } from './shared';
 
 export function DetailScreen() {
-  const { data, selectedPlanId, openChat, requestJoin, cancelRequest, approveRequest, busy } = useAlong();
+  const { data, selectedPlanId, openChat, requestJoin, cancelRequest, approveRequest, replacePlanImage, removePlanImage, busy } = useAlong();
   const plan = data.plans.find((item) => item.id === selectedPlanId);
   if (!plan) return <><BackButton /><Panel><h1 className="font-heading text-2xl font-extrabold">Plan not found</h1><p className="text-muted-foreground">This plan may have been removed.</p></Panel></>;
 
@@ -14,8 +18,16 @@ export function DetailScreen() {
   const mine = plan.host === 'You';
   const incoming = data.hostRequests.filter((request) => request.planId === plan.id);
 
+  async function changePhoto(event) {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    try { await replacePlanImage(plan.id, await preparePlanImage(file)); }
+    catch (error) { toast.error(error.message); }
+  }
+
   return <><BackButton /><div className="grid grid-cols-[minmax(0,1.3fr)_minmax(290px,.7fr)] gap-5 max-[760px]:grid-cols-1">
-    <Panel><div className="flex flex-wrap gap-1.5"><CategoryBadge category={plan.category} />{plan.beginnerFriendly && <BeginnerBadge />}</div><h1 className="mt-4 mb-4 font-heading text-[clamp(1.8rem,3.3vw,2.7rem)] leading-[1.14] font-extrabold tracking-[-.04em]">{plan.title}</h1><p className="max-w-[65ch] text-muted-foreground">{plan.intro}</p>
+    <Panel><div className="relative mb-5 aspect-[1.9] overflow-hidden rounded-2xl bg-soft-green"><Image src={planImage(plan)} alt={plan.imageUrl ? `Photo added by the host for ${plan.title}` : `Illustrative image for ${plan.category.toLowerCase()} activities`} fill sizes="(max-width: 760px) 100vw, 58vw" className="object-cover" /><span className="absolute bottom-3 left-3 rounded-full bg-forest/80 px-3 py-1.5 text-xs font-bold text-white">{plan.imageUrl ? 'Added by host' : 'Activity illustration · not the venue'}</span></div>{mine && <div className="mb-5 flex flex-wrap items-center gap-3"><label htmlFor={`replace-photo-${plan.id}`} className={`inline-flex min-h-10 items-center rounded-full border border-primary px-4 text-xs font-extrabold text-primary ${busy ? 'pointer-events-none opacity-50' : 'cursor-pointer hover:bg-secondary'}`}>{busy ? 'Saving…' : plan.imageUrl ? 'Replace photo' : 'Add your photo'}</label><input id={`replace-photo-${plan.id}`} type="file" accept="image/jpeg,image/png,image/webp" onChange={changePhoto} disabled={busy} className="sr-only" />{plan.imageUrl && <button type="button" disabled={busy} onClick={() => removePlanImage(plan.id)} className="inline-flex min-h-10 items-center gap-1 text-xs font-bold text-muted-foreground hover:text-forest disabled:opacity-50"><X className="size-4" aria-hidden="true" /> Remove photo</button>}</div>}<div className="flex flex-wrap gap-1.5"><CategoryBadge category={plan.category} />{plan.beginnerFriendly && <BeginnerBadge />}</div><h1 className="mt-4 mb-4 font-heading text-[clamp(1.8rem,3.3vw,2.7rem)] leading-[1.14] font-extrabold tracking-[-.04em]">{plan.title}</h1><p className="max-w-[65ch] text-muted-foreground">{plan.intro}</p>
       <div className="my-6 grid gap-3 border-y border-border py-5">
         <div className="flex items-start gap-3"><CalendarDays className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" /><div><strong className="block">{plan.date} at {plan.time}</strong><span className="block text-[13px] text-muted-foreground">Confirm details in chat before you go</span></div></div>
         <div className="flex items-start gap-3"><MapPin className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" /><div><strong className="block">{plan.venue}</strong><span className="block text-[13px] text-muted-foreground">Meet at a public venue</span></div></div>
