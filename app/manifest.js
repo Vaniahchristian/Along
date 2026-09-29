@@ -1,8 +1,8 @@
 export default function manifest() {
   return {
-    name: 'Along',
-    short_name: 'Along',
-    description: 'Find people to do the things you have been putting off doing alone. Small plans, real places, good company.',
+    name: 'Tagwimi',
+    short_name: 'Tagwimi',
+    description: 'Make the plan. Find your people. Go.',
     start_url: '/',
     scope: '/',
     display: 'standalone',

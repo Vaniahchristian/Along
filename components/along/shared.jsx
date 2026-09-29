@@ -66,7 +66,7 @@ export function ReportForm({ planId }) {
   return <form className="mt-4 grid gap-2.5" onSubmit={submit}>
     <label className="text-sm font-bold" htmlFor={`report-${planId}`}>Tell us what concerns you</label>
     <Textarea id={`report-${planId}`} className="min-h-24 border-border bg-card" value={reason} onChange={(event) => setReason(event.target.value)} maxLength={500} required placeholder="What happened or seems wrong? Include details that will help us review it." />
-    <p className="text-xs text-muted-foreground">An Along admin will review your report. If you are in immediate danger, contact local emergency services.</p>
+    <p className="text-xs text-muted-foreground">A Tagwimi admin will review your report. If you are in immediate danger, contact local emergency services.</p>
     <div className="flex flex-wrap gap-2"><ActionButton type="submit" disabled={busy || !reason.trim()}>{busy ? 'Sending…' : 'Send report'}</ActionButton><ActionButton type="button" tone="text" onClick={() => setOpen(false)}>Cancel</ActionButton></div>
   </form>;
 }

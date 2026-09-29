@@ -1,29 +1,29 @@
 import { LegalShell } from '@/components/marketing/site-chrome';
 
 export const metadata = {
-  title: 'Privacy Policy · Along',
-  description: 'How Along collects, uses, and protects personal information for adults 18 and older.'
+  title: 'Privacy Policy · Tagwimi',
+  description: 'How Tagwimi collects, uses, and protects personal information for adults 18 and older.'
 };
 
 export default function PrivacyPage() {
   return (
-    <LegalShell title="Privacy Policy" updated="28 September 2026">
+    <LegalShell title="Privacy Policy" updated="29 September 2026">
       <p>
-        This Privacy Policy explains how <strong>Along</strong> (“Along,” “we,” “us,” or “our”) collects, uses, shares, and protects personal information when you use the Along website, application, and related services (the “Service”).
+        This Privacy Policy explains how <strong>Tagwimi</strong> (“Tagwimi,” “we,” “us,” or “our”) collects, uses, shares, and protects personal information when you use the Tagwimi website, application, and related services (the “Service”).
       </p>
       <p>
-        Along is an adults-only service. You must be at least <strong>18 years old</strong> to create an account or use Along.
+        Tagwimi is an adults-only service. You must be at least <strong>18 years old</strong> to create an account or use Tagwimi.
       </p>
       <p>
-        By using Along, you acknowledge this Privacy Policy. If you do not agree, please do not use the Service.
+        By using Tagwimi, you acknowledge this Privacy Policy. If you do not agree, please do not use the Service.
       </p>
 
       <h2>1. Who we are</h2>
       <p>
-        Along helps people in Kampala and beyond find others to join them for lawful activities and everyday plans. We are based in <strong>Kampala, Uganda</strong>.
+        Tagwimi helps people in Kampala and beyond find others to join them for lawful activities and everyday plans. We are based in <strong>Kampala, Uganda</strong>.
       </p>
       <p>
-        For privacy questions, contact <a href="mailto:support@along.app">support@along.app</a>.
+        For privacy questions, contact <a href="mailto:support@tagwimi.com">support@tagwimi.com</a>.
       </p>
 
       <h2>2. Information we collect</h2>
@@ -38,7 +38,7 @@ export default function PrivacyPage() {
       </ul>
 
       <h3>Activity and community content</h3>
-      <p>We collect information you submit while using Along, such as:</p>
+      <p>We collect information you submit while using Tagwimi, such as:</p>
       <ul>
         <li>Plans or activities you create</li>
         <li>Join requests and memberships</li>
@@ -73,16 +73,16 @@ export default function PrivacyPage() {
       <p>We may share information in these situations:</p>
       <ul>
         <li>
-          <strong>With other users:</strong> Profile details and plan information you publish can be visible to other Along users as needed for the Service to work.
+          <strong>With other users:</strong> Profile details and plan information you publish can be visible to other Tagwimi users as needed for the Service to work.
         </li>
         <li>
           <strong>With service providers:</strong> Trusted vendors who help us operate hosting, authentication, databases, analytics, email, or security, under appropriate contracts.
         </li>
         <li>
-          <strong>For safety and legal reasons:</strong> When reasonably necessary to protect users, investigate abuse, respond to lawful requests, or protect Along&apos;s rights.
+          <strong>For safety and legal reasons:</strong> When reasonably necessary to protect users, investigate abuse, respond to lawful requests, or protect Tagwimi&apos;s rights.
         </li>
         <li>
-          <strong>Business transfers:</strong> If Along is involved in a merger, acquisition, or similar transaction, information may transfer as part of that process with notice where required.
+          <strong>Business transfers:</strong> If Tagwimi is involved in a merger, acquisition, or similar transaction, information may transfer as part of that process with notice where required.
         </li>
       </ul>
       <p>We do not sell your personal information.</p>
@@ -92,7 +92,7 @@ export default function PrivacyPage() {
         If you report a plan or user, we may review the report together with related account, plan, and message information needed to assess the concern.
       </p>
       <p>
-        Authorized Along admins may access report details and related records for moderation. Some information may be preserved when necessary for safety, legal, or enforcement reasons.
+        Authorized Tagwimi admins may access report details and related records for moderation. Some information may be preserved when necessary for safety, legal, or enforcement reasons.
       </p>
 
       <h2>6. Data retention</h2>
@@ -119,17 +119,17 @@ export default function PrivacyPage() {
         <li>Object to or restrict certain processing where the law allows</li>
       </ul>
       <p>
-        To make a request, email <a href="mailto:support@along.app">support@along.app</a>. We may need to verify your identity before responding.
+        To make a request, email <a href="mailto:support@tagwimi.com">support@tagwimi.com</a>. We may need to verify your identity before responding.
       </p>
 
       <h2>9. Children</h2>
       <p>
-        Along is not directed to children or anyone under 18. We do not knowingly collect personal information from people under 18. If we learn that we have done so, we will take steps to delete that information.
+        Tagwimi is not directed to children or anyone under 18. We do not knowingly collect personal information from people under 18. If we learn that we have done so, we will take steps to delete that information.
       </p>
 
       <h2>10. International processing</h2>
       <p>
-        Along operates from Uganda and may use infrastructure or service providers in other countries. Where information is transferred internationally, we take steps appropriate under applicable law to protect it.
+        Tagwimi operates from Uganda and may use infrastructure or service providers in other countries. Where information is transferred internationally, we take steps appropriate under applicable law to protect it.
       </p>
 
       <h2>11. Changes to this policy</h2>
@@ -139,11 +139,11 @@ export default function PrivacyPage() {
 
       <h2>12. Contact</h2>
       <p>
-        <strong>Along</strong>
+        <strong>Tagwimi</strong>
         <br />
         Kampala, Uganda
         <br />
-        Email: <a href="mailto:support@along.app">support@along.app</a>
+        Email: <a href="mailto:support@tagwimi.com">support@tagwimi.com</a>
       </p>
       <p>
         For product rules and safety expectations, also read our <a href="/terms">Terms of Service</a> and <a href="/help">Help</a> pages.

@@ -4,15 +4,15 @@ import { ClerkProvider } from '@clerk/nextjs';
 export const metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
   title: {
-    default: 'Along — good plans are better together',
-    template: '%s · Along'
+    default: 'Tagwimi — Make the plan. Find your people. Go.',
+    template: '%s · Tagwimi'
   },
-  description: 'Find people to do the things you have been putting off doing alone. Small plans, real places, good company. Adults 18+.',
-  applicationName: 'Along',
+  description: 'Make the plan. Find your people. Go. Tagwimi brings people together around small activities at real places and times. Adults 18+.',
+  applicationName: 'Tagwimi',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Along'
+    title: 'Tagwimi'
   },
   formatDetection: {
     telephone: false

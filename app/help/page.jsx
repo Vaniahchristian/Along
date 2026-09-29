@@ -2,26 +2,26 @@ import Link from 'next/link';
 import { LegalShell } from '@/components/marketing/site-chrome';
 
 export const metadata = {
-  title: 'Help · Along',
-  description: 'Answers about using Along, staying safe, reporting concerns, and getting support.'
+  title: 'Help · Tagwimi',
+  description: 'Answers about using Tagwimi, staying safe, reporting concerns, and getting support.'
 };
 
 export default function HelpPage() {
   return (
-    <LegalShell title="Help Center" updated="28 September 2026">
+    <LegalShell title="Help Center" updated="29 September 2026">
       <p>
-        Along helps adults find company for small, specific plans at real places. This page covers the basics, safety tips, and how to get support.
+        Tagwimi helps adults find company for small, specific plans at real places. This page covers the basics, safety tips, and how to get support.
       </p>
       <p className="rounded-2xl bg-[#fff0b5] px-4 py-3 text-sm font-semibold text-forest">
-        Along is for people 18 years and older.
+        Tagwimi is for people 18 years and older.
       </p>
 
       <h2>Getting started</h2>
-      <h3>How do I join Along?</h3>
+      <h3>How do I join Tagwimi?</h3>
       <p>
-        Open <Link href="/app">Along</Link>, create an account with your email, confirm you are 18+, and add a few interests so people understand what you enjoy.
+        Open <Link href="/app">Tagwimi</Link>, create an account with your email, confirm you are 18+, and add a few interests so people understand what you enjoy.
       </p>
-      <h3>What can I do on Along?</h3>
+      <h3>What can I do on Tagwimi?</h3>
       <ul>
         <li>Browse open plans around Kampala</li>
         <li>Ask to join a plan</li>
@@ -44,13 +44,13 @@ export default function HelpPage() {
       <ul>
         <li>Meet at public venues for first meetups</li>
         <li>Tell someone you trust where you are going</li>
-        <li>Keep early coordination in Along chat</li>
+        <li>Keep early coordination in Tagwimi chat</li>
         <li>Arrange your own transport when possible</li>
         <li>Leave if anything feels wrong</li>
         <li>In an emergency, contact local authorities first</li>
       </ul>
       <p>
-        Along connects people but does not supervise meetups. Read the safety sections in our <Link href="/terms">Terms of Service</Link>.
+        Tagwimi connects people but does not supervise meetups. Read the safety sections in our <Link href="/terms">Terms of Service</Link>.
       </p>
 
       <h2>Reporting a concern</h2>
@@ -70,16 +70,16 @@ export default function HelpPage() {
       </p>
       <h3>Can I delete my account?</h3>
       <p>
-        Email <a href="mailto:support@along.app">support@along.app</a> from the address on your account and ask for deletion. We will confirm once it is processed.
+        Email <a href="mailto:support@tagwimi.com">support@tagwimi.com</a> from the address on your account and ask for deletion. We will confirm once it is processed.
       </p>
 
       <h2>Contact support</h2>
       <p>
-        <strong>Along Support</strong>
+        <strong>Tagwimi Support</strong>
         <br />
         Kampala, Uganda
         <br />
-        Email: <a href="mailto:support@along.app">support@along.app</a>
+        Email: <a href="mailto:support@tagwimi.com">support@tagwimi.com</a>
       </p>
       <p>We aim to reply within a few business days. Safety emergencies should go to local authorities first.</p>
     </LegalShell>

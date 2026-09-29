@@ -2,8 +2,8 @@ import Link from 'next/link';
 import { MarketingBrand } from '@/components/marketing/site-chrome';
 
 export const metadata = {
-  title: 'You are offline · Along',
-  description: 'Along needs a connection to load plans and messages.'
+  title: 'You are offline · Tagwimi',
+  description: 'Tagwimi needs a connection to load plans and messages.'
 };
 
 export default function OfflinePage() {
@@ -13,7 +13,7 @@ export default function OfflinePage() {
         <MarketingBrand />
         <h1 className="mt-8 font-heading text-4xl font-extrabold tracking-[-.05em]">You&apos;re offline</h1>
         <p className="mt-4 leading-relaxed text-[#586b5b]">
-          Along needs an internet connection to load plans, chat, and your account. Check your connection and try again.
+          Tagwimi needs an internet connection to load plans, chat, and your account. Check your connection and try again.
         </p>
         <Link
           href="/"

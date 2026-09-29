@@ -1,8 +1,14 @@
 import Image from 'next/image';
 
-export function AlongLogo({ compact = false, className = '' }) {
-  if (compact) return <div className={`relative h-[116px] w-[105px] overflow-hidden ${className}`}>
-    <Image src="/along-logo.png" alt="Along" width={500} height={500} priority className="absolute top-[-29px] left-[-40px] h-[174px] w-[174px] max-w-none" />
-  </div>;
-  return <Image src="/along-logo.png" alt="Along" width={500} height={500} priority className={`h-[230px] w-[230px] object-contain max-[760px]:h-[165px] max-[760px]:w-[165px] ${className}`} />;
+export function TagwimiLogo({ compact = false, onDark = false, className = '' }) {
+  return <span className={`inline-flex w-fit shrink-0 items-center ${onDark ? 'rounded-2xl bg-[#f5f9f2] px-3 py-2' : ''} ${className}`}>
+    <Image
+      src="/tagwimi-logo.png"
+      alt="Tagwimi"
+      width={2172}
+      height={724}
+      priority
+      className={compact ? 'h-auto w-[166px] max-w-full object-contain' : 'h-auto w-[250px] max-w-full object-contain max-[760px]:w-[174px]'}
+    />
+  </span>;
 }
