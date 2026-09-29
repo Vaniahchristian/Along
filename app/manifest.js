@@ -2,7 +2,8 @@ export default function manifest() {
   return {
     name: 'Tagwimi',
     short_name: 'Tagwimi',
-    description: 'Make the plan. Find your people. Go.',
+    description:
+      'Tagwimi helps adults in Kampala make small activity plans, find people to join, and actually go.',
     start_url: '/',
     scope: '/',
     display: 'standalone',

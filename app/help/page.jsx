@@ -2,8 +2,16 @@ import Link from 'next/link';
 import { LegalShell } from '@/components/marketing/site-chrome';
 
 export const metadata = {
-  title: 'Help · Tagwimi',
-  description: 'Answers about using Tagwimi, staying safe, reporting concerns, and getting support.'
+  title: 'Help',
+  description:
+    'How to use Tagwimi in Kampala: join plans, create activities, stay safe at public venues, and get support. Adults 18+.',
+  alternates: { canonical: '/help' },
+  openGraph: {
+    title: 'Help · Tagwimi',
+    description:
+      'How to use Tagwimi in Kampala: join plans, create activities, stay safe at public venues, and get support. Adults 18+.',
+    url: '/help'
+  }
 };
 
 export default function HelpPage() {

@@ -1,0 +1,25 @@
+# Tagwimi
+
+> Make the plan. Find your people. Go.
+
+Tagwimi is an adults-only (18+) social web app that helps people in Kampala create and join small, specific activity plans at real places and times — swims, walks, coffee, events, and similar meetups.
+
+## Product
+
+- Browse open activity plans around Kampala
+- Create a plan with a public venue, time, and group size
+- Request to join; hosts accept before group chat opens
+- Coordinate in chat, check in, and mark plans complete
+- Safety-first: public venues, small groups, adults only
+
+## Primary pages
+
+- [Home](https://tagwimi.com/): product overview and join
+- [Help](https://tagwimi.com/help): getting started, safety, support
+- [Terms](https://tagwimi.com/terms): terms of service
+- [Privacy](https://tagwimi.com/privacy): privacy policy
+
+## Contact
+
+- Email: support@tagwimi.com
+- Website: https://tagwimi.com

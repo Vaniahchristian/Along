@@ -2,8 +2,12 @@ import Link from 'next/link';
 import { MarketingBrand } from '@/components/marketing/site-chrome';
 
 export const metadata = {
-  title: 'You are offline · Tagwimi',
-  description: 'Tagwimi needs a connection to load plans and messages.'
+  title: 'You are offline',
+  description: 'Tagwimi needs a connection to load plans and messages.',
+  robots: {
+    index: false,
+    follow: false
+  }
 };
 
 export default function OfflinePage() {

@@ -1,8 +1,14 @@
 import { LegalShell } from '@/components/marketing/site-chrome';
 
 export const metadata = {
-  title: 'Privacy Policy · Tagwimi',
-  description: 'How Tagwimi collects, uses, and protects personal information for adults 18 and older.'
+  title: 'Privacy Policy',
+  description: 'How Tagwimi collects, uses, and protects personal information for adults 18 and older.',
+  alternates: { canonical: '/privacy' },
+  openGraph: {
+    title: 'Privacy Policy · Tagwimi',
+    description: 'How Tagwimi collects, uses, and protects personal information for adults 18 and older.',
+    url: '/privacy'
+  }
 };
 
 export default function PrivacyPage() {

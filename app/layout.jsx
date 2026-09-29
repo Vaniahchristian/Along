@@ -1,18 +1,57 @@
 import './globals.css';
 import { ClerkProvider } from '@clerk/nextjs';
+import { JsonLd } from '@/components/seo/json-ld';
+import {
+  getSiteUrl,
+  SITE_DESCRIPTION,
+  SITE_KEYWORDS,
+  SITE_NAME,
+  SITE_TAGLINE
+} from '@/lib/seo';
+
+const siteUrl = getSiteUrl();
 
 export const metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
+  metadataBase: new URL(siteUrl),
   title: {
-    default: 'Tagwimi — Make the plan. Find your people. Go.',
-    template: '%s · Tagwimi'
+    default: `${SITE_NAME} — ${SITE_TAGLINE}`,
+    template: `%s · ${SITE_NAME}`
   },
-  description: 'Make the plan. Find your people. Go. Tagwimi brings people together around small activities at real places and times. Adults 18+.',
-  applicationName: 'Tagwimi',
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  keywords: SITE_KEYWORDS,
+  authors: [{ name: SITE_NAME, url: siteUrl }],
+  creator: SITE_NAME,
+  publisher: SITE_NAME,
+  category: 'social',
+  openGraph: {
+    type: 'website',
+    locale: 'en_UG',
+    url: siteUrl,
+    siteName: SITE_NAME,
+    title: `${SITE_NAME} — ${SITE_TAGLINE}`,
+    description: SITE_DESCRIPTION
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: `${SITE_NAME} — ${SITE_TAGLINE}`,
+    description: SITE_DESCRIPTION
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+      'max-video-preview': -1
+    }
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Tagwimi'
+    title: SITE_NAME
   },
   formatDetection: {
     telephone: false
@@ -40,10 +79,29 @@ export const viewport = {
 };
 
 export default function RootLayout({ children }) {
-  const content = <ClerkProvider appearance={{ variables: { colorPrimary: '#3b793f', colorText: '#0f2218', colorBackground: '#ffffff', colorInputBackground: '#ffffff', colorInputText: '#0f2218', borderRadius: '14px' } }}>{children}</ClerkProvider>;
+  const content = (
+    <ClerkProvider
+      appearance={{
+        variables: {
+          colorPrimary: '#3b793f',
+          colorText: '#0f2218',
+          colorBackground: '#ffffff',
+          colorInputBackground: '#ffffff',
+          colorInputText: '#0f2218',
+          borderRadius: '14px'
+        }
+      }}
+    >
+      {children}
+    </ClerkProvider>
+  );
+
   return (
     <html lang="en">
-      <body>{content}</body>
+      <body>
+        <JsonLd />
+        {content}
+      </body>
     </html>
   );
 }

@@ -1,8 +1,14 @@
 import { LegalShell } from '@/components/marketing/site-chrome';
 
 export const metadata = {
-  title: 'Terms of Service · Tagwimi',
-  description: 'Terms that govern your use of Tagwimi, the adults-only activity companion platform.'
+  title: 'Terms of Service',
+  description: 'Terms that govern your use of Tagwimi, the adults-only activity companion platform.',
+  alternates: { canonical: '/terms' },
+  openGraph: {
+    title: 'Terms of Service · Tagwimi',
+    description: 'Terms that govern your use of Tagwimi, the adults-only activity companion platform.',
+    url: '/terms'
+  }
 };
 
 export default function TermsPage() {
