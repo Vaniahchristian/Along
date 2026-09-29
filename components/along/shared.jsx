@@ -61,18 +61,23 @@ export function BackButton() {
   );
 }
 
-export function ReportForm({ planId }) {
+export function ReportForm({ planId, hasPhoto = false, messages = [] }) {
   const { reportPlan, busy } = useAlong();
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState('');
+  const [targetType, setTargetType] = useState('plan');
+  const [messageId, setMessageId] = useState('');
   async function submit(event) {
     event.preventDefault();
-    if (!reason.trim()) return;
-    const result = await reportPlan(planId, reason);
-    if (result?.ok) { setReason(''); setOpen(false); }
+    if (!reason.trim() || (targetType === 'message' && !messageId)) return;
+    const result = await reportPlan(planId, reason, targetType, messageId);
+    if (result?.ok) { setReason(''); setMessageId(''); setTargetType('plan'); setOpen(false); }
   }
   if (!open) return <ActionButton tone="text" type="button" onClick={() => setOpen(true)}><Flag aria-hidden="true" /> Report a concern</ActionButton>;
   return <form className="mt-4 grid gap-2.5" onSubmit={submit}>
+    <label className="text-sm font-bold" htmlFor={`report-type-${planId}`}>What are you reporting?</label>
+    <select id={`report-type-${planId}`} value={targetType} onChange={(event) => setTargetType(event.target.value)} className="min-h-11 rounded-xl border border-border bg-white px-3 text-sm"><option value="plan">Plan details</option><option value="member">The host</option>{hasPhoto && <option value="image">Plan photo</option>}{messages.length > 0 && <option value="message">A group message</option>}</select>
+    {targetType === 'message' && <><label className="text-sm font-bold" htmlFor={`report-message-${planId}`}>Select the message</label><select id={`report-message-${planId}`} required value={messageId} onChange={(event) => setMessageId(event.target.value)} className="min-h-11 max-w-full rounded-xl border border-border bg-white px-3 text-sm"><option value="">Choose a message</option>{messages.map((message) => <option key={message.id} value={message.id}>{message.senderName}: {message.text.slice(0, 80)}</option>)}</select></>}
     <label className="text-sm font-bold" htmlFor={`report-${planId}`}>Tell us what concerns you</label>
     <Textarea id={`report-${planId}`} className="min-h-24 border-border bg-card" value={reason} onChange={(event) => setReason(event.target.value)} maxLength={500} required placeholder="What happened or seems wrong? Include details that will help us review it." />
     <p className="text-xs text-muted-foreground">A Tagwimi admin will review your report. If you are in immediate danger, contact local emergency services.</p>

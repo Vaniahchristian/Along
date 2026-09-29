@@ -182,7 +182,7 @@ export function AlongProvider({ children, clerkIdentity = null }) {
   function sendMessage(id, text) { return runAction(() => sendPlanMessage(viewer.id, id, text)); }
   function checkIn(id) { return runAction(() => markCheckIn(viewer.id, id), 'You’re checked in.'); }
   function complete(id) { return runAction(() => markComplete(viewer.id, id), 'Plan completed.'); }
-  function reportPlan(id, reason) { return runAction(() => submitPlanReport(viewer.id, id, reason), 'Report sent. Thank you for telling us.'); }
+  function reportPlan(id, reason, targetType, messageId) { return runAction(() => submitPlanReport(viewer.id, id, reason, targetType, messageId), 'Report sent. Thank you for telling us.'); }
 
   const value = { data, busy, hydrated, loadError, refresh, viewer, clerkSignedIn: Boolean(clerkIdentity?.user), isAdmin, signOut, saveProfile, screen, selectedPlanId, chatId, chatViewOpen, setChatViewOpen, navigate, openPlan, openChat, requestJoin, cancelRequest, approveRequest, publishPlan, replacePlanImage, removePlanImage, sendMessage, checkIn, complete, reportPlan, notifications, notificationError, refreshNotifications, openNotification, readAllNotifications, deleteNotification, clearNotifications };
   return <AlongContext.Provider value={value}>{children}</AlongContext.Provider>;

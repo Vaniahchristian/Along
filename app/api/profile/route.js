@@ -15,7 +15,7 @@ function profileResponse(profile, db) {
   return { id: profile.id, name: profile.display_name, email: profile.email, interests: profile.interests || [], bio: profile.bio || '', city: profile.city || '', avatarUrl: profile.avatar_path ? db.storage.from('profile-photos').getPublicUrl(profile.avatar_path).data.publicUrl : null };
 }
 
-const profileColumns = 'id,display_name,email,interests,bio,city,avatar_path';
+const profileColumns = 'id,display_name,email,interests,bio,city,avatar_path,suspended_at';
 
 export async function POST(request) {
   if (request.headers.get('origin') !== new URL(request.url).origin) return failure('Invalid request origin.', 403);
@@ -39,10 +39,12 @@ export async function POST(request) {
   if (byClerkId.error) return failure('Could not load your profile.', 500);
 
   let profile = byClerkId.data;
+  if (profile?.suspended_at) return failure('This account is suspended. Contact support@tagwimi.com.', 403);
   if (!profile) {
     const byEmail = await db.from('profiles').select(`${profileColumns},clerk_user_id`).eq('email', email).maybeSingle();
     if (byEmail.error) return failure('Could not find your existing profile.', 500);
     if (byEmail.data?.clerk_user_id && byEmail.data.clerk_user_id !== userId) return failure('This email is already linked to another account. Contact support@tagwimi.com.', 409);
+    if (byEmail.data?.suspended_at) return failure('This account is suspended. Contact support@tagwimi.com.', 403);
 
     if (byEmail.data) {
       const linked = await db.from('profiles').update({ clerk_user_id: userId }).eq('id', byEmail.data.id).is('clerk_user_id', null).select(profileColumns).single();
@@ -81,6 +83,7 @@ export async function PATCH(request) {
   const db = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
   const existing = await db.from('profiles').select(profileColumns).eq('clerk_user_id', userId).maybeSingle();
   if (existing.error || !existing.data) return failure('Could not load your profile.', 404);
+  if (existing.data.suspended_at) return failure('This account is suspended. Contact support@tagwimi.com.', 403);
   const form = await request.formData().catch(() => null);
   if (!form) return failure('Check your profile details and try again.', 400);
   const name = String(form.get('name') || '').trim();
