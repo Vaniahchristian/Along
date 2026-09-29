@@ -13,7 +13,7 @@ import { PlansScreen } from './plans-screen';
 import { CreateScreen } from './create-screen';
 import { ChatScreen } from './chat-screen';
 import { ProfileScreen } from './profile-screen';
-import { TagwimiLogo } from './logo';
+import { TagwimiLogo, TagwimiSplash } from './logo';
 import { MobileDrawer } from './mobile-drawer';
 import { NotificationsScreen } from './notifications-screen';
 
@@ -39,8 +39,21 @@ function Shell() {
     if (hydrated && !viewer && !clerkSignedIn) router.replace('/?join=1');
   }, [clerkSignedIn, hydrated, router, viewer]);
 
-  if (!hydrated) return <div className="grid min-h-screen place-items-center bg-forest font-heading text-xl font-bold text-white">Opening Tagwimi…</div>;
-  if (!viewer) return <main className="grid min-h-dvh place-items-center bg-[#f7f9f4] px-5 text-center text-forest"><div className="max-w-md"><TagwimiLogo compact className="mx-auto" /><h1 className="mt-8 font-heading text-2xl font-extrabold">{clerkSignedIn ? 'Your account needs a moment' : 'Opening Tagwimi…'}</h1>{clerkSignedIn && <><p role="alert" className="mt-3 text-sm text-[#526756]">{loadError || 'Your profile could not load yet.'}</p><button type="button" onClick={() => window.location.reload()} className="mt-6 rounded-full bg-[#3b793f] px-6 py-3 font-bold text-white">Try again</button><button type="button" onClick={() => signOut()} className="ml-4 text-sm font-bold text-[#526756] underline">Sign out</button></>}</div></main>;
+  if (!hydrated) return <TagwimiSplash />;
+  if (!viewer) {
+    if (!clerkSignedIn) return <TagwimiSplash />;
+    return (
+      <main className="grid min-h-dvh place-items-center bg-[#f7f9f4] px-5 text-center text-forest">
+        <div className="max-w-md">
+          <TagwimiLogo compact className="mx-auto" />
+          <h1 className="mt-8 font-heading text-2xl font-extrabold">Your account needs a moment</h1>
+          <p role="alert" className="mt-3 text-sm text-[#526756]">{loadError || 'Your profile could not load yet.'}</p>
+          <button type="button" onClick={() => window.location.reload()} className="mt-6 rounded-full bg-[#3b793f] px-6 py-3 font-bold text-white">Try again</button>
+          <button type="button" onClick={() => signOut()} className="ml-4 text-sm font-bold text-[#526756] underline">Sign out</button>
+        </div>
+      </main>
+    );
+  }
 
   return <div className="min-h-screen bg-background text-foreground">
     <div className="mx-auto grid max-w-[1440px] grid-cols-[248px_minmax(0,1fr)] max-[1050px]:grid-cols-[190px_minmax(0,1fr)] max-[760px]:block">
