@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState } f
 import { useAuth, useClerk, useUser } from '@clerk/nextjs';
 import { toast } from 'sonner';
 import { supabase, setClerkTokenGetter } from '@/lib/supabase/client';
-import { emptyAlongState, ensureViewerProfile, ensureClerkViewerProfile, updateInterests, loadAlongState, requestJoinPlan, cancelJoinRequest, acceptHostRequest as dbAcceptHostRequest, publishPlan as dbPublishPlan, sendPlanMessage, markCheckIn, markComplete, submitPlanReport, loadNotifications, markNotificationRead, markAllNotificationsRead, deleteNotification as dbDeleteNotification, clearNotifications as dbClearNotifications } from '@/lib/along-db';
+import { emptyAlongState, ensureClerkViewerProfile, updateInterests, loadAlongState, requestJoinPlan, cancelJoinRequest, acceptHostRequest as dbAcceptHostRequest, publishPlan as dbPublishPlan, sendPlanMessage, markCheckIn, markComplete, submitPlanReport, loadNotifications, markNotificationRead, markAllNotificationsRead, deleteNotification as dbDeleteNotification, clearNotifications as dbClearNotifications } from '@/lib/along-db';
 
 const AlongContext = createContext(null);
 
@@ -24,7 +24,6 @@ export function AlongProvider({ children, clerkIdentity = null }) {
   const [loadError, setLoadError] = useState('');
   const [viewer, setViewer] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [authScreen, setAuthScreen] = useState('welcome');
   const [screen, setScreen] = useState('explore');
   const [selectedPlanId, setSelectedPlanId] = useState(null);
   const [chatId, setChatId] = useState(null);
@@ -46,15 +45,6 @@ export function AlongProvider({ children, clerkIdentity = null }) {
     await refreshNotifications(profileId);
   }, [refreshNotifications]);
 
-  const activate = useCallback(async (user) => {
-    const profile = await ensureViewerProfile(user);
-    setViewer(profile);
-    const admin = await supabase.from('along_admins').select('user_id').eq('user_id', profile.id).maybeSingle();
-    setIsAdmin(!admin.error && Boolean(admin.data));
-    try { await refresh(profile.id); }
-    catch (error) { setLoadError(error.message || 'Could not load plans.'); }
-  }, [refresh]);
-
   const activateClerk = useCallback(async (user) => {
     const profile = await ensureClerkViewerProfile(user);
     setViewer(profile);
@@ -65,39 +55,20 @@ export function AlongProvider({ children, clerkIdentity = null }) {
   }, [refresh]);
 
   useEffect(() => {
-    if (clerkRef.current) {
-      if (!clerkRef.current.isLoaded) return;
-      setClerkTokenGetter(() => clerkRef.current?.getToken() ?? null);
-      let active = true;
-      (async () => {
-        if (clerkRef.current?.user) {
-          try { await activateClerk(clerkRef.current.user); }
-          catch (error) { if (active) setLoadError(error.message || 'Could not load your profile.'); }
-        } else {
-          setViewer(null); setIsAdmin(false); setData(emptyAlongState()); setNotifications([]);
-        }
-        if (active) setHydrated(true);
-      })();
-      return () => { active = false; };
-    }
+    if (!clerkRef.current?.isLoaded) return;
+    setClerkTokenGetter(() => clerkRef.current?.getToken() ?? null);
     let active = true;
-    const { data: listener } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') setAuthScreen('recovery');
-      if (event === 'SIGNED_OUT') { setViewer(null); setIsAdmin(false); setData(emptyAlongState()); setNotifications([]); setChatViewOpen(false); }
-    });
     (async () => {
-      const { data: authData, error } = await supabase.auth.getUser();
-      if (!active) return;
-      if (authData?.user) {
-        try { await activate(authData.user); }
-        catch (profileError) { setLoadError(profileError.message || 'Could not load your profile.'); }
-      } else if (error && error.name !== 'AuthSessionMissingError') {
-        setLoadError(error.message);
+      if (clerkRef.current?.user) {
+        try { await activateClerk(clerkRef.current.user); }
+        catch (error) { if (active) setLoadError(error.message || 'Could not load your profile.'); }
+      } else {
+        setViewer(null); setIsAdmin(false); setData(emptyAlongState()); setNotifications([]);
       }
       if (active) setHydrated(true);
     })();
-    return () => { active = false; listener.subscription.unsubscribe(); };
-  }, [activate, activateClerk, clerkIdentity?.isLoaded, clerkIdentity?.user?.id]);
+    return () => { active = false; };
+  }, [activateClerk, clerkIdentity?.isLoaded, clerkIdentity?.user?.id]);
 
   useEffect(() => {
     if (!viewer?.id) return;
@@ -118,48 +89,10 @@ export function AlongProvider({ children, clerkIdentity = null }) {
     finally { setBusy(false); }
   }
 
-  async function signIn(email, password) {
-    return withBusy(async () => {
-      const { data: authData, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      await activate(authData.user);
-    });
-  }
-
-  async function finishSignup({ name, email, password, interests }) {
-    return withBusy(async () => {
-      const { data: authData, error } = await supabase.auth.signUp({
-        email, password,
-        options: { data: { display_name: name, interests }, emailRedirectTo: `${window.location.origin}/app` }
-      });
-      if (error) throw error;
-      if (authData.session && authData.user) await activate(authData.user);
-      else setAuthScreen('verify');
-    });
-  }
-
-  async function sendPasswordReset(email) {
-    return withBusy(async () => {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/app` });
-      if (error) throw error;
-    });
-  }
-
-  async function updatePassword(password) {
-    return withBusy(async () => {
-      const { error } = await supabase.auth.updateUser({ password });
-      if (error) throw error;
-      const { data: authData } = await supabase.auth.getUser();
-      if (authData.user) await activate(authData.user);
-      setAuthScreen('welcome');
-    }, 'Password updated.');
-  }
-
   async function signOut() {
     return withBusy(async () => {
-      if (clerkRef.current) await clerkRef.current.signOut();
-      else { const { error } = await supabase.auth.signOut(); if (error) throw error; }
-      setViewer(null); setIsAdmin(false); setData(emptyAlongState()); setNotifications([]); setAuthScreen('welcome'); setScreen('explore'); setChatViewOpen(false);
+      await clerkRef.current.signOut();
+      setViewer(null); setIsAdmin(false); setData(emptyAlongState()); setNotifications([]); setScreen('explore'); setChatViewOpen(false);
     });
   }
 
@@ -216,7 +149,7 @@ export function AlongProvider({ children, clerkIdentity = null }) {
   function complete(id) { return runAction(() => markComplete(viewer.id, id), 'Plan completed.'); }
   function reportPlan(id, reason) { return runAction(() => submitPlanReport(viewer.id, id, reason), 'Report sent. Thank you for telling us.'); }
 
-  const value = { data, busy, hydrated, loadError, refresh, viewer, isAdmin, authScreen, setAuthScreen, signIn, finishSignup, sendPasswordReset, updatePassword, signOut, saveInterests, screen, selectedPlanId, chatId, chatViewOpen, setChatViewOpen, navigate, openPlan, openChat, requestJoin, cancelRequest, approveRequest, publishPlan, sendMessage, checkIn, complete, reportPlan, notifications, notificationError, refreshNotifications, openNotification, readAllNotifications, deleteNotification, clearNotifications };
+  const value = { data, busy, hydrated, loadError, refresh, viewer, clerkSignedIn: Boolean(clerkIdentity?.user), isAdmin, signOut, saveInterests, screen, selectedPlanId, chatId, chatViewOpen, setChatViewOpen, navigate, openPlan, openChat, requestJoin, cancelRequest, approveRequest, publishPlan, sendMessage, checkIn, complete, reportPlan, notifications, notificationError, refreshNotifications, openNotification, readAllNotifications, deleteNotification, clearNotifications };
   return <AlongContext.Provider value={value}>{children}</AlongContext.Provider>;
 }
 

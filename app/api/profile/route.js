@@ -11,16 +11,15 @@ function failure(message, status) {
 }
 
 export async function POST(request) {
-  if (process.env.NEXT_PUBLIC_AUTH_PROVIDER !== 'clerk') return failure('Clerk sign-in is not enabled.', 404);
   if (request.headers.get('origin') !== new URL(request.url).origin) return failure('Invalid request origin.', 403);
 
   const { userId } = await auth();
-  if (!userId) return failure('Sign in with Google to continue.', 401);
+  if (!userId) return failure('Sign in to continue.', 401);
 
   const user = await currentUser();
   const primaryEmail = user?.emailAddresses?.find((address) => address.id === user.primaryEmailAddressId);
   if (!user || user.id !== userId || !primaryEmail || primaryEmail.verification?.status !== 'verified') {
-    return failure('Your Google email must be verified before using Tagwimi.', 403);
+    return failure('Verify your email before using Tagwimi.', 403);
   }
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -29,10 +28,6 @@ export async function POST(request) {
 
   const db = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
   const email = primaryEmail.emailAddress.toLowerCase();
-  const googleAccount = user.externalAccounts?.some((account) =>
-    (account.provider === 'google' || account.provider === 'oauth_google') && account.emailAddress?.toLowerCase() === email
-  );
-  if (!googleAccount) return failure('Continue with the Google account for this email.', 403);
   const byClerkId = await db.from('profiles').select('id,display_name,email,interests').eq('clerk_user_id', userId).maybeSingle();
   if (byClerkId.error) return failure('Could not load your profile.', 500);
 
@@ -47,8 +42,9 @@ export async function POST(request) {
       if (linked.error) return failure('Could not link your existing profile. Please try again.', 500);
       profile = linked.data;
     } else {
-      const name = String(user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.firstName || email.split('@')[0]).trim().slice(0, 40);
-      const created = await db.from('profiles').insert({ clerk_user_id: userId, display_name: name, email, initials: name.slice(0, 2).toUpperCase(), tone: '', interests: [], is_demo_seed: false }).select('id,display_name,email,interests').single();
+      const name = String(user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.firstName || user.unsafeMetadata?.display_name || email.split('@')[0]).trim().slice(0, 40);
+      const interests = Array.isArray(user.unsafeMetadata?.interests) ? user.unsafeMetadata.interests.filter((item) => typeof item === 'string').slice(0, 5) : [];
+      const created = await db.from('profiles').insert({ clerk_user_id: userId, display_name: name, email, initials: name.slice(0, 2).toUpperCase(), tone: '', interests, is_demo_seed: false }).select('id,display_name,email,interests').single();
       if (created.error) return failure('Could not create your profile. Please try again.', 500);
       profile = created.data;
     }

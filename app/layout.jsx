@@ -40,9 +40,7 @@ export const viewport = {
 };
 
 export default function RootLayout({ children }) {
-  const content = process.env.NEXT_PUBLIC_AUTH_PROVIDER === 'clerk'
-    ? <ClerkProvider appearance={{ variables: { colorPrimary: '#3b793f', colorText: '#0f2218', colorBackground: '#ffffff', colorInputBackground: '#ffffff', colorInputText: '#0f2218', borderRadius: '14px' } }}>{children}</ClerkProvider>
-    : children;
+  const content = <ClerkProvider appearance={{ variables: { colorPrimary: '#3b793f', colorText: '#0f2218', colorBackground: '#ffffff', colorInputBackground: '#ffffff', colorInputText: '#0f2218', borderRadius: '14px' } }}>{children}</ClerkProvider>;
   return (
     <html lang="en">
       <body>{content}</body>

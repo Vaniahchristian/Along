@@ -1,10 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Bell, CalendarDays, Compass, LogOut, Menu, MessageCircle, Plus, ShieldCheck, UserRound } from 'lucide-react';
 import { Toaster } from '@/components/ui/sonner';
-import { AlongProvider, ClerkAlongProvider, useAlong } from './context';
+import { ClerkAlongProvider, useAlong } from './context';
 import { PersonAvatar } from './shared';
 import { ExploreScreen } from './explore-screen';
 import { DetailScreen } from './detail-screen';
@@ -12,8 +13,6 @@ import { PlansScreen } from './plans-screen';
 import { CreateScreen } from './create-screen';
 import { ChatScreen } from './chat-screen';
 import { ProfileScreen } from './profile-screen';
-import { AuthScreen } from './auth-screen';
-import { ClerkAuthScreen } from './clerk-auth-screen';
 import { TagwimiLogo } from './logo';
 import { MobileDrawer } from './mobile-drawer';
 import { NotificationsScreen } from './notifications-screen';
@@ -27,7 +26,8 @@ const navigation = [
 ];
 
 function Shell() {
-  const { screen, navigate, viewer, isAdmin, signOut, hydrated, loadError, authScreen, refresh, notifications, chatViewOpen } = useAlong();
+  const { screen, navigate, viewer, clerkSignedIn, isAdmin, signOut, hydrated, loadError, refresh, notifications, chatViewOpen } = useAlong();
+  const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const unread = notifications.filter((item) => !item.read_at).length;
   const inMobileChat = screen === 'chat' && chatViewOpen;
@@ -35,8 +35,12 @@ function Shell() {
   const navClass = (id) => `flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left font-bold transition-colors ${screen === id ? 'bg-secondary text-primary' : 'text-muted-foreground hover:bg-card hover:text-foreground'}`;
   const mobileClass = (id) => `grid justify-items-center gap-1 px-1 py-1 text-[10px] font-extrabold ${screen === id ? 'text-primary' : 'text-muted-foreground'}`;
 
+  useEffect(() => {
+    if (hydrated && !viewer && !clerkSignedIn) router.replace('/?join=1');
+  }, [clerkSignedIn, hydrated, router, viewer]);
+
   if (!hydrated) return <div className="grid min-h-screen place-items-center bg-forest font-heading text-xl font-bold text-white">Opening Tagwimi…</div>;
-  if (!viewer || authScreen === 'recovery') return <>{process.env.NEXT_PUBLIC_AUTH_PROVIDER === 'clerk' ? <ClerkAuthScreen /> : <AuthScreen />}<Toaster position="bottom-right" /></>;
+  if (!viewer) return <main className="grid min-h-dvh place-items-center bg-[#f7f9f4] px-5 text-center text-forest"><div className="max-w-md"><TagwimiLogo compact className="mx-auto" /><h1 className="mt-8 font-heading text-2xl font-extrabold">{clerkSignedIn ? 'Your account needs a moment' : 'Opening Tagwimi…'}</h1>{clerkSignedIn && <><p role="alert" className="mt-3 text-sm text-[#526756]">{loadError || 'Your profile could not load yet.'}</p><button type="button" onClick={() => window.location.reload()} className="mt-6 rounded-full bg-[#3b793f] px-6 py-3 font-bold text-white">Try again</button><button type="button" onClick={() => signOut()} className="ml-4 text-sm font-bold text-[#526756] underline">Sign out</button></>}</div></main>;
 
   return <div className="min-h-screen bg-background text-foreground">
     <div className="mx-auto grid max-w-[1440px] grid-cols-[248px_minmax(0,1fr)] max-[1050px]:grid-cols-[190px_minmax(0,1fr)] max-[760px]:block">
@@ -68,7 +72,6 @@ function Shell() {
 }
 
 export function AlongApp() {
-  const Provider = process.env.NEXT_PUBLIC_AUTH_PROVIDER === 'clerk' ? ClerkAlongProvider : AlongProvider;
-  return <Provider><Shell /></Provider>;
+  return <ClerkAlongProvider><Shell /></ClerkAlongProvider>;
 }
 

@@ -1,17 +1,17 @@
 # Tagwimi
 
-Tagwimi is a Next.js app for small public activity plans, join requests, group messages, and attendance. **Make the plan. Find your people. Go.** It uses Tailwind CSS, Clerk for the new Google sign-in flow, and Supabase for the database and realtime notifications.
+Tagwimi is a Next.js app for small public activity plans, join requests, group messages, and attendance. **Make the plan. Find your people. Go.** It uses Tailwind CSS, Clerk for Google and email authentication, and Supabase for the database and realtime notifications.
 
 ## Local setup
 
 1. Run `npm install`.
-2. Copy `.env.example` to `.env.local` and add the Supabase URL and publishable key, the site URL, and both Clerk keys.
-3. In Clerk, enable Google sign-in and the Supabase integration. In Supabase Authentication → Third-Party Auth, add Clerk's domain as a provider.
+2. Copy `.env.example` to `.env.local` and add the Supabase URL and publishable key, the site URL, Clerk development keys, and a server-only Supabase secret key. Production Clerk keys only work on the configured Tagwimi domain.
+3. In Clerk, enable Google sign-in, email sign-up with password and email verification, email-code sign-in, and the Supabase integration. In Supabase Authentication → Third-Party Auth, add Clerk's domain as a provider.
 4. Run `database/clerk-identity.sql` once on the Tagwimi Supabase project. This migration is already applied to project `jjhjuezixwelxcwnnlrt`.
-5. Set `NEXT_PUBLIC_AUTH_PROVIDER=clerk` and `SUPABASE_SECRET_KEY` locally, then run `npm run dev`. Add the same variables and **production** Clerk keys to Vercel when the integration has been verified. A legacy `SUPABASE_SERVICE_ROLE_KEY` also works. Keep this privileged Supabase key server-only; never prefix it with `NEXT_PUBLIC_` or expose it to the browser. Configure Google as the only enabled sign-in method in the Clerk production instance.
+5. Run `npm run dev`. Set the same non-secret variables, production Clerk keys, and server-only Supabase key in Vercel. A legacy `SUPABASE_SERVICE_ROLE_KEY` also works. Never prefix the privileged Supabase key with `NEXT_PUBLIC_` or expose it to the browser.
 
-The auth-provider flag keeps the existing Supabase Auth sign-in working during the migration. Clerk users have a `user_...` ID, while Tagwimi's plans and messages reference UUID profile IDs. The database bridge stores the Clerk ID alongside the existing profile UUID so those relationships remain intact. On first Google sign-in, the server checks the verified Clerk email, links any existing profile with that exact email, and otherwise creates a profile. The administrator is `christianvaniah@gmail.com`; after that verified Google identity has a linked Tagwimi profile, the server grants its admin role and revokes the previous admin role.
+Clerk users have a `user_...` ID, while Tagwimi's plans and messages reference UUID profile IDs. The database bridge stores the Clerk ID alongside the existing profile UUID so those relationships remain intact. On first sign-in, the server checks the verified Clerk email, links any existing profile with that exact email, and otherwise creates a profile. The administrator is `christianvaniah@gmail.com`; after that verified identity has a linked Tagwimi profile, the server grants its admin role and revokes the previous admin role.
 
-The public domain is `tagwimi.com` (`www.tagwimi.com` redirects there). Before enabling the Clerk flag in production, set Clerk's production domain to `tagwimi.com`, complete its required DNS records, add the production Clerk instance domain to Supabase Third-Party Auth, and set `NEXT_PUBLIC_SITE_URL` in Vercel to `https://tagwimi.com`.
+The public domain is `tagwimi.com` with `www.tagwimi.com` also configured. Set Clerk's production domain to `tagwimi.com`, complete its required DNS records, add the production Clerk instance domain to Supabase Third-Party Auth, and set `NEXT_PUBLIC_SITE_URL` in Vercel to the canonical site URL.
 
 Run `npm run build` before deploying. The production build registers a Progressive Web App service worker and provides an `/offline` fallback.
