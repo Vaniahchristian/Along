@@ -11,12 +11,13 @@ function GoogleMark() {
 }
 
 export function ClerkAuthScreen({ embedded = false, onClose }) {
-  const { signIn, isLoaded } = useSignIn();
+  const { signIn } = useSignIn();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
   async function continueWithGoogle() {
-    if (!isLoaded || busy) return;
+    if (busy) return;
+    if (!signIn) { setError('Google sign-in is still loading. Please try again.'); return; }
     setBusy(true);
     setError('');
     try {
@@ -32,7 +33,7 @@ export function ClerkAuthScreen({ embedded = false, onClose }) {
     {embedded && <div className="mb-8 flex items-start justify-between gap-4"><TagwimiLogo compact /><button type="button" onClick={onClose} aria-label="Close account dialog" className="grid size-11 shrink-0 place-items-center rounded-full text-[#45604a] transition-colors hover:bg-[#e9f1e8] focus-visible:outline-2 focus-visible:outline-[#3b793f]"><X className="size-5" /></button></div>}
     <h2 className="font-heading text-[clamp(1.9rem,6vw,2.7rem)] font-extrabold leading-[1.1] tracking-[-.04em] text-forest">Come along.</h2>
     <p className="mt-3 max-w-sm text-[15px] leading-relaxed text-[#526756]">Join a plan, bring someone with you, or make your own. Your next good day starts with a yes.</p>
-    <button type="button" onClick={continueWithGoogle} disabled={!isLoaded || busy} className="mt-8 flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl border border-[#c9d9c8] bg-white px-5 text-[15px] font-bold text-forest shadow-[0_3px_12px_rgba(15,34,24,.07)] transition-[background-color,transform,box-shadow] hover:-translate-y-0.5 hover:bg-[#f2f7f0] hover:shadow-[0_6px_18px_rgba(15,34,24,.1)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3b793f] disabled:cursor-wait disabled:opacity-60 disabled:hover:translate-y-0">
+    <button type="button" onClick={continueWithGoogle} disabled={busy} className="mt-8 flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl border border-[#c9d9c8] bg-white px-5 text-[15px] font-bold text-forest shadow-[0_3px_12px_rgba(15,34,24,.07)] transition-[background-color,transform,box-shadow] hover:-translate-y-0.5 hover:bg-[#f2f7f0] hover:shadow-[0_6px_18px_rgba(15,34,24,.1)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3b793f] disabled:cursor-wait disabled:opacity-60 disabled:hover:translate-y-0">
       <GoogleMark />{busy ? 'Connecting to Google…' : 'Continue with Google'}<ArrowRight className="ml-auto size-4 text-[#3b793f]" />
     </button>
     {error && <p role="alert" className="mt-4 rounded-xl bg-[#fff0f4] px-4 py-3 text-sm text-[#912c51]">{error}</p>}
