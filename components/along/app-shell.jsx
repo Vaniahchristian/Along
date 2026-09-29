@@ -66,7 +66,7 @@ function Shell() {
         </nav>
         <div className="mt-auto border-t border-border px-2.5 pt-5"><div className="flex items-center gap-2.5"><PersonAvatar initials={viewer.name.slice(0, 2).toUpperCase()} name={viewer.name} /><div><strong>{viewer.name}</strong><div className="text-xs text-muted-foreground">{viewer.email}</div></div></div></div>
       </aside>
-      <main className={`min-w-0 px-12 pt-7 pb-20 max-[1050px]:px-6 max-[760px]:pt-0 ${inMobileChat ? 'max-[760px]:px-0 max-[760px]:pb-0' : inMobileDetail ? 'max-[760px]:px-4 max-[760px]:pb-28' : 'max-[760px]:px-4 max-[760px]:pb-24'}`}>
+      <main className={`min-w-0 px-12 pt-7 pb-20 max-[1050px]:px-6 ${inMobileChat ? 'max-[760px]:px-0 max-[760px]:pb-0 max-[760px]:pt-0' : inMobileDetail ? 'max-[760px]:px-5 max-[760px]:pt-[max(1rem,env(safe-area-inset-top))] max-[760px]:pb-28' : 'max-[760px]:px-4 max-[760px]:pt-0 max-[760px]:pb-24'}`}>
         <header className="mb-7 flex items-center justify-end max-[760px]:hidden">
           <button type="button" onClick={() => navigate('notifications')} aria-label={unread ? `Notifications, ${unread} unread` : 'Notifications'} className="relative ml-auto grid size-10 shrink-0 place-items-center rounded-xl border border-border bg-card text-forest hover:bg-secondary focus-visible:outline-2 focus-visible:outline-primary"><Bell className="size-5" />{unread > 0 && <span className="absolute -right-1 -top-1 grid min-w-5 h-5 place-items-center rounded-full bg-[#ec4899] px-1 text-[10px] font-bold text-white">{unread > 99 ? '99+' : unread}</span>}</button>
         </header>

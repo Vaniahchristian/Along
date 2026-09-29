@@ -49,7 +49,15 @@ export function EmptyState({ title, description, action, onAction }) {
 
 export function BackButton() {
   const { navigate } = useAlong();
-  return <button type="button" className="mb-5 flex items-center gap-2 py-1 font-bold text-muted-foreground hover:text-primary focus-visible:rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" onClick={() => navigate('explore')}><ArrowLeft className="size-4" aria-hidden="true" /> Back to explore</button>;
+  return (
+    <button
+      type="button"
+      className="mb-6 flex min-h-11 items-center gap-2 font-bold text-muted-foreground hover:text-primary focus-visible:rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary max-[760px]:mb-8"
+      onClick={() => navigate('explore')}
+    >
+      <ArrowLeft className="size-4" aria-hidden="true" /> Back to explore
+    </button>
+  );
 }
 
 export function ReportForm({ planId }) {
