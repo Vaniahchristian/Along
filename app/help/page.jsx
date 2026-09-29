@@ -19,7 +19,7 @@ export default function HelpPage() {
       <h2>Getting started</h2>
       <h3>How do I join Tagwimi?</h3>
       <p>
-        Open <Link href="/app">Tagwimi</Link>, create an account with your email, confirm you are 18+, and add a few interests so people understand what you enjoy.
+        Open <Link href="/app">Tagwimi</Link> and continue with Google. Confirm you are 18+, then add a few interests so people understand what you enjoy.
       </p>
       <h3>What can I do on Tagwimi?</h3>
       <ul>
@@ -62,8 +62,8 @@ export default function HelpPage() {
       </p>
 
       <h2>Account and privacy</h2>
-      <h3>How do I reset my password?</h3>
-      <p>Use the password reset option on the sign-in screen. We will send reset instructions to your email if an account exists.</p>
+      <h3>How do I sign back in?</h3>
+      <p>Choose Continue with Google and select the same Google account you used to join. Tagwimi does not use a separate password.</p>
       <h3>How is my data used?</h3>
       <p>
         See our <Link href="/privacy">Privacy Policy</Link> for details on collection, use, sharing, retention, and your rights.
