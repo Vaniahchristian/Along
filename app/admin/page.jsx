@@ -1,7 +1,7 @@
-import { AdminDashboard } from '@/components/admin/dashboard';
+import { AdminDashboard, ClerkAdminDashboard } from '@/components/admin/dashboard';
 
 export const metadata = { title: 'Admin · Along' };
 
 export default function AdminPage() {
-  return <AdminDashboard />;
+  return process.env.NEXT_PUBLIC_AUTH_PROVIDER === 'clerk' ? <ClerkAdminDashboard /> : <AdminDashboard />;
 }

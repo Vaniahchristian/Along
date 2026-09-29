@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { Bell, CalendarDays, Compass, LogOut, Menu, MessageCircle, Plus, ShieldCheck, UserRound } from 'lucide-react';
 import { Toaster } from '@/components/ui/sonner';
-import { AlongProvider, useAlong } from './context';
+import { AlongProvider, ClerkAlongProvider, useAlong } from './context';
 import { PersonAvatar } from './shared';
 import { ExploreScreen } from './explore-screen';
 import { DetailScreen } from './detail-screen';
@@ -13,6 +13,7 @@ import { CreateScreen } from './create-screen';
 import { ChatScreen } from './chat-screen';
 import { ProfileScreen } from './profile-screen';
 import { AuthScreen } from './auth-screen';
+import { ClerkAuthScreen } from './clerk-auth-screen';
 import { AlongLogo } from './logo';
 import { MobileDrawer } from './mobile-drawer';
 import { NotificationsScreen } from './notifications-screen';
@@ -35,7 +36,7 @@ function Shell() {
   const mobileClass = (id) => `grid justify-items-center gap-1 px-1 py-1 text-[10px] font-extrabold ${screen === id ? 'text-primary' : 'text-muted-foreground'}`;
 
   if (!hydrated) return <div className="grid min-h-screen place-items-center bg-forest font-heading text-xl font-bold text-white">Opening Along…</div>;
-  if (!viewer || authScreen === 'recovery') return <><AuthScreen /><Toaster position="bottom-right" /></>;
+  if (!viewer || authScreen === 'recovery') return <>{process.env.NEXT_PUBLIC_AUTH_PROVIDER === 'clerk' ? <ClerkAuthScreen /> : <AuthScreen />}<Toaster position="bottom-right" /></>;
 
   return <div className="min-h-screen bg-background text-foreground">
     <div className="mx-auto grid max-w-[1440px] grid-cols-[248px_minmax(0,1fr)] max-[1050px]:grid-cols-[190px_minmax(0,1fr)] max-[760px]:block">
@@ -67,6 +68,7 @@ function Shell() {
 }
 
 export function AlongApp() {
-  return <AlongProvider><Shell /></AlongProvider>;
+  const Provider = process.env.NEXT_PUBLIC_AUTH_PROVIDER === 'clerk' ? ClerkAlongProvider : AlongProvider;
+  return <Provider><Shell /></Provider>;
 }
 

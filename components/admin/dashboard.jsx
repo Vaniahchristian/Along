@@ -11,6 +11,8 @@ import { ListPagination } from '@/components/ui/list-pagination';
 import { AlongLogo } from '@/components/along/logo';
 import { MobileDrawer } from '@/components/along/mobile-drawer';
 import { getAdminAccess, loadAdminDashboard, setPlanStatus, setReportStatus } from '@/lib/admin-db';
+import { useAuth, useUser } from '@clerk/nextjs';
+import { setClerkTokenGetter } from '@/lib/supabase/client';
 
 const tabs = [
   { id: 'overview', label: 'Overview', icon: LayoutDashboard },
@@ -68,7 +70,13 @@ function MembersView({ members, search, setSearch }) {
   return <><div className="mb-6 flex flex-wrap items-end justify-between gap-4"><div><h2 className="font-heading text-3xl font-extrabold tracking-[-.045em] text-forest">Members</h2><p className="mt-2 text-sm text-[#5d6e60]">A read only view of people who have joined Along.</p></div><label className="relative w-full max-w-xs"><Search className="absolute left-3.5 top-3.5 size-4 text-[#6b7b6c]" /><Input aria-label="Search members" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search members" className="h-11 rounded-xl border-[#d5e0d4] bg-white pl-10" /></label></div>{visible.length ? <div className="overflow-hidden rounded-[22px] border border-[#dee7dc] bg-white">{visible.map((person) => <div key={person.id} className="flex flex-wrap items-center gap-4 border-b border-[#e4ebe2] px-5 py-4 last:border-0"><span className="grid size-11 place-items-center rounded-full bg-[#ffe1ee] text-xs font-extrabold text-[#92305e]">{initials(person.display_name)}</span><div className="min-w-0 flex-1"><strong className="block text-sm text-forest">{person.display_name}</strong><span className="block truncate text-xs text-[#68796a]">{person.email}</span></div><div className="flex max-w-xs flex-wrap gap-1.5">{(person.interests || []).slice(0, 3).map((interest) => <Pill key={interest} tone="yellow">{interest}</Pill>)}</div><span className="text-xs text-[#6d7c6e]">Joined {dateText(person.created_at)}</span></div>)}</div> : <Empty icon={Users} title="No matching members" text="Try another name or email address." />}</>;
 }
 
-export function AdminDashboard() {
+export function ClerkAdminDashboard() {
+  const { user, isLoaded } = useUser();
+  const { getToken } = useAuth();
+  return <AdminDashboard clerkIdentity={{ user, isLoaded, getToken }} />;
+}
+
+export function AdminDashboard({ clerkIdentity = null }) {
   const [phase, setPhase] = useState('loading');
   const [access, setAccess] = useState(null);
   const [data, setData] = useState(null);
@@ -85,10 +93,14 @@ export function AdminDashboard() {
   }, []);
 
   useEffect(() => {
+    if (clerkIdentity && !clerkIdentity.isLoaded) return;
     let active = true;
     (async () => {
       try {
-        const result = await getAdminAccess();
+        if (clerkIdentity) setClerkTokenGetter(clerkIdentity.getToken);
+        const result = clerkIdentity && !clerkIdentity.user
+          ? { user: null, allowed: false }
+          : await getAdminAccess(clerkIdentity ? clerkIdentity.user : undefined);
         if (!active) return;
         setAccess(result);
         if (!result.allowed) { setPhase('denied'); return; }
@@ -99,7 +111,7 @@ export function AdminDashboard() {
       }
     })();
     return () => { active = false; };
-  }, []);
+  }, [clerkIdentity?.isLoaded, clerkIdentity?.user?.id]);
 
   async function runAction(work, message) {
     setBusy(true);

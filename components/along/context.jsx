@@ -1,13 +1,23 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { useAuth, useClerk, useUser } from '@clerk/nextjs';
 import { toast } from 'sonner';
-import { supabase } from '@/lib/supabase/client';
-import { emptyAlongState, ensureViewerProfile, updateInterests, loadAlongState, requestJoinPlan, cancelJoinRequest, acceptHostRequest as dbAcceptHostRequest, publishPlan as dbPublishPlan, sendPlanMessage, markCheckIn, markComplete, submitPlanReport, loadNotifications, markNotificationRead, markAllNotificationsRead, deleteNotification as dbDeleteNotification, clearNotifications as dbClearNotifications } from '@/lib/along-db';
+import { supabase, setClerkTokenGetter } from '@/lib/supabase/client';
+import { emptyAlongState, ensureViewerProfile, ensureClerkViewerProfile, updateInterests, loadAlongState, requestJoinPlan, cancelJoinRequest, acceptHostRequest as dbAcceptHostRequest, publishPlan as dbPublishPlan, sendPlanMessage, markCheckIn, markComplete, submitPlanReport, loadNotifications, markNotificationRead, markAllNotificationsRead, deleteNotification as dbDeleteNotification, clearNotifications as dbClearNotifications } from '@/lib/along-db';
 
 const AlongContext = createContext(null);
 
-export function AlongProvider({ children }) {
+export function ClerkAlongProvider({ children }) {
+  const { user, isLoaded } = useUser();
+  const { getToken } = useAuth();
+  const { signOut } = useClerk();
+  return <AlongProvider clerkIdentity={{ user, isLoaded, getToken, signOut }}>{children}</AlongProvider>;
+}
+
+export function AlongProvider({ children, clerkIdentity = null }) {
+  const clerkRef = useRef(clerkIdentity);
+  clerkRef.current = clerkIdentity;
   const [data, setData] = useState(emptyAlongState);
   const [hydrated, setHydrated] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -39,13 +49,37 @@ export function AlongProvider({ children }) {
   const activate = useCallback(async (user) => {
     const profile = await ensureViewerProfile(user);
     setViewer(profile);
-    const admin = await supabase.from('along_admins').select('user_id').eq('user_id', user.id).maybeSingle();
+    const admin = await supabase.from('along_admins').select('user_id').eq('user_id', profile.id).maybeSingle();
+    setIsAdmin(!admin.error && Boolean(admin.data));
+    try { await refresh(profile.id); }
+    catch (error) { setLoadError(error.message || 'Could not load plans.'); }
+  }, [refresh]);
+
+  const activateClerk = useCallback(async (user) => {
+    const profile = await ensureClerkViewerProfile(user);
+    setViewer(profile);
+    const admin = await supabase.from('along_admins').select('user_id').eq('user_id', profile.id).maybeSingle();
     setIsAdmin(!admin.error && Boolean(admin.data));
     try { await refresh(profile.id); }
     catch (error) { setLoadError(error.message || 'Could not load plans.'); }
   }, [refresh]);
 
   useEffect(() => {
+    if (clerkRef.current) {
+      if (!clerkRef.current.isLoaded) return;
+      setClerkTokenGetter(() => clerkRef.current?.getToken() ?? null);
+      let active = true;
+      (async () => {
+        if (clerkRef.current?.user) {
+          try { await activateClerk(clerkRef.current.user); }
+          catch (error) { if (active) setLoadError(error.message || 'Could not load your profile.'); }
+        } else {
+          setViewer(null); setIsAdmin(false); setData(emptyAlongState()); setNotifications([]);
+        }
+        if (active) setHydrated(true);
+      })();
+      return () => { active = false; };
+    }
     let active = true;
     const { data: listener } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY') setAuthScreen('recovery');
@@ -63,7 +97,7 @@ export function AlongProvider({ children }) {
       if (active) setHydrated(true);
     })();
     return () => { active = false; listener.subscription.unsubscribe(); };
-  }, [activate]);
+  }, [activate, activateClerk, clerkIdentity?.isLoaded, clerkIdentity?.user?.id]);
 
   useEffect(() => {
     if (!viewer?.id) return;
@@ -123,8 +157,8 @@ export function AlongProvider({ children }) {
 
   async function signOut() {
     return withBusy(async () => {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      if (clerkRef.current) await clerkRef.current.signOut();
+      else { const { error } = await supabase.auth.signOut(); if (error) throw error; }
       setViewer(null); setIsAdmin(false); setData(emptyAlongState()); setNotifications([]); setAuthScreen('welcome'); setScreen('explore'); setChatViewOpen(false);
     });
   }

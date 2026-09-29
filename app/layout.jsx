@@ -1,4 +1,5 @@
 import './globals.css';
+import { ClerkProvider } from '@clerk/nextjs';
 
 export const metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
@@ -39,9 +40,12 @@ export const viewport = {
 };
 
 export default function RootLayout({ children }) {
+  const content = process.env.NEXT_PUBLIC_AUTH_PROVIDER === 'clerk'
+    ? <ClerkProvider appearance={{ variables: { colorPrimary: '#3b793f', colorText: '#0f2218', colorBackground: '#ffffff', colorInputBackground: '#ffffff', colorInputText: '#0f2218', borderRadius: '14px' } }}>{children}</ClerkProvider>
+    : children;
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>{content}</body>
     </html>
   );
 }
