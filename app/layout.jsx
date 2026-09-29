@@ -1,13 +1,7 @@
 import './globals.css';
 import { ClerkProvider } from '@clerk/nextjs';
 import { JsonLd } from '@/components/seo/json-ld';
-import {
-  getSiteUrl,
-  SITE_DESCRIPTION,
-  SITE_KEYWORDS,
-  SITE_NAME,
-  SITE_TAGLINE
-} from '@/lib/seo';
+import { getSiteUrl, SITE_DESCRIPTION, SITE_KEYWORDS, SITE_NAME, SITE_TAGLINE } from '@/lib/seo';
 
 const siteUrl = getSiteUrl();
 
@@ -97,7 +91,7 @@ export default function RootLayout({ children }) {
   );
 
   return (
-    <html lang="en">
+    <html lang='en'>
       <body>
         <JsonLd />
         {content}

@@ -16,18 +16,20 @@ export const metadata = {
 
 export default function HelpPage() {
   return (
-    <LegalShell title="Help Center" updated="29 September 2026">
+    <LegalShell title='Help Center' updated='29 September 2026'>
       <p>
-        Tagwimi helps adults find company for small, specific plans at real places. This page covers the basics, safety tips, and how to get support.
+        Tagwimi helps adults find company for small, specific plans at real places. This page covers
+        the basics, safety tips, and how to get support.
       </p>
-      <p className="rounded-2xl bg-[#fff0b5] px-4 py-3 text-sm font-semibold text-forest">
+      <p className='rounded-2xl bg-[#fff0b5] px-4 py-3 text-sm font-semibold text-forest'>
         Tagwimi is for people 18 years and older.
       </p>
 
       <h2>Getting started</h2>
       <h3>How do I join Tagwimi?</h3>
       <p>
-        Open <Link href="/app">Tagwimi</Link> and continue with Google. Confirm you are 18+, then add a few interests so people understand what you enjoy.
+        Open <Link href='/app'>Tagwimi</Link> and continue with Google. Confirm you are 18+, then
+        add a few interests so people understand what you enjoy.
       </p>
       <h3>What can I do on Tagwimi?</h3>
       <ul>
@@ -40,12 +42,18 @@ export default function HelpPage() {
 
       <h2>Making and joining plans</h2>
       <h3>What makes a good plan?</h3>
-      <p>Be specific. Include the activity, public venue, meeting point, date, time, group size, and anything people should bring or expect to pay.</p>
+      <p>
+        Be specific. Include the activity, public venue, meeting point, date, time, group size, and
+        anything people should bring or expect to pay.
+      </p>
       <h3>Do I have to accept every join request?</h3>
-      <p>No. Hosts review requests before chat opens. Only accept people you are comfortable meeting.</p>
+      <p>
+        No. Hosts review requests before chat opens. Only accept people you are comfortable meeting.
+      </p>
       <h3>Who pays?</h3>
       <p>
-        Unless you clearly agree otherwise, everyone covers their own costs. Say expected fees up front when you create a plan.
+        Unless you clearly agree otherwise, everyone covers their own costs. Say expected fees up
+        front when you create a plan.
       </p>
 
       <h2>Staying safe</h2>
@@ -58,27 +66,35 @@ export default function HelpPage() {
         <li>In an emergency, contact local authorities first</li>
       </ul>
       <p>
-        Tagwimi connects people but does not supervise meetups. Read the safety sections in our <Link href="/terms">Terms of Service</Link>.
+        Tagwimi connects people but does not supervise meetups. Read the safety sections in our{' '}
+        <Link href='/terms'>Terms of Service</Link>.
       </p>
 
       <h2>Reporting a concern</h2>
       <p>
-        You can report a plan from its detail page or group chat. Tell us what happened in enough detail for an admin to review it.
+        You can report a plan from its detail page or group chat. Tell us what happened in enough
+        detail for an admin to review it.
       </p>
       <p>
-        Reports should be made in good faith. Deliberately false reports can lead to account restrictions.
+        Reports should be made in good faith. Deliberately false reports can lead to account
+        restrictions.
       </p>
 
       <h2>Account and privacy</h2>
       <h3>How do I sign back in?</h3>
-      <p>Choose Continue with Google and select the same Google account you used to join. Tagwimi does not use a separate password.</p>
+      <p>
+        Choose Continue with Google and select the same Google account you used to join. Tagwimi
+        does not use a separate password.
+      </p>
       <h3>How is my data used?</h3>
       <p>
-        See our <Link href="/privacy">Privacy Policy</Link> for details on collection, use, sharing, retention, and your rights.
+        See our <Link href='/privacy'>Privacy Policy</Link> for details on collection, use, sharing,
+        retention, and your rights.
       </p>
       <h3>Can I delete my account?</h3>
       <p>
-        Email <a href="mailto:support@tagwimi.com">support@tagwimi.com</a> from the address on your account and ask for deletion. We will confirm once it is processed.
+        Email <a href='mailto:support@tagwimi.com'>support@tagwimi.com</a> from the address on your
+        account and ask for deletion. We will confirm once it is processed.
       </p>
 
       <h2>Contact support</h2>
@@ -87,9 +103,12 @@ export default function HelpPage() {
         <br />
         Kampala, Uganda
         <br />
-        Email: <a href="mailto:support@tagwimi.com">support@tagwimi.com</a>
+        Email: <a href='mailto:support@tagwimi.com'>support@tagwimi.com</a>
       </p>
-      <p>We aim to reply within a few business days. Safety emergencies should go to local authorities first.</p>
+      <p>
+        We aim to reply within a few business days. Safety emergencies should go to local
+        authorities first.
+      </p>
     </LegalShell>
   );
 }

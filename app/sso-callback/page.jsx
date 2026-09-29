@@ -6,7 +6,12 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 function errorMessage(reason) {
-  return reason?.errors?.[0]?.longMessage || reason?.errors?.[0]?.message || reason?.message || 'Google sign-in could not be completed. Please try again.';
+  return (
+    reason?.errors?.[0]?.longMessage ||
+    reason?.errors?.[0]?.message ||
+    reason?.message ||
+    'Google sign-in could not be completed. Please try again.'
+  );
 }
 
 export default function SsoCallbackPage() {
@@ -19,7 +24,9 @@ export default function SsoCallbackPage() {
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
-      setError((current) => current || 'Sign-in is taking longer than expected. Please try Google again.');
+      setError(
+        (current) => current || 'Sign-in is taking longer than expected. Please try Google again.'
+      );
     }, 15000);
     return () => window.clearTimeout(timeout);
   }, []);
@@ -57,8 +64,12 @@ export default function SsoCallbackPage() {
             await signUp.finalize({ navigate });
             return;
           }
-          const missing = signUp.missingFields?.length ? ` Missing: ${signUp.missingFields.join(', ')}.` : '';
-          setError(`Your account needs more information before it can be created.${missing} Please contact support@tagwimi.com.`);
+          const missing = signUp.missingFields?.length
+            ? ` Missing: ${signUp.missingFields.join(', ')}.`
+            : '';
+          setError(
+            `Your account needs more information before it can be created.${missing} Please contact support@tagwimi.com.`
+          );
           return;
         }
 
@@ -82,14 +93,29 @@ export default function SsoCallbackPage() {
     void finish();
   }, [clerk, router, signIn, signUp]);
 
-  return <main className="grid min-h-dvh place-items-center bg-[#f7f9f4] px-5 text-center text-[#0f2218]">
-    <div className="max-w-md">
-      <p className="font-heading text-2xl font-extrabold">{error ? 'We couldn’t finish signing you in' : 'Finding your people…'}</p>
-      {error ? <>
-        <p role="alert" className="mt-3 text-sm leading-relaxed text-[#526756]">{error}</p>
-        <Link href="/app" className="mt-6 inline-flex min-h-11 items-center rounded-full bg-[#3b793f] px-6 font-semibold text-white">Try Google again</Link>
-      </> : <p className="mt-2 text-sm text-[#526756]">Finishing your Google sign-in.</p>}
-      <div id="clerk-captcha" />
-    </div>
-  </main>;
+  return (
+    <main className='grid min-h-dvh place-items-center bg-[#f7f9f4] px-5 text-center text-[#0f2218]'>
+      <div className='max-w-md'>
+        <p className='font-heading text-2xl font-extrabold'>
+          {error ? 'We couldn’t finish signing you in' : 'Finding your people…'}
+        </p>
+        {error ? (
+          <>
+            <p role='alert' className='mt-3 text-sm leading-relaxed text-[#526756]'>
+              {error}
+            </p>
+            <Link
+              href='/app'
+              className='mt-6 inline-flex min-h-11 items-center rounded-full bg-[#3b793f] px-6 font-semibold text-white'
+            >
+              Try Google again
+            </Link>
+          </>
+        ) : (
+          <p className='mt-2 text-sm text-[#526756]'>Finishing your Google sign-in.</p>
+        )}
+        <div id='clerk-captcha' />
+      </div>
+    </main>
+  );
 }
