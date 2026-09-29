@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSignIn, useSignUp } from '@clerk/nextjs';
 import { ArrowLeft, ArrowRight, Eye, EyeOff, Mail, X } from 'lucide-react';
-import { TagwimiLogo } from './logo';
+import { TagwimiLogo } from '@/components/layout/logo';
 
 const interests = ['Swimming', 'Fitness classes', 'Coffee', 'Walks', 'Art & learning'];
 

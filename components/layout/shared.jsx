@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import { useAlong } from './context';
+import { useAlong } from '@/components/providers/along';
 
 export function ActionButton({ tone = 'primary', className, children, ...props }) {
   const tones = {

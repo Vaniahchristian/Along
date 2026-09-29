@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { TagwimiLogo } from '@/components/along/logo';
+import { TagwimiLogo } from '@/components/layout/logo';
 
 export function MarketingBrand({ light = false }) {
   return (

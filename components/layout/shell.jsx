@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   Bell,
   CalendarDays,
@@ -14,37 +14,31 @@ import {
   UserRound
 } from 'lucide-react';
 import { Toaster } from '@/components/ui/sonner';
-import { ClerkAlongProvider, useAlong } from './context';
-import { PersonAvatar } from './shared';
-import { ExploreScreen } from './explore-screen';
-import { DetailScreen } from './detail-screen';
-import { PlansScreen } from './plans-screen';
-import { CreateScreen } from './create-screen';
-import { ChatScreen } from './chat-screen';
-import { ProfileScreen } from './profile-screen';
-import { TagwimiLogo, TagwimiSplash } from './logo';
-import { MobileDrawer } from './mobile-drawer';
-import { NotificationsScreen } from './notifications-screen';
+import { useAlong } from '@/components/providers/along';
+import { PersonAvatar } from '@/components/layout/shared';
+import { TagwimiLogo, TagwimiSplash } from '@/components/layout/logo';
+import { MobileDrawer } from '@/components/layout/mobile-drawer';
 
-const screens = {
-  explore: ExploreScreen,
-  detail: DetailScreen,
-  plans: PlansScreen,
-  create: CreateScreen,
-  chat: ChatScreen,
-  profile: ProfileScreen,
-  notifications: NotificationsScreen
-};
 const navigation = [
-  { id: 'explore', label: 'Explore', icon: Compass },
-  { id: 'plans', label: 'My plans', icon: CalendarDays },
-  { id: 'chat', label: 'Messages', icon: MessageCircle },
-  { id: 'profile', label: 'Profile', icon: UserRound }
+  { id: 'explore', href: '/app/explore', label: 'Explore', icon: Compass },
+  { id: 'plans', href: '/app/plans', label: 'My plans', icon: CalendarDays },
+  { id: 'chat', href: '/app/chat', label: 'Messages', icon: MessageCircle },
+  { id: 'profile', href: '/app/profile', label: 'Profile', icon: UserRound }
 ];
 
-function Shell() {
+function activeNavId(pathname) {
+  if (pathname.startsWith('/app/plans/') && pathname !== '/app/plans') return 'detail';
+  if (pathname.startsWith('/app/chat/')) return 'chat';
+  if (pathname.startsWith('/app/notifications')) return 'notifications';
+  if (pathname.startsWith('/app/create')) return 'create';
+  if (pathname.startsWith('/app/plans')) return 'plans';
+  if (pathname.startsWith('/app/chat')) return 'chat';
+  if (pathname.startsWith('/app/profile')) return 'profile';
+  return 'explore';
+}
+
+export function AppShell({ children }) {
   const {
-    screen,
     navigate,
     viewer,
     clerkSignedIn,
@@ -53,15 +47,15 @@ function Shell() {
     hydrated,
     loadError,
     refresh,
-    notifications,
-    chatViewOpen
+    notifications
   } = useAlong();
   const router = useRouter();
+  const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const unread = notifications.filter((item) => !item.read_at).length;
-  const inMobileChat = screen === 'chat' && chatViewOpen;
-  const inMobileDetail = screen === 'detail';
-  const Screen = screens[screen] ?? ExploreScreen;
+  const screen = activeNavId(pathname);
+  const inMobileChat = pathname.startsWith('/app/chat/');
+  const inMobileDetail = pathname.startsWith('/app/plans/') && pathname !== '/app/plans';
   const navClass = (id) =>
     `flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left font-bold transition-colors ${screen === id ? 'bg-secondary text-primary' : 'text-muted-foreground hover:bg-card hover:text-foreground'}`;
   const mobileClass = (id) =>
@@ -213,7 +207,7 @@ function Shell() {
               </button>
             </div>
           )}
-          <Screen />
+          {children}
         </main>
       </div>
       <nav
@@ -309,13 +303,5 @@ function Shell() {
       </MobileDrawer>
       <Toaster position='bottom-right' />
     </div>
-  );
-}
-
-export function AlongApp() {
-  return (
-    <ClerkAlongProvider>
-      <Shell />
-    </ClerkAlongProvider>
   );
 }

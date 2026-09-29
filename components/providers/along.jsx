@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useAuth, useClerk, useUser } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { supabase, setClerkTokenGetter } from '@/lib/supabase/client';
 import {
@@ -21,7 +22,16 @@ import {
   markAllNotificationsRead,
   deleteNotification as dbDeleteNotification,
   clearNotifications as dbClearNotifications
-} from '@/lib/along-db';
+} from '@/lib/along';
+
+const ROUTES = {
+  explore: '/app/explore',
+  plans: '/app/plans',
+  create: '/app/create',
+  chat: '/app/chat',
+  profile: '/app/profile',
+  notifications: '/app/notifications'
+};
 
 const AlongContext = createContext(null);
 
@@ -35,6 +45,7 @@ export function ClerkAlongProvider({ children }) {
 }
 
 export function AlongProvider({ children, clerkIdentity = null }) {
+  const router = useRouter();
   const clerkRef = useRef(clerkIdentity);
   clerkRef.current = clerkIdentity;
   const [data, setData] = useState(emptyAlongState);
@@ -43,10 +54,6 @@ export function AlongProvider({ children, clerkIdentity = null }) {
   const [loadError, setLoadError] = useState('');
   const [viewer, setViewer] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [screen, setScreen] = useState('explore');
-  const [selectedPlanId, setSelectedPlanId] = useState(null);
-  const [chatId, setChatId] = useState(null);
-  const [chatViewOpen, setChatViewOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [notificationError, setNotificationError] = useState('');
 
@@ -64,13 +71,8 @@ export function AlongProvider({ children, clerkIdentity = null }) {
       const next = await loadAlongState(profileId);
       setData(next);
       setLoadError('');
-      setSelectedPlanId((current) =>
-        next.plans.some((plan) => plan.id === current) ? current : next.plans[0]?.id || null
-      );
-      setChatId((current) =>
-        next.plans.some((plan) => plan.id === current) ? current : next.plans[0]?.id || null
-      );
       await refreshNotifications(profileId);
+      return next;
     },
     [refreshNotifications]
   );
@@ -168,8 +170,7 @@ export function AlongProvider({ children, clerkIdentity = null }) {
       setIsAdmin(false);
       setData(emptyAlongState());
       setNotifications([]);
-      setScreen('explore');
-      setChatViewOpen(false);
+      router.replace('/?join=1');
     });
   }
 
@@ -189,18 +190,19 @@ export function AlongProvider({ children, clerkIdentity = null }) {
   }
 
   function navigate(next) {
-    setScreen(next);
-    setChatViewOpen(false);
+    const href = ROUTES[next] || `/app/${next}`;
+    router.push(href);
     window.scrollTo({ top: 0, behavior: 'instant' });
   }
+
   function openPlan(id) {
-    setSelectedPlanId(id);
-    navigate('detail');
+    router.push(`/app/plans/${id}`);
+    window.scrollTo({ top: 0, behavior: 'instant' });
   }
+
   function openChat(id) {
-    setChatId(id);
-    navigate('chat');
-    setChatViewOpen(true);
+    router.push(`/app/chat/${id}`);
+    window.scrollTo({ top: 0, behavior: 'instant' });
     if (!viewer?.id) return;
     const unread = notifications.filter(
       (item) => item.plan_id === id && item.kind === 'message' && !item.read_at
@@ -217,6 +219,7 @@ export function AlongProvider({ children, clerkIdentity = null }) {
       refreshNotifications(viewer.id)
     );
   }
+
   async function openNotification(notification) {
     if (!viewer) return;
     if (!notification.read_at) {
@@ -248,6 +251,7 @@ export function AlongProvider({ children, clerkIdentity = null }) {
       else openPlan(notification.plan_id);
     }
   }
+
   async function readAllNotifications() {
     if (!viewer) return;
     const previous = notifications;
@@ -261,6 +265,7 @@ export function AlongProvider({ children, clerkIdentity = null }) {
       toast.error(error.message || 'Could not mark notifications as read.');
     }
   }
+
   async function deleteNotification(id) {
     if (!viewer) return;
     const previous = notifications;
@@ -273,6 +278,7 @@ export function AlongProvider({ children, clerkIdentity = null }) {
       toast.error(error.message || 'Could not delete notification.');
     }
   }
+
   async function clearNotifications() {
     if (!viewer || !notifications.length) return;
     const previous = notifications;
@@ -285,6 +291,7 @@ export function AlongProvider({ children, clerkIdentity = null }) {
       toast.error(error.message || 'Could not clear notifications.');
     }
   }
+
   function runAction(work, message) {
     if (viewer?.id)
       return withBusy(async () => {
@@ -292,15 +299,19 @@ export function AlongProvider({ children, clerkIdentity = null }) {
         await refresh(viewer.id);
       }, message);
   }
+
   function requestJoin(id) {
     return runAction(() => requestJoinPlan(viewer.id, id), 'Request sent.');
   }
+
   function cancelRequest(id) {
     return runAction(() => cancelJoinRequest(viewer.id, id), 'Request cancelled.');
   }
+
   function approveRequest(planId, requestId) {
     return runAction(() => dbAcceptHostRequest(planId, requestId), 'Request accepted.');
   }
+
   async function imageRequest(id, method, file) {
     const body = file ? new FormData() : undefined;
     if (body) body.set('image', file);
@@ -312,6 +323,7 @@ export function AlongProvider({ children, clerkIdentity = null }) {
     const result = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(result.error || 'Could not update the plan photo.');
   }
+
   function publishPlan(plan, file) {
     if (!viewer?.id) return;
     return withBusy(async () => {
@@ -324,27 +336,32 @@ export function AlongProvider({ children, clerkIdentity = null }) {
           imageError = error.message;
         }
       await refresh(viewer.id);
-      setSelectedPlanId(id);
-      navigate('detail');
+      router.push(`/app/plans/${id}`);
       if (imageError) toast.error(`Your plan is live, but the photo was not saved: ${imageError}`);
       else toast.success('Your plan is live.');
     });
   }
+
   function replacePlanImage(id, file) {
     return runAction(() => imageRequest(id, 'POST', file), 'Photo updated.');
   }
+
   function removePlanImage(id) {
     return runAction(() => imageRequest(id, 'DELETE'), 'Photo removed.');
   }
+
   function sendMessage(id, text) {
     return runAction(() => sendPlanMessage(viewer.id, id, text));
   }
+
   function checkIn(id) {
     return runAction(() => markCheckIn(viewer.id, id), 'You’re checked in.');
   }
+
   function complete(id) {
     return runAction(() => markComplete(viewer.id, id), 'Plan completed.');
   }
+
   function reportPlan(id, reason, targetType, messageId) {
     return runAction(
       () => submitPlanReport(viewer.id, id, reason, targetType, messageId),
@@ -363,11 +380,6 @@ export function AlongProvider({ children, clerkIdentity = null }) {
     isAdmin,
     signOut,
     saveProfile,
-    screen,
-    selectedPlanId,
-    chatId,
-    chatViewOpen,
-    setChatViewOpen,
     navigate,
     openPlan,
     openChat,

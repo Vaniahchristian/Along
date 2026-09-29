@@ -11,7 +11,7 @@ import {
   Flag,
   Trash2
 } from 'lucide-react';
-import { useAlong } from './context';
+import { useAlong } from '@/components/providers/along';
 
 const icons = {
   join_request: UserRoundPlus,

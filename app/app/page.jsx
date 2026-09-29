@@ -1,5 +1,5 @@
-import { AlongApp } from '@/components/along/app-shell';
+import { redirect } from 'next/navigation';
 
-export default function AppPage() {
-  return <AlongApp />;
+export default function AppIndexPage() {
+  redirect('/app/explore');
 }

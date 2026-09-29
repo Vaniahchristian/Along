@@ -5,9 +5,9 @@ import { useMemo, useRef, useState } from 'react';
 import { ArrowUpRight, CalendarDays, MapPin, Plus, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { ListPagination } from '@/components/ui/list-pagination';
-import { planImage } from '@/lib/activity-image';
-import { useAlong } from './context';
-import { BeginnerBadge, CategoryBadge, EmptyState, PersonAvatar } from './shared';
+import { planImage } from '@/lib/media/activity-image';
+import { useAlong } from '@/components/providers/along';
+import { BeginnerBadge, CategoryBadge, EmptyState, PersonAvatar } from '@/components/layout/shared';
 
 const categories = ['All', 'Fitness', 'Outings', 'Learning'];
 const PAGE_SIZE = 6;

@@ -1,3 +1,6 @@
+import { ClerkAlongProvider } from '@/components/providers/along';
+import { AppShell } from '@/components/layout/shell';
+
 export const metadata = {
   robots: {
     index: false,
@@ -10,5 +13,9 @@ export const metadata = {
 };
 
 export default function AppShellLayout({ children }) {
-  return children;
+  return (
+    <ClerkAlongProvider>
+      <AppShell>{children}</AppShell>
+    </ClerkAlongProvider>
+  );
 }

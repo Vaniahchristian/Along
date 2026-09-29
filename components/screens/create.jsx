@@ -13,9 +13,9 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select';
-import { useAlong } from './context';
-import { preparePlanImage } from '@/lib/prepare-plan-image';
-import { ActionButton, BackButton, PageHeading, Panel } from './shared';
+import { useAlong } from '@/components/providers/along';
+import { preparePlanImage } from '@/lib/media/prepare-plan-image';
+import { ActionButton, BackButton, PageHeading, Panel } from '@/components/layout/shared';
 
 function SelectField({ id, label, value, onChange, options }) {
   return (

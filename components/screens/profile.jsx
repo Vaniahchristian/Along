@@ -5,8 +5,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { CalendarDays, Camera, Eye, MapPin, Pencil, Plus, ShieldCheck, X } from 'lucide-react';
 import { useClerk } from '@clerk/nextjs';
-import { useAlong } from './context';
-import { ActionButton, Panel } from './shared';
+import { useAlong } from '@/components/providers/along';
+import { ActionButton, Panel } from '@/components/layout/shared';
 
 const choices = [
   'Swimming',

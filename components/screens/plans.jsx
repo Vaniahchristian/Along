@@ -13,9 +13,9 @@ import {
 } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ListPagination } from '@/components/ui/list-pagination';
-import { planImage } from '@/lib/activity-image';
-import { useAlong } from './context';
-import { ActionButton, EmptyState } from './shared';
+import { planImage } from '@/lib/media/activity-image';
+import { useAlong } from '@/components/providers/along';
+import { ActionButton, EmptyState } from '@/components/layout/shared';
 
 const PAGE_SIZE = 8;
 

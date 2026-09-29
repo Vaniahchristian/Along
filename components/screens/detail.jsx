@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import { useParams } from 'next/navigation';
 import {
   CalendarDays,
   Clock3,
@@ -13,9 +14,9 @@ import {
   X
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { planImage } from '@/lib/activity-image';
-import { preparePlanImage } from '@/lib/prepare-plan-image';
-import { useAlong } from './context';
+import { planImage } from '@/lib/media/activity-image';
+import { preparePlanImage } from '@/lib/media/prepare-plan-image';
+import { useAlong } from '@/components/providers/along';
 import {
   ActionButton,
   BackButton,
@@ -24,7 +25,7 @@ import {
   Panel,
   PersonAvatar,
   ReportForm
-} from './shared';
+} from '@/components/layout/shared';
 
 function JoinAction({ plan, mine, joined, requested, busy, openChat, requestJoin, cancelRequest }) {
   return mine || joined ? (
@@ -141,10 +142,11 @@ function JoinPanel({
 
 export function DetailScreen() {
   const [hostPreview, setHostPreview] = useState(false);
+  const params = useParams();
+  const planId = params?.id;
   const {
     data,
     viewer,
-    selectedPlanId,
     openChat,
     requestJoin,
     cancelRequest,
@@ -153,7 +155,7 @@ export function DetailScreen() {
     removePlanImage,
     busy
   } = useAlong();
-  const plan = data.plans.find((item) => item.id === selectedPlanId);
+  const plan = data.plans.find((item) => item.id === planId);
   if (!plan)
     return (
       <>

@@ -19,10 +19,10 @@ import {
 } from 'lucide-react';
 import { useAuth, useUser } from '@clerk/nextjs';
 import { toast, Toaster } from 'sonner';
-import { TagwimiLogo } from '@/components/along/logo';
-import { MobileDrawer } from '@/components/along/mobile-drawer';
+import { TagwimiLogo } from '@/components/layout/logo';
+import { MobileDrawer } from '@/components/layout/mobile-drawer';
 import { ListPagination } from '@/components/ui/list-pagination';
-import { adminAction, getAdminAccess, loadAdminDashboard } from '@/lib/admin-db';
+import { adminAction, getAdminAccess, loadAdminDashboard } from '@/lib/admin/api';
 import { setClerkTokenGetter } from '@/lib/supabase/client';
 
 const tabs = [

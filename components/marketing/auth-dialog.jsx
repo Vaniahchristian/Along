@@ -2,8 +2,8 @@
 
 import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { ClerkAlongProvider, useAlong } from '@/components/along/context';
-import { ClerkAuthScreen } from '@/components/along/clerk-auth-screen';
+import { ClerkAlongProvider, useAlong } from '@/components/providers/along';
+import { ClerkAuthScreen } from '@/components/auth/clerk-auth-screen';
 
 function DialogContent({ onClose }) {
   const router = useRouter();
@@ -11,7 +11,7 @@ function DialogContent({ onClose }) {
   const panelRef = useRef(null);
 
   useEffect(() => {
-    if (viewer) router.replace('/app');
+    if (viewer) router.replace('/app/explore');
   }, [viewer, router]);
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
