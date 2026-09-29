@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState } f
 import { useAuth, useClerk, useUser } from '@clerk/nextjs';
 import { toast } from 'sonner';
 import { supabase, setClerkTokenGetter } from '@/lib/supabase/client';
-import { emptyAlongState, ensureClerkViewerProfile, updateInterests, loadAlongState, requestJoinPlan, cancelJoinRequest, acceptHostRequest as dbAcceptHostRequest, publishPlan as dbPublishPlan, sendPlanMessage, markCheckIn, markComplete, submitPlanReport, loadNotifications, markNotificationRead, markAllNotificationsRead, deleteNotification as dbDeleteNotification, clearNotifications as dbClearNotifications } from '@/lib/along-db';
+import { emptyAlongState, ensureClerkViewerProfile, loadAlongState, requestJoinPlan, cancelJoinRequest, acceptHostRequest as dbAcceptHostRequest, publishPlan as dbPublishPlan, sendPlanMessage, markCheckIn, markComplete, submitPlanReport, loadNotifications, markNotificationRead, markAllNotificationsRead, deleteNotification as dbDeleteNotification, clearNotifications as dbClearNotifications } from '@/lib/along-db';
 
 const AlongContext = createContext(null);
 
@@ -96,10 +96,15 @@ export function AlongProvider({ children, clerkIdentity = null }) {
     });
   }
 
-  async function saveInterests(interests) {
-    if (!viewer) return;
-    const result = await withBusy(() => updateInterests(viewer.id, interests), 'Interests updated.');
-    if (result.ok) setViewer((current) => ({ ...current, interests }));
+  async function saveProfile(form) {
+    return withBusy(async () => {
+      const response = await fetch('/api/profile', { method: 'PATCH', body: form, credentials: 'same-origin' });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || 'Could not save your profile.');
+      setViewer(result.profile);
+      await refresh(viewer.id);
+      return result.profile;
+    }, 'Profile updated.');
   }
 
   function navigate(next) { setScreen(next); setChatViewOpen(false); window.scrollTo({ top: 0, behavior: 'instant' }); }
@@ -179,7 +184,7 @@ export function AlongProvider({ children, clerkIdentity = null }) {
   function complete(id) { return runAction(() => markComplete(viewer.id, id), 'Plan completed.'); }
   function reportPlan(id, reason) { return runAction(() => submitPlanReport(viewer.id, id, reason), 'Report sent. Thank you for telling us.'); }
 
-  const value = { data, busy, hydrated, loadError, refresh, viewer, clerkSignedIn: Boolean(clerkIdentity?.user), isAdmin, signOut, saveInterests, screen, selectedPlanId, chatId, chatViewOpen, setChatViewOpen, navigate, openPlan, openChat, requestJoin, cancelRequest, approveRequest, publishPlan, replacePlanImage, removePlanImage, sendMessage, checkIn, complete, reportPlan, notifications, notificationError, refreshNotifications, openNotification, readAllNotifications, deleteNotification, clearNotifications };
+  const value = { data, busy, hydrated, loadError, refresh, viewer, clerkSignedIn: Boolean(clerkIdentity?.user), isAdmin, signOut, saveProfile, screen, selectedPlanId, chatId, chatViewOpen, setChatViewOpen, navigate, openPlan, openChat, requestJoin, cancelRequest, approveRequest, publishPlan, replacePlanImage, removePlanImage, sendMessage, checkIn, complete, reportPlan, notifications, notificationError, refreshNotifications, openNotification, readAllNotifications, deleteNotification, clearNotifications };
   return <AlongContext.Provider value={value}>{children}</AlongContext.Provider>;
 }
 

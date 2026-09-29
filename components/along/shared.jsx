@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { ArrowLeft, Flag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -23,10 +24,10 @@ export function Panel({ className, children, ...props }) {
   return <Card className={cn('gap-0 overflow-visible rounded-[20px] border border-border bg-card p-6 text-foreground shadow-none ring-0', className)} {...props}>{children}</Card>;
 }
 
-export function PersonAvatar({ initials, name, tone = '', small = false, large = false }) {
+export function PersonAvatar({ initials, name, tone = '', small = false, large = false, src = null }) {
   const colors = { green: 'bg-soft-green text-forest', pink: 'bg-accent text-accent-foreground' };
-  return <Avatar className={cn('flex shrink-0 items-center justify-center rounded-full border-0 after:hidden', small ? 'size-8' : large ? 'size-[53px]' : 'size-10', colors[tone] ?? 'bg-muted text-forest')} aria-label={name}>
-    <AvatarFallback className="size-full bg-transparent text-xs font-extrabold text-inherit">{initials}</AvatarFallback>
+  return <Avatar className={cn('flex shrink-0 items-center justify-center overflow-hidden rounded-full border-0 after:hidden', small ? 'size-8' : large ? 'size-[53px]' : 'size-10', colors[tone] ?? 'bg-muted text-forest')} aria-label={name}>
+    {src ? <Image src={src} alt={name ? `${name}'s profile photo` : 'Profile photo'} fill sizes={large ? '53px' : small ? '32px' : '40px'} className="object-cover" /> : <AvatarFallback className="size-full bg-transparent text-xs font-extrabold text-inherit">{initials}</AvatarFallback>}
   </Avatar>;
 }
 
