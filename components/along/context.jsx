@@ -104,7 +104,15 @@ export function AlongProvider({ children, clerkIdentity = null }) {
 
   function navigate(next) { setScreen(next); setChatViewOpen(false); window.scrollTo({ top: 0, behavior: 'instant' }); }
   function openPlan(id) { setSelectedPlanId(id); navigate('detail'); }
-  function openChat(id) { setChatId(id); navigate('chat'); setChatViewOpen(true); }
+  function openChat(id) {
+    setChatId(id); navigate('chat'); setChatViewOpen(true);
+    if (!viewer?.id) return;
+    const unread = notifications.filter((item) => item.plan_id === id && item.kind === 'message' && !item.read_at);
+    if (!unread.length) return;
+    setNotifications((current) => current.map((item) => unread.some((notice) => notice.id === item.id) ? { ...item, read_at: new Date().toISOString() } : item));
+    Promise.all(unread.map((item) => markNotificationRead(viewer.id, item.id)))
+      .catch(() => refreshNotifications(viewer.id));
+  }
   async function openNotification(notification) {
     if (!viewer) return;
     if (!notification.read_at) {
