@@ -121,7 +121,7 @@ export async function POST(request) {
         .single();
       if (created.error) return failure('Could not create your profile. Please try again.', 500);
       profile = created.data;
-      try { await dispatchEmails({ recipientId: profile.id, limit: 1 }); } catch { /* Cron will retry. */ }
+      try { await dispatchEmails({ recipientId: profile.id }); } catch { /* Cron will retry. */ }
     }
   }
 

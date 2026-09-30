@@ -12,7 +12,7 @@ export async function POST(request) {
     const db = emailDatabase();
     const profile = await db.from('profiles').select('id').eq('clerk_user_id', userId).maybeSingle();
     if (profile.error || !profile.data) return Response.json({ error: 'Profile not found.' }, { status: 403 });
-    const result = await dispatchEmails({ actorId: profile.data.id, limit: 10 });
+    const result = await dispatchEmails({ actorId: profile.data.id });
     return Response.json(result, { headers: { 'Cache-Control': 'no-store' } });
   } catch {
     return Response.json({ error: 'Email delivery will be retried.' }, { status: 503 });

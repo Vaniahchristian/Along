@@ -122,7 +122,7 @@ export async function POST(request) {
   if (audit.error)
     return fail('Action saved, but its history could not be recorded. Contact support.', 500);
   if (action === 'cancel_plan') {
-    try { await dispatchEmails({ actorId: before.data.host_id, limit: 50 }); }
+    try { await dispatchEmails({ actorId: before.data.host_id }); }
     catch { /* Scheduled delivery will retry the queued cancellation. */ }
   }
   return Response.json({ id }, { headers: { 'Cache-Control': 'no-store' } });

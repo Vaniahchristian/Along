@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { emailContent } from '../lib/email/dispatch.js';
+import { emailContent } from '../supabase/functions/tagwimi-email-worker/content.js';
 
 const planId = '11111111-1111-4111-8111-111111111111';
 
