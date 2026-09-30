@@ -34,7 +34,7 @@ Deno.serve(async (request) => {
     const claimed = await db.rpc('claim_tagwimi_emails', {
       target_actor: fromCron ? null : actorId,
       target_recipient: fromCron ? null : recipientId,
-      max_rows: fromCron ? 40 : 10
+      max_rows: 40
     });
     if (claimed.error) throw claimed.error;
     let sent = 0;
