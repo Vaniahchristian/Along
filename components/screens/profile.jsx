@@ -68,6 +68,7 @@ export function ProfileScreen() {
   const clerk = useClerk();
   const [editing, setEditing] = useState(false);
   const [preview, setPreview] = useState(false);
+  const [logoutConfirm, setLogoutConfirm] = useState(false);
   const [showInterests, setShowInterests] = useState(false);
   const [name, setName] = useState(viewer.name);
   const [city, setCity] = useState(viewer.city || '');
@@ -308,7 +309,7 @@ export function ProfileScreen() {
               tone='secondary'
               className='mt-2 w-full text-[#aa244c]'
               disabled={busy}
-              onClick={signOut}
+              onClick={() => setLogoutConfirm(true)}
             >
               Sign out
             </ActionButton>
@@ -536,6 +537,58 @@ export function ProfileScreen() {
             </p>
             <Interests items={viewer.interests || []} />
             <p className='mt-5 text-xs text-muted-foreground'>{hosted.length} plans hosted</p>
+          </section>
+        </div>
+      )}
+      {logoutConfirm && (
+        <div
+          className='fixed inset-0 z-50 grid place-items-center bg-forest/65 p-4'
+          role='presentation'
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setLogoutConfirm(false);
+          }}
+        >
+          <section
+            role='dialog'
+            aria-modal='true'
+            aria-labelledby='profile-logout-confirm-title'
+            className='w-full max-w-sm rounded-[22px] bg-card p-5 shadow-2xl'
+          >
+            <div className='flex items-start justify-between gap-4'>
+              <h2 id='profile-logout-confirm-title' className='font-heading text-xl font-extrabold'>
+                Log out?
+              </h2>
+              <button
+                type='button'
+                aria-label='Close'
+                onClick={() => setLogoutConfirm(false)}
+                className='grid size-10 place-items-center rounded-full hover:bg-secondary'
+              >
+                <X className='size-5' />
+              </button>
+            </div>
+            <p className='mt-3 text-sm text-muted-foreground'>
+              You’ll need to sign in again to open your plans and messages.
+            </p>
+            <div className='mt-5 flex justify-end gap-2'>
+              <button
+                type='button'
+                onClick={() => setLogoutConfirm(false)}
+                className='min-h-11 rounded-xl px-4 text-sm font-bold'
+              >
+                Cancel
+              </button>
+              <button
+                type='button'
+                onClick={() => {
+                  setLogoutConfirm(false);
+                  signOut();
+                }}
+                className='min-h-11 rounded-xl bg-[#9f2849] px-4 text-sm font-bold text-white'
+              >
+                Log out
+              </button>
+            </div>
           </section>
         </div>
       )}

@@ -11,7 +11,8 @@ import {
   MessageCircle,
   Plus,
   ShieldCheck,
-  UserRound
+  UserRound,
+  X
 } from 'lucide-react';
 import { Toaster } from '@/components/ui/sonner';
 import { useAlongSession } from '@/components/providers/along';
@@ -52,6 +53,7 @@ export function AppShell({ children }) {
   const router = useRouter();
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [logoutConfirm, setLogoutConfirm] = useState(false);
   const unread = notifications.filter((item) => !item.read_at).length;
   const screen = activeNavId(pathname);
   const inMobileChat = pathname.startsWith('/app/chat/');
@@ -139,7 +141,7 @@ export function AppShell({ children }) {
                 <strong className='block truncate'>{viewer.name}</strong>
                 <button
                   type='button'
-                  onClick={() => signOut()}
+                  onClick={() => setLogoutConfirm(true)}
                   className='mt-0.5 text-xs font-bold text-[#9f2849] hover:underline'
                 >
                   Log out
@@ -302,7 +304,7 @@ export function AppShell({ children }) {
             type='button'
             onClick={() => {
               setDrawerOpen(false);
-              signOut();
+              setLogoutConfirm(true);
             }}
             className='mt-2 flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-bold text-[#9f2849] hover:bg-[#fff0f4]'
           >
@@ -310,6 +312,58 @@ export function AppShell({ children }) {
           </button>
         </div>
       </MobileDrawer>
+      {logoutConfirm && (
+        <div
+          className='fixed inset-0 z-50 grid place-items-center bg-forest/65 p-4'
+          role='presentation'
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setLogoutConfirm(false);
+          }}
+        >
+          <section
+            role='dialog'
+            aria-modal='true'
+            aria-labelledby='logout-confirm-title'
+            className='w-full max-w-sm rounded-[22px] bg-card p-5 shadow-2xl'
+          >
+            <div className='flex items-start justify-between gap-4'>
+              <h2 id='logout-confirm-title' className='font-heading text-xl font-extrabold'>
+                Log out?
+              </h2>
+              <button
+                type='button'
+                aria-label='Close'
+                onClick={() => setLogoutConfirm(false)}
+                className='grid size-10 place-items-center rounded-full hover:bg-secondary'
+              >
+                <X className='size-5' />
+              </button>
+            </div>
+            <p className='mt-3 text-sm text-muted-foreground'>
+              You’ll need to sign in again to open your plans and messages.
+            </p>
+            <div className='mt-5 flex justify-end gap-2'>
+              <button
+                type='button'
+                onClick={() => setLogoutConfirm(false)}
+                className='min-h-11 rounded-xl px-4 text-sm font-bold'
+              >
+                Cancel
+              </button>
+              <button
+                type='button'
+                onClick={() => {
+                  setLogoutConfirm(false);
+                  signOut();
+                }}
+                className='min-h-11 rounded-xl bg-[#9f2849] px-4 text-sm font-bold text-white'
+              >
+                Log out
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
       <Toaster position='bottom-right' />
     </div>
   );
