@@ -73,6 +73,17 @@ export function AlongSessionProvider({ children }) {
     [refresh, setViewer, viewer?.id, withBusy]
   );
 
+  const saveEmailPreferences = useCallback(async (preferences) => {
+    const response = await fetch('/api/email/preferences', {
+      method: 'PATCH', credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(preferences)
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.error || 'Could not save email preferences.');
+    setViewer((current) => current ? { ...current, ...result } : current);
+    return result;
+  }, [setViewer]);
+
   const navigate = useCallback(
     (next) => {
       const href = ROUTES[next] || `/app/${next}`;
@@ -201,6 +212,7 @@ export function AlongSessionProvider({ children }) {
       clerkSignedIn,
       signOut,
       saveProfile,
+      saveEmailPreferences,
       navigate,
       openPlan,
       openChat,
@@ -231,6 +243,7 @@ export function AlongSessionProvider({ children }) {
       refresh,
       refreshNotifications,
       saveProfile,
+      saveEmailPreferences,
       signOut,
       viewer
     ]

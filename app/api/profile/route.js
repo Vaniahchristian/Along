@@ -1,6 +1,7 @@
 import { auth, currentUser } from '@clerk/nextjs/server';
 import { createClient } from '@supabase/supabase-js';
 import sharp from 'sharp';
+import { dispatchEmails } from '@/lib/email/dispatch';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,13 +20,15 @@ function profileResponse(profile, db) {
     interests: profile.interests || [],
     bio: profile.bio || '',
     city: profile.city || '',
+    emailReminders: profile.email_reminders !== false,
+    emailChatSummaries: profile.email_chat_summaries === true,
     avatarUrl: profile.avatar_path
       ? db.storage.from('profile-photos').getPublicUrl(profile.avatar_path).data.publicUrl
       : null
   };
 }
 
-const profileColumns = 'id,display_name,email,interests,bio,city,avatar_path,suspended_at';
+const profileColumns = 'id,display_name,email,interests,bio,city,avatar_path,suspended_at,email_reminders,email_chat_summaries';
 
 export async function POST(request) {
   if (request.headers.get('origin') !== new URL(request.url).origin)
@@ -118,6 +121,7 @@ export async function POST(request) {
         .single();
       if (created.error) return failure('Could not create your profile. Please try again.', 500);
       profile = created.data;
+      try { await dispatchEmails({ recipientId: profile.id, limit: 1 }); } catch { /* Cron will retry. */ }
     }
   }
 

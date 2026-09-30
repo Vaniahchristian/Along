@@ -15,12 +15,17 @@ import { useAlongCore } from '@/components/providers/along-core';
 
 const AlongPlansContext = createContext(null);
 
+async function flushPlanEmails() {
+  try { await fetch('/api/email/dispatch', { method: 'POST', credentials: 'same-origin' }); }
+  catch { /* Queued messages are retried by the scheduled worker. */ }
+}
+
 export function AlongPlansProvider({ children }) {
   const router = useRouter();
   const { data, viewer, busy, refresh, withBusy, runAction } = useAlongCore();
 
   const requestJoin = useCallback(
-    (id, intro = '') => runAction(() => requestJoinPlan(viewer.id, id, intro), 'Request sent.'),
+    (id, intro = '') => runAction(async () => { await requestJoinPlan(viewer.id, id, intro); await flushPlanEmails(); }, 'Request sent.'),
     [runAction, viewer?.id]
   );
 
@@ -35,7 +40,7 @@ export function AlongPlansProvider({ children }) {
   );
 
   const approveRequest = useCallback(
-    (planId, requestId) => runAction(() => dbAcceptHostRequest(planId, requestId), 'Request accepted.'),
+    (planId, requestId) => runAction(async () => { await dbAcceptHostRequest(planId, requestId); await flushPlanEmails(); }, 'Request accepted.'),
     [runAction]
   );
 

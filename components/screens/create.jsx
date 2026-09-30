@@ -70,7 +70,7 @@ export function CreateScreen() {
   function submit(event) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    const date = new Date(`${form.get('date')}T${form.get('time')}`);
+    const date = new Date(`${form.get('date')}T${form.get('time')}:00+03:00`);
     if (Number.isNaN(date.getTime())) return toast.error('Choose a valid date and time.');
     if (date <= new Date()) return toast.error('Choose a future date for your plan.');
     const groupSize = Number(size);
@@ -86,11 +86,13 @@ export function CreateScreen() {
         venue: String(form.get('venue')).trim(),
         intro: String(form.get('intro')).trim(),
         date: date.toLocaleDateString('en-UG', {
+          timeZone: 'Africa/Kampala',
           weekday: 'short',
           day: 'numeric',
           month: 'short'
         }),
-        time: date.toLocaleTimeString('en-UG', { hour: 'numeric', minute: '2-digit' }),
+        time: date.toLocaleTimeString('en-UG', { timeZone: 'Africa/Kampala', hour: 'numeric', minute: '2-digit' }),
+        startsAt: date.toISOString(),
         meet: String(form.get('meet')).trim(),
         bring: String(form.get('bring')).trim() || 'Whatever you need for the activity'
       },

@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { CalendarDays, Camera, Eye, MapPin, Pencil, Plus, ShieldCheck, X } from 'lucide-react';
 import { useClerk } from '@clerk/nextjs';
+import { toast } from 'sonner';
 import { useAlongSession, useAlongPlans } from '@/components/providers/along';
 import { ActionButton, Panel } from '@/components/layout/shared';
 
@@ -62,7 +63,7 @@ function Interests({ items }) {
 }
 
 export function ProfileScreen() {
-  const { viewer, isAdmin, navigate, signOut, busy, saveProfile } = useAlongSession();
+  const { viewer, isAdmin, navigate, signOut, busy, saveProfile, saveEmailPreferences } = useAlongSession();
   const { data } = useAlongPlans();
   const clerk = useClerk();
   const [editing, setEditing] = useState(false);
@@ -75,6 +76,21 @@ export function ProfileScreen() {
   const [photo, setPhoto] = useState(null);
   const [photoPreview, setPhotoPreview] = useState('');
   const [removePhoto, setRemovePhoto] = useState(false);
+  const [emailReminders, setEmailReminders] = useState(viewer.emailReminders !== false);
+  const [emailChatSummaries, setEmailChatSummaries] = useState(viewer.emailChatSummaries === true);
+  const [savingEmails, setSavingEmails] = useState(false);
+
+  async function saveEmailSetting(key, checked) {
+    const next = { emailReminders, emailChatSummaries, [key]: checked };
+    setSavingEmails(true);
+    try {
+      const result = await saveEmailPreferences(next);
+      setEmailReminders(result.emailReminders);
+      setEmailChatSummaries(result.emailChatSummaries);
+      toast.success('Email preferences saved.');
+    } catch (error) { toast.error(error.message); }
+    finally { setSavingEmails(false); }
+  }
   const completed = data.plans.filter(
     (plan) =>
       data.completed.includes(plan.id) &&
@@ -266,6 +282,19 @@ export function ProfileScreen() {
             <p className='mt-2 text-xs text-muted-foreground'>
               Your email is not shown to other members.
             </p>
+            <div className='mt-4 border-t border-border pt-4'>
+              <p className='text-sm font-bold text-forest'>Email notifications</p>
+              <label className='mt-3 flex cursor-pointer items-start gap-3 text-sm'>
+                <input type='checkbox' className='mt-1 accent-green-700' checked={emailReminders}
+                  disabled={savingEmails} onChange={(event) => saveEmailSetting('emailReminders', event.target.checked)} />
+                <span><strong>Plan reminders</strong><span className='block text-xs text-muted-foreground'>About a day before your confirmed plans.</span></span>
+              </label>
+              <label className='mt-3 flex cursor-pointer items-start gap-3 text-sm'>
+                <input type='checkbox' className='mt-1 accent-green-700' checked={emailChatSummaries}
+                  disabled={savingEmails} onChange={(event) => saveEmailSetting('emailChatSummaries', event.target.checked)} />
+                <span><strong>Chat summaries</strong><span className='block text-xs text-muted-foreground'>Saved for a future update. We do not email individual messages.</span></span>
+              </label>
+            </div>
             <ActionButton
               type='button'
               tone='secondary'
