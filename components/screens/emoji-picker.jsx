@@ -35,7 +35,7 @@ export function EmojiPicker({ onSelect, onClose }) {
     return () => { active = false; picker?.remove(); };
   }, [onSelect]);
 
-  return <section aria-label='Emoji picker' className='mb-2 overflow-hidden rounded-xl border border-border bg-white shadow-[0_8px_24px_rgba(15,34,24,.12)]'>
+  return <section aria-label='Emoji picker' className='mt-2 overflow-hidden rounded-xl border border-border bg-white shadow-[0_8px_24px_rgba(15,34,24,.12)]'>
     <div className='flex items-center justify-between px-3 py-1.5 text-xs font-bold text-forest'><span>Choose an emoji</span><button type='button' onClick={onClose} aria-label='Close emoji picker' className='grid size-8 place-items-center rounded-lg hover:bg-soft-green'><X className='size-4' /></button></div>
     <div className='relative h-[min(330px,42dvh)] w-full border-t border-border'><div ref={container} className='h-full w-full' />{!loaded && <p className='absolute inset-0 p-4 text-sm text-muted-foreground'>{error ? 'Emoji picker could not load. You can still use your keyboard’s emojis.' : 'Loading emojis…'}</p>}</div>
   </section>;

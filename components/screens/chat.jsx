@@ -396,7 +396,6 @@ export function ChatScreen() {
           >
             {attachment && <div className='mb-2 flex items-center gap-3 rounded-xl bg-soft-green p-2 text-sm'><span className='min-w-0 flex-1 truncate'>{attachment.type.startsWith('image/') ? 'Photo' : 'Voice note'} · {attachment.name}</span>{attachment.type.startsWith('image/') && previewUrl && <img src={previewUrl} alt='Selected photo preview' className='size-11 rounded-lg object-cover' />}{attachment.type.startsWith('audio/') && previewUrl && <audio controls src={previewUrl} className='max-w-40' aria-label='Preview voice note' />}<button type='button' onClick={() => setAttachment(null)} aria-label='Remove attachment' className='grid size-9 shrink-0 place-items-center rounded-full hover:bg-white'><X className='size-4' /></button></div>}
             {recording && <p role='status' className='mb-2 text-sm font-bold text-[#b51b63]'>Recording voice note… tap stop when finished.</p>}
-            {emojiOpen && <EmojiPicker onSelect={addEmoji.current} onClose={() => setEmojiOpen(false)} />}
             <div className='flex items-end gap-1.5'>
             <input ref={fileRef} type='file' accept='image/jpeg,image/png,image/webp,audio/webm,audio/mp4,audio/ogg,audio/mpeg' onChange={chooseFile} className='sr-only' aria-label='Choose a photo or audio file' />
             <button type='button' onClick={() => fileRef.current?.click()} aria-label='Attach photo or audio' className='grid size-10 shrink-0 place-items-center rounded-full text-primary hover:bg-soft-green'><Paperclip className='size-5' /></button>
@@ -404,7 +403,7 @@ export function ChatScreen() {
             <textarea
               ref={composerRef}
               rows={1}
-              className='min-h-11 max-h-32 min-w-0 flex-1 resize-none overflow-y-auto rounded-[22px] border border-border bg-[#f8faf7] px-4 py-2.5 leading-6 text-foreground outline-none [overflow-wrap:anywhere] placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20'
+              className='min-h-11 max-h-32 min-w-0 flex-1 resize-none overflow-y-auto rounded-[22px] border border-border bg-[#f8faf7] px-4 py-2.5 leading-6 text-foreground outline-none [overflow-wrap:anywhere] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20'
               aria-label='Message the group'
               maxLength={500}
               placeholder='Message the group…'
@@ -427,6 +426,7 @@ export function ChatScreen() {
               <span className='sr-only'>Send message</span>
             </ActionButton>
             </div>
+            {emojiOpen && <EmojiPicker onSelect={addEmoji.current} onClose={() => setEmojiOpen(false)} />}
           </form>
         </section>
       ) : (
