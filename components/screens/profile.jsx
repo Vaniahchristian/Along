@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { CalendarDays, Camera, Eye, MapPin, Pencil, Plus, ShieldCheck, X } from 'lucide-react';
 import { useClerk } from '@clerk/nextjs';
-import { useAlong } from '@/components/providers/along';
+import { useAlongSession, useAlongPlans } from '@/components/providers/along';
 import { ActionButton, Panel } from '@/components/layout/shared';
 
 const choices = [
@@ -62,7 +62,8 @@ function Interests({ items }) {
 }
 
 export function ProfileScreen() {
-  const { viewer, data, isAdmin, navigate, signOut, busy, saveProfile } = useAlong();
+  const { viewer, isAdmin, navigate, signOut, busy, saveProfile } = useAlongSession();
+  const { data } = useAlongPlans();
   const clerk = useClerk();
   const [editing, setEditing] = useState(false);
   const [preview, setPreview] = useState(false);

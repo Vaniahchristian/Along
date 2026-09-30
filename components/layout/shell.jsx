@@ -14,7 +14,7 @@ import {
   UserRound
 } from 'lucide-react';
 import { Toaster } from '@/components/ui/sonner';
-import { useAlong } from '@/components/providers/along';
+import { useAlongSession } from '@/components/providers/along';
 import { PersonAvatar } from '@/components/layout/shared';
 import { TagwimiLogo, TagwimiSplash } from '@/components/layout/logo';
 import { MobileDrawer } from '@/components/layout/mobile-drawer';
@@ -48,7 +48,7 @@ export function AppShell({ children }) {
     loadError,
     refresh,
     notifications
-  } = useAlong();
+  } = useAlongSession();
   const router = useRouter();
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);

@@ -16,7 +16,7 @@ import {
 import { toast } from 'sonner';
 import { planImage } from '@/lib/media/activity-image';
 import { preparePlanImage } from '@/lib/media/prepare-plan-image';
-import { useAlong } from '@/components/providers/along';
+import { useAlongSession, useAlongPlans } from '@/components/providers/along';
 import {
   ActionButton,
   BackButton,
@@ -146,15 +146,14 @@ export function DetailScreen() {
   const planId = params?.id;
   const {
     data,
-    viewer,
-    openChat,
     requestJoin,
     cancelRequest,
     approveRequest,
     replacePlanImage,
     removePlanImage,
     busy
-  } = useAlong();
+  } = useAlongPlans();
+  const { viewer, openChat } = useAlongSession();
   const plan = data.plans.find((item) => item.id === planId);
   if (!plan)
     return (

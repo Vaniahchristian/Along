@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { planImage } from '@/lib/media/activity-image';
-import { useAlong } from '@/components/providers/along';
+import { useAlongSession, useAlongChat } from '@/components/providers/along';
 import { ActionButton, EmptyState, PersonAvatar, ReportForm } from '@/components/layout/shared';
 import { EmojiPicker } from './emoji-picker';
 
@@ -49,8 +49,8 @@ export function ChatScreen() {
   const router = useRouter();
   const chatId = params?.id || null;
   const chatViewOpen = Boolean(chatId);
-  const { data, notifications, viewer, openChat, openPlan, navigate, sendMessage, sendMedia, refreshPlanMessages, checkIn, complete } =
-    useAlong();
+  const { notifications, viewer, openChat, openPlan, navigate } = useAlongSession();
+  const { data, sendMessage, sendMedia, refreshPlanMessages, checkIn, complete } = useAlongChat();
   const [draft, setDraft] = useState('');
   const [query, setQuery] = useState('');
   const [sending, setSending] = useState(false);

@@ -11,7 +11,7 @@ import {
   Flag,
   Trash2
 } from 'lucide-react';
-import { useAlong } from '@/components/providers/along';
+import { useAlongSession } from '@/components/providers/along';
 
 const icons = {
   join_request: UserRoundPlus,
@@ -55,7 +55,7 @@ export function NotificationsScreen() {
     readAllNotifications,
     deleteNotification,
     clearNotifications
-  } = useAlong();
+  } = useAlongSession();
   const unread = notifications.filter((item) => !item.read_at).length;
 
   return (

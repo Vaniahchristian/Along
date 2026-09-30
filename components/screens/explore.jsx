@@ -6,14 +6,14 @@ import { ArrowUpRight, CalendarDays, MapPin, Plus, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { ListPagination } from '@/components/ui/list-pagination';
 import { planImage } from '@/lib/media/activity-image';
-import { useAlong } from '@/components/providers/along';
+import { useAlongSession, useAlongPlans } from '@/components/providers/along';
 import { BeginnerBadge, CategoryBadge, EmptyState, PersonAvatar } from '@/components/layout/shared';
 
 const categories = ['All', 'Fitness', 'Outings', 'Learning'];
 const PAGE_SIZE = 6;
 
 function PlanCard({ plan }) {
-  const { openPlan } = useAlong();
+  const { openPlan } = useAlongSession();
   return (
     <article className='group grid min-w-0 grid-cols-[minmax(145px,42%)_minmax(0,1fr)] overflow-hidden rounded-[22px] border border-border bg-card shadow-[0_8px_28px_rgba(15,34,24,.055)] transition-[box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_36px_rgba(15,34,24,.1)] max-[600px]:grid-cols-1'>
       <div className='relative min-h-[265px] overflow-hidden bg-soft-green max-[600px]:min-h-0 max-[600px]:aspect-[1.7]'>
@@ -83,7 +83,8 @@ function PlanCard({ plan }) {
 }
 
 export function ExploreScreen() {
-  const { data, navigate } = useAlong();
+  const { navigate } = useAlongSession();
+  const { data } = useAlongPlans();
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('All');
   const [page, setPage] = useState(1);

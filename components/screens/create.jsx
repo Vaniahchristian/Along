@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select';
-import { useAlong } from '@/components/providers/along';
+import { useAlongPlans } from '@/components/providers/along';
 import { preparePlanImage } from '@/lib/media/prepare-plan-image';
 import { ActionButton, BackButton, PageHeading, Panel } from '@/components/layout/shared';
 
@@ -40,7 +40,7 @@ function SelectField({ id, label, value, onChange, options }) {
 }
 
 export function CreateScreen() {
-  const { publishPlan, busy } = useAlong();
+  const { publishPlan, busy } = useAlongPlans();
   const [category, setCategory] = useState('Fitness');
   const [size, setSize] = useState('2');
   const [photoFile, setPhotoFile] = useState(null);

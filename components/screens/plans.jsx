@@ -14,7 +14,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ListPagination } from '@/components/ui/list-pagination';
 import { planImage } from '@/lib/media/activity-image';
-import { useAlong } from '@/components/providers/along';
+import { useAlongSession, useAlongPlans } from '@/components/providers/along';
 import { ActionButton, EmptyState } from '@/components/layout/shared';
 
 const PAGE_SIZE = 8;
@@ -192,7 +192,8 @@ function PlanItem({ plan, featured, data, busy, openPlan, openChat, cancelReques
 }
 
 export function PlansScreen() {
-  const { data, navigate, openPlan, openChat, cancelRequest, busy } = useAlong();
+  const { data, cancelRequest, busy } = useAlongPlans();
+  const { navigate, openPlan, openChat } = useAlongSession();
   const [tab, setTab] = useState('upcoming');
   const [page, setPage] = useState(1);
   const listTop = useRef(null);

@@ -2,12 +2,12 @@
 
 import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { ClerkAlongProvider, useAlong } from '@/components/providers/along';
+import { ClerkAlongProvider, useAlongSession } from '@/components/providers/along';
 import { ClerkAuthScreen } from '@/components/auth/clerk-auth-screen';
 
 function DialogContent({ onClose }) {
   const router = useRouter();
-  const { viewer } = useAlong();
+  const { viewer } = useAlongSession();
   const panelRef = useRef(null);
 
   useEffect(() => {

@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import { useAlong } from '@/components/providers/along';
+import { useAlongSession, useAlongPlans } from '@/components/providers/along';
 
 export function ActionButton({ tone = 'primary', className, children, ...props }) {
   const tones = {
@@ -131,7 +131,7 @@ export function EmptyState({ title, description, action, onAction }) {
 }
 
 export function BackButton() {
-  const { navigate } = useAlong();
+  const { navigate } = useAlongSession();
   return (
     <button
       type='button'
@@ -144,7 +144,7 @@ export function BackButton() {
 }
 
 export function ReportForm({ planId, hasPhoto = false, messages = [] }) {
-  const { reportPlan, busy } = useAlong();
+  const { reportPlan, busy } = useAlongPlans();
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState('');
   const [targetType, setTargetType] = useState('plan');
