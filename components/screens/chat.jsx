@@ -15,6 +15,7 @@ import {
   SendHorizontal,
   Smile,
   Square,
+  Trash2,
   X,
   UsersRound
 } from 'lucide-react';
@@ -50,7 +51,7 @@ export function ChatScreen() {
   const chatId = params?.id || null;
   const chatViewOpen = Boolean(chatId);
   const { notifications, viewer, openChat, openPlan, navigate } = useAlongSession();
-  const { data, sendMessage, sendMedia, refreshPlanMessages, subscribePlanMessages, dismissFailedMessage, checkIn, complete } = useAlongChat();
+  const { data, sendMessage, sendMedia, refreshPlanMessages, subscribePlanMessages, dismissFailedMessage, checkIn, complete, deleteConversation } = useAlongChat();
   const [draft, setDraft] = useState('');
   const [query, setQuery] = useState('');
   const [sending, setSending] = useState(false);
@@ -58,6 +59,7 @@ export function ChatScreen() {
   const [attachment, setAttachment] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
   const [emojiOpen, setEmojiOpen] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
   const addEmoji = useRef((emoji) => setDraft((value) => value.length + emoji.length <= 500 ? value + emoji : value));
   const [recording, setRecording] = useState(false);
   const recorderRef = useRef(null);
@@ -65,13 +67,16 @@ export function ChatScreen() {
   const fileRef = useRef(null);
   const composerRef = useRef(null);
   const scrollRef = useRef(null);
-  const available = data.plans.filter(
+  const memberships = data.plans.filter(
     (item) => data.joined.includes(item.id) || item.host === 'You'
   );
+  const available = memberships.filter((item) => !(data.hiddenChats || []).includes(item.id));
   const filtered = available.filter((item) =>
     `${item.title} ${item.venue}`.toLowerCase().includes(query.trim().toLowerCase())
   );
-  const plan = chatId ? available.find((item) => item.id === chatId) : available[0] || null;
+  const plan = chatId
+    ? memberships.find((item) => item.id === chatId) || null
+    : available[0] || null;
   const messages = plan ? (data.messages[plan.id] ?? []) : [];
   const checked = plan && data.checkins.includes(plan.id);
   const done = plan && data.completed.includes(plan.id);
@@ -301,6 +306,13 @@ export function ChatScreen() {
                   {done ? 'Plan completed' : 'Mark completed'}
                 </button>
                 <ReportForm planId={plan.id} hasPhoto={Boolean(plan.imageUrl)} messages={messages} />
+                <button
+                  type='button'
+                  onClick={() => setDeleteConfirm(true)}
+                  className='mt-1 flex items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-bold text-[#9f2849] hover:bg-[#fff0f4]'
+                >
+                  <Trash2 className='size-4' /> Delete conversation
+                </button>
               </div>
             </details>
           </header>
@@ -468,6 +480,61 @@ export function ChatScreen() {
         <section className='hidden place-items-center p-8 text-sm text-muted-foreground max-[760px]:hidden min-[761px]:grid'>
           {chatId ? 'This conversation is unavailable.' : 'Select a conversation'}
         </section>
+      )}
+      {deleteConfirm && plan && (
+        <div
+          className='fixed inset-0 z-50 grid place-items-center bg-forest/65 p-4'
+          role='presentation'
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setDeleteConfirm(false);
+          }}
+        >
+          <section
+            role='dialog'
+            aria-modal='true'
+            aria-labelledby='delete-conversation-title'
+            className='w-full max-w-sm rounded-[22px] bg-card p-5 shadow-2xl'
+          >
+            <div className='flex items-start justify-between gap-4'>
+              <h2 id='delete-conversation-title' className='font-heading text-xl font-extrabold'>
+                Delete conversation?
+              </h2>
+              <button
+                type='button'
+                aria-label='Close'
+                onClick={() => setDeleteConfirm(false)}
+                className='grid size-10 place-items-center rounded-full hover:bg-secondary'
+              >
+                <X className='size-5' />
+              </button>
+            </div>
+            <p className='mt-3 text-sm text-muted-foreground'>
+              This removes the chat from your Messages list. You’re still on the plan, and it can
+              reappear if someone sends a new message.
+            </p>
+            <div className='mt-5 flex justify-end gap-2'>
+              <button
+                type='button'
+                onClick={() => setDeleteConfirm(false)}
+                className='min-h-11 rounded-xl px-4 text-sm font-bold'
+              >
+                Cancel
+              </button>
+              <button
+                type='button'
+                onClick={async () => {
+                  const id = plan.id;
+                  setDeleteConfirm(false);
+                  const result = await deleteConversation(id);
+                  if (result?.ok) router.push('/app/chat');
+                }}
+                className='min-h-11 rounded-xl bg-[#9f2849] px-4 text-sm font-bold text-white'
+              >
+                Delete
+              </button>
+            </div>
+          </section>
+        </div>
       )}
     </div>
   );

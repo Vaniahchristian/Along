@@ -7,7 +7,8 @@ import {
   loadPlanMessages,
   hydrateMessage,
   markCheckIn,
-  markComplete
+  markComplete,
+  hideConversation
 } from '@/lib/along';
 import { supabase } from '@/lib/supabase/client';
 import { useAlongCore } from '@/components/providers/along-core';
@@ -130,10 +131,15 @@ export function AlongChatProvider({ children }) {
             )
         );
         const nextMessages = [...withoutTemp, mapped];
+        const hiddenChats =
+          mapped.mine || !current.hiddenChats?.includes(planId)
+            ? current.hiddenChats
+            : current.hiddenChats.filter((id) => id !== planId);
         return {
           ...current,
           messages: { ...current.messages, [planId]: nextMessages },
-          messagePreviews: { ...current.messagePreviews, [planId]: previewFromMessage(mapped) }
+          messagePreviews: { ...current.messagePreviews, [planId]: previewFromMessage(mapped) },
+          hiddenChats
         };
       });
     },
@@ -261,6 +267,20 @@ export function AlongChatProvider({ children }) {
     [runAction, viewer?.id]
   );
 
+  const deleteConversation = useCallback(
+    (id) =>
+      runAction(async () => {
+        await hideConversation(viewer.id, id);
+        setData((current) => ({
+          ...current,
+          hiddenChats: current.hiddenChats?.includes(id)
+            ? current.hiddenChats
+            : [...(current.hiddenChats || []), id]
+        }));
+      }, 'Conversation deleted.'),
+    [runAction, setData, viewer?.id]
+  );
+
   const value = useMemo(
     () => ({
       data,
@@ -271,13 +291,15 @@ export function AlongChatProvider({ children }) {
       subscribePlanMessages,
       dismissFailedMessage,
       checkIn,
-      complete
+      complete,
+      deleteConversation
     }),
     [
       busy,
       checkIn,
       complete,
       data,
+      deleteConversation,
       dismissFailedMessage,
       refreshPlanMessages,
       sendMedia,
