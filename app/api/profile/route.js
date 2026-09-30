@@ -1,4 +1,4 @@
-import { auth, currentUser } from '@clerk/nextjs/server';
+import { auth, clerkClient, currentUser } from '@clerk/nextjs/server';
 import { createClient } from '@supabase/supabase-js';
 import sharp from 'sharp';
 import { dispatchEmails } from '@/lib/email/dispatch';
@@ -76,23 +76,36 @@ export async function POST(request) {
       .eq('email', email)
       .maybeSingle();
     if (byEmail.error) return failure('Could not find your existing profile.', 500);
-    if (byEmail.data?.clerk_user_id && byEmail.data.clerk_user_id !== userId)
-      return failure(
-        'This email is already linked to another account. Contact support@tagwimi.com.',
-        409
-      );
     if (byEmail.data?.suspended_at)
       return failure('This account is suspended. Contact support@tagwimi.com.', 403);
 
+    const previousClerkId = byEmail.data?.clerk_user_id;
+    if (previousClerkId && previousClerkId !== userId) {
+      try {
+        await (await clerkClient()).users.getUser(previousClerkId);
+        return failure(
+          'This email is already linked to another account. Contact support@tagwimi.com.',
+          409
+        );
+      } catch (error) {
+        if (error?.status !== 404 || !error?.errors?.some((item) => item.code === 'resource_not_found'))
+          return failure('Could not verify your previous account. Please try again shortly.', 503);
+      }
+    }
+
     if (byEmail.data) {
-      const linked = await db
+      let linkQuery = db
         .from('profiles')
         .update({ clerk_user_id: userId })
         .eq('id', byEmail.data.id)
-        .is('clerk_user_id', null)
+        .eq('email', email);
+      linkQuery = previousClerkId
+        ? linkQuery.eq('clerk_user_id', previousClerkId)
+        : linkQuery.is('clerk_user_id', null);
+      const linked = await linkQuery
         .select(profileColumns)
-        .single();
-      if (linked.error)
+        .maybeSingle();
+      if (linked.error || !linked.data)
         return failure('Could not link your existing profile. Please try again.', 500);
       profile = linked.data;
     } else {
