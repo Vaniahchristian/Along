@@ -7,6 +7,7 @@ import {
   Bell,
   CalendarDays,
   Compass,
+  LifeBuoy,
   LogOut,
   MessageCircle,
   Plus,
@@ -19,6 +20,7 @@ import { useAlongSession } from '@/components/providers/along';
 import { PersonAvatar } from '@/components/layout/shared';
 import { TagwimiLogo, TagwimiSplash } from '@/components/layout/logo';
 import { MobileDrawer } from '@/components/layout/mobile-drawer';
+import { SupportPanel } from '@/components/support/support-panel';
 
 const navigation = [
   { id: 'explore', href: '/app/explore', label: 'Explore', icon: Compass },
@@ -54,7 +56,11 @@ export function AppShell({ children }) {
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [logoutConfirm, setLogoutConfirm] = useState(false);
+  const [supportOpen, setSupportOpen] = useState(false);
   const unread = notifications.filter((item) => !item.read_at).length;
+  const supportUnread = notifications.filter(
+    (item) => item.kind === 'support' && !item.read_at
+  ).length;
   const screen = activeNavId(pathname);
   const inMobileChat = pathname.startsWith('/app/chat/');
   const inMobileDetail = pathname.startsWith('/app/plans/') && pathname !== '/app/plans';
@@ -66,6 +72,13 @@ export function AppShell({ children }) {
   useEffect(() => {
     if (hydrated && !viewer && !clerkSignedIn) router.replace('/?join=1');
   }, [clerkSignedIn, hydrated, router, viewer]);
+
+  useEffect(() => {
+    const open = () => setSupportOpen(true);
+    window.addEventListener('tagwimi:open-support', open);
+    if (new URLSearchParams(window.location.search).get('support') === '1') setSupportOpen(true);
+    return () => window.removeEventListener('tagwimi:open-support', open);
+  }, []);
 
   if (!hydrated) return <TagwimiSplash />;
   if (!viewer) {
@@ -130,8 +143,21 @@ export function AppShell({ children }) {
               )}
             </button>
           </nav>
-          <div className='mt-auto border-t border-border px-2.5 pt-5 pb-1'>
-            <div className='flex min-w-0 items-center gap-2.5'>
+          <div className='mt-auto border-t border-border px-1 pt-4 pb-1'>
+            <button
+              type='button'
+              onClick={() => setSupportOpen(true)}
+              className='mb-3 flex w-full min-w-0 items-center gap-3 rounded-xl px-3 py-3 text-left font-bold text-muted-foreground hover:bg-secondary/70 hover:text-foreground'
+            >
+              <LifeBuoy className='size-5 shrink-0 stroke-[1.8]' aria-hidden='true' />
+              <span className='truncate'>Support</span>
+              {supportUnread > 0 && (
+                <span className='ml-auto shrink-0 rounded-full bg-[#ec4899] px-2 py-0.5 text-[10px] text-white'>
+                  {supportUnread > 99 ? '99+' : supportUnread}
+                </span>
+              )}
+            </button>
+            <div className='flex min-w-0 items-center gap-2.5 px-1.5'>
               <PersonAvatar
                 initials={viewer.name.slice(0, 2).toUpperCase()}
                 name={viewer.name}
@@ -304,6 +330,21 @@ export function AppShell({ children }) {
             type='button'
             onClick={() => {
               setDrawerOpen(false);
+              setSupportOpen(true);
+            }}
+            className='mt-2 flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-bold text-[#334b38] hover:bg-[#edf4eb]'
+          >
+            <LifeBuoy className='size-5' /> Support
+            {supportUnread > 0 && (
+              <span className='ml-auto rounded-full bg-[#ec4899] px-2 py-0.5 text-[10px] text-white'>
+                {supportUnread > 99 ? '99+' : supportUnread}
+              </span>
+            )}
+          </button>
+          <button
+            type='button'
+            onClick={() => {
+              setDrawerOpen(false);
               setLogoutConfirm(true);
             }}
             className='mt-2 flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-bold text-[#9f2849] hover:bg-[#fff0f4]'
@@ -312,6 +353,7 @@ export function AppShell({ children }) {
           </button>
         </div>
       </MobileDrawer>
+      <SupportPanel open={supportOpen} onClose={() => setSupportOpen(false)} viewer={viewer} />
       {logoutConfirm && (
         <div
           className='fixed inset-0 z-50 grid place-items-center bg-forest/65 p-4'

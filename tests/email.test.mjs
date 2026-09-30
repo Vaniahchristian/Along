@@ -49,7 +49,8 @@ test('every active event type renders subject, text, and html', () => {
     ['plan_changed', { ...planPayload, changes: { date: ['Sat', 'Sun'] } }],
     ['plan_cancelled', { ...planPayload, reason: 'Rain' }],
     ['participant_left', { ...planPayload, participant: 'Chris' }],
-    ['admin_broadcast', { title: 'Update', body: 'Hello members' }]
+    ['admin_broadcast', { title: 'Update', body: 'Hello members' }],
+    ['support_response', { preview: 'We can help with that.' }]
   ];
   for (const [event_type, payload] of cases) {
     const message = emailContent({ event_type, plan_id: planId, payload });
@@ -61,6 +62,5 @@ test('every active event type renders subject, text, and html', () => {
 
 test('unimplemented event types return null', () => {
   assert.equal(emailContent({ event_type: 'attendance_followup', payload: {} }), null);
-  assert.equal(emailContent({ event_type: 'support_response', payload: {} }), null);
   assert.equal(emailContent({ event_type: 'nope', payload: {} }), null);
 });

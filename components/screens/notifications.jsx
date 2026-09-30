@@ -10,6 +10,7 @@ import {
   MapPinCheck,
   Flag,
   Megaphone,
+  LifeBuoy,
   Trash2
 } from 'lucide-react';
 import { useAlongSession } from '@/components/providers/along';
@@ -22,7 +23,8 @@ const icons = {
   check_in: MapPinCheck,
   plan_completed: CircleCheck,
   report: Flag,
-  broadcast: Megaphone
+  broadcast: Megaphone,
+  support: LifeBuoy
 };
 const tones = {
   join_request: 'bg-[#fff2df] text-[#9b6415]',
@@ -32,7 +34,8 @@ const tones = {
   check_in: 'bg-[#e7f5e9] text-[#3b793f]',
   plan_completed: 'bg-[#e9f1e8] text-[#2f5d34]',
   report: 'bg-[#fff2f7] text-[#9f2849]',
-  broadcast: 'bg-[#e7f5e9] text-[#246b43]'
+  broadcast: 'bg-[#e7f5e9] text-[#246b43]',
+  support: 'bg-[#e8f1ff] text-[#1d4f91]'
 };
 
 function dateLabel(value) {

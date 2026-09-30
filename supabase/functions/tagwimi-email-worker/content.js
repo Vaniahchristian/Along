@@ -50,10 +50,15 @@ export function emailContent(item) {
       subject = String(p.title || 'Update from Tagwimi'); heading = subject;
       copy = String(p.body || '');
       action = 'Open Tagwimi'; href = `${origin}/app/notifications`; break;
+    case 'support_response':
+      subject = 'Reply from Tagwimi support';
+      heading = 'Tagwimi support replied';
+      copy = String(p.preview || 'Open the app to read the full reply.');
+      action = 'Open Support'; href = `${origin}/app/explore?support=1`; break;
     default: return null;
   }
-  if (p.cost && !['welcome', 'request_declined', 'plan_cancelled', 'admin_broadcast'].includes(item.event_type)) details.push(`Cost: ${p.cost}`);
-  const showDetails = !['welcome', 'admin_broadcast'].includes(item.event_type);
+  if (p.cost && !['welcome', 'request_declined', 'plan_cancelled', 'admin_broadcast', 'support_response'].includes(item.event_type)) details.push(`Cost: ${p.cost}`);
+  const showDetails = !['welcome', 'admin_broadcast', 'support_response'].includes(item.event_type);
   const plain = `${heading}\n\n${copy}\n\n${showDetails ? details.join('\n') + '\n\n' : ''}${action}: ${href}\n\nTagwimi`;
   const html = `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#10291d"><p style="color:#17763a;font-weight:800">Tagwimi</p><h1 style="font-size:26px">${escapeHtml(heading)}</h1><p style="white-space:pre-line;line-height:1.6">${escapeHtml(copy)}</p>${showDetails ? `<div style="background:#eef5ed;border-radius:12px;padding:16px;line-height:1.7">${details.map(escapeHtml).join('<br>')}</div>` : ''}<p style="margin:28px 0"><a href="${href}" style="background:#176c36;color:white;text-decoration:none;padding:12px 20px;border-radius:8px;font-weight:bold">${escapeHtml(action)}</a></p><p style="font-size:12px;color:#637569">You received this because of your Tagwimi account or plan.</p></div>`;
   return { subject, text: plain, html };

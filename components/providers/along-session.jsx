@@ -140,6 +140,12 @@ export function AlongSessionProvider({ children }) {
           await refreshNotifications(viewer.id);
         }
       }
+      if (notification.kind === 'support') {
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('tagwimi:open-support'));
+        }
+        return;
+      }
       if (notification.plan_id) {
         try {
           await refresh(viewer.id);
