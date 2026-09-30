@@ -8,6 +8,7 @@ import {
   cancelJoinRequest,
   acceptHostRequest as dbAcceptHostRequest,
   publishPlan as dbPublishPlan,
+  updatePlanVisibility as dbUpdatePlanVisibility,
   submitPlanReport
 } from '@/lib/along';
 import { useAlongCore } from '@/components/providers/along-core';
@@ -19,12 +20,17 @@ export function AlongPlansProvider({ children }) {
   const { data, viewer, busy, refresh, withBusy, runAction } = useAlongCore();
 
   const requestJoin = useCallback(
-    (id) => runAction(() => requestJoinPlan(viewer.id, id), 'Request sent.'),
+    (id, intro = '') => runAction(() => requestJoinPlan(viewer.id, id, intro), 'Request sent.'),
     [runAction, viewer?.id]
   );
 
   const cancelRequest = useCallback(
     (id) => runAction(() => cancelJoinRequest(viewer.id, id), 'Request cancelled.'),
+    [runAction, viewer?.id]
+  );
+
+  const updateVisibility = useCallback(
+    (id, visibility) => runAction(() => dbUpdatePlanVisibility(viewer.id, id, visibility), 'Sharing setting updated.'),
     [runAction, viewer?.id]
   );
 
@@ -90,6 +96,7 @@ export function AlongPlansProvider({ children }) {
       data,
       busy,
       requestJoin,
+      updateVisibility,
       cancelRequest,
       approveRequest,
       publishPlan,
@@ -106,7 +113,8 @@ export function AlongPlansProvider({ children }) {
       removePlanImage,
       replacePlanImage,
       reportPlan,
-      requestJoin
+      requestJoin,
+      updateVisibility
     ]
   );
 

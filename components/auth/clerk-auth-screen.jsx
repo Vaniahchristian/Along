@@ -77,7 +77,7 @@ function Field({
   );
 }
 
-export function ClerkAuthScreen({ onClose }) {
+export function ClerkAuthScreen({ onClose, returnTo = '/app', planSummary }) {
   const { signIn } = useSignIn();
   const { signUp } = useSignUp();
   const router = useRouter();
@@ -116,7 +116,7 @@ export function ClerkAuthScreen({ onClose }) {
     if (result?.error) throw result.error;
   };
   const navigate = ({ decorateUrl }) => {
-    const url = decorateUrl('/app');
+    const url = decorateUrl(returnTo);
     if (url.startsWith('http')) window.location.assign(url);
     else router.replace(url);
   };
@@ -127,8 +127,8 @@ export function ClerkAuthScreen({ onClose }) {
       assertResult(
         await signIn.sso({
           strategy: 'oauth_google',
-          redirectCallbackUrl: '/sso-callback',
-          redirectUrl: '/app'
+          redirectCallbackUrl: `/sso-callback?returnTo=${encodeURIComponent(returnTo)}`,
+          redirectUrl: returnTo
         })
       );
     });
@@ -275,6 +275,15 @@ export function ClerkAuthScreen({ onClose }) {
           <X className='size-5' />
         </button>
       </div>
+      {planSummary && (
+        <div className='mb-5 flex items-center gap-3 rounded-2xl bg-[#f0f6ef] p-3'>
+          <img src={planSummary.image} alt='' className='size-14 shrink-0 rounded-xl object-cover' />
+          <div className='min-w-0'>
+            <strong className='block truncate text-sm'>{planSummary.title}</strong>
+            <span className='text-xs text-[#526756]'>{planSummary.date} · {planSummary.time}</span>
+          </div>
+        </div>
+      )}
       <div
         className='mb-6 grid grid-cols-2 rounded-2xl bg-[#e9f1e8] p-1'
         role='tablist'
@@ -323,10 +332,10 @@ export function ClerkAuthScreen({ onClose }) {
             <span className='size-2 rounded-full bg-[#ec4899]' /> Small plans, good company
           </span>
           <h2 className='mt-5 font-heading text-[clamp(1.9rem,6vw,2.5rem)] font-extrabold leading-tight tracking-[-.05em]'>
-            {mode === 'signup' ? 'Your next yes starts here.' : 'Welcome back.'}
+            {planSummary ? `Join Tagwimi to ask to join ${planSummary.host}’s plan.` : mode === 'signup' ? 'Your next yes starts here.' : 'Welcome back.'}
           </h2>
           <p className='mt-3 text-sm leading-relaxed text-[#526756]'>
-            {mode === 'signup'
+            {planSummary ? 'You’ll return to this plan to confirm your request.' : mode === 'signup'
               ? 'Create an account and find someone to go with.'
               : 'Log in and pick up where your plans left off.'}
           </p>

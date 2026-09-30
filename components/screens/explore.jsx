@@ -94,6 +94,7 @@ export function ExploreScreen() {
       data.plans.filter(
         (plan) =>
           plan.status === 'open' &&
+          plan.visibility !== 'link_only' &&
           plan.spots > 0 &&
           (category === 'All' || plan.category === category) &&
           `${plan.title} ${plan.venue} ${plan.category}`.toLowerCase().includes(query.toLowerCase())

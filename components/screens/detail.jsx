@@ -7,6 +7,8 @@ import {
   CalendarDays,
   Clock3,
   ImagePlus,
+  Share2,
+  Copy,
   MapPin,
   ShieldCheck,
   Tag,
@@ -16,6 +18,7 @@ import {
 import { toast } from 'sonner';
 import { planImage } from '@/lib/media/activity-image';
 import { preparePlanImage } from '@/lib/media/prepare-plan-image';
+import { sharePlan, planShareUrl } from '@/lib/along/share-plan';
 import { useAlongSession, useAlongPlans } from '@/components/providers/along';
 import {
   ActionButton,
@@ -151,6 +154,7 @@ export function DetailScreen() {
     approveRequest,
     replacePlanImage,
     removePlanImage,
+    updateVisibility,
     busy
   } = useAlongPlans();
   const { viewer, openChat } = useAlongSession();
@@ -194,9 +198,27 @@ export function DetailScreen() {
     }
   }
 
+  async function handleShare() {
+    try {
+      const result = await sharePlan(plan);
+      if (result === 'copied') toast.success('Plan link copied.');
+    } catch { toast.error('Could not share this plan.'); }
+  }
+
+  async function copyLink() {
+    try { await navigator.clipboard.writeText(planShareUrl(plan.id)); toast.success('Plan link copied.'); }
+    catch { toast.error('Could not copy the link.'); }
+  }
+
   return (
     <>
-      <BackButton />
+      <div className='mb-4 flex flex-wrap items-center justify-between gap-3'>
+        <BackButton />
+        <div className='flex gap-2'>
+          <button type='button' onClick={copyLink} className='inline-flex min-h-10 items-center gap-2 rounded-full border border-border px-3 text-xs font-bold text-primary'><Copy className='size-4' /> Copy link</button>
+          <button type='button' onClick={handleShare} className='inline-flex min-h-10 items-center gap-2 rounded-full bg-primary px-4 text-xs font-bold text-white'><Share2 className='size-4' /> Share plan</button>
+        </div>
+      </div>
       <div className='grid grid-cols-[minmax(0,1fr)_minmax(285px,330px)] items-start gap-6 max-[900px]:grid-cols-1'>
         <div className='min-w-0'>
           <div className='flex flex-wrap items-center gap-2'>
@@ -244,7 +266,7 @@ export function DetailScreen() {
               <Tag className='mt-0.5 size-5 shrink-0 text-primary' aria-hidden='true' />
               <div className='min-w-0'>
                 <strong className='block text-[13px] font-extrabold leading-snug text-forest'>
-                  Check with venue
+                  {plan.costNote || 'Check with venue'}
                 </strong>
                 <span className='mt-0.5 block text-xs text-muted-foreground'>Ask about fees</span>
               </div>
@@ -296,17 +318,24 @@ export function DetailScreen() {
               )}
             </div>
           )}
+          {mine && <div className='mt-5 rounded-2xl bg-soft-green p-4'>
+            <strong className='block text-sm text-forest'>Who can find this plan?</strong>
+            <div className='mt-3 flex gap-2'>
+              {[['public','Public'],['link_only','Link only']].map(([value,label]) => <button key={value} type='button' disabled={busy} onClick={() => updateVisibility(plan.id,value)} aria-pressed={plan.visibility === value} className={`min-h-10 rounded-full px-4 text-xs font-bold ${plan.visibility === value ? 'bg-primary text-white' : 'bg-white text-primary'}`}>{label}</button>)}
+            </div>
+            <p className='mt-2 text-xs text-muted-foreground'>Link only plans stay off Explore. Anyone with the link can still forward it.</p>
+          </div>}
 
           <section className='mt-8 border-t border-border pt-7'>
             <h2 className='font-heading text-xl font-extrabold tracking-[-.03em] text-forest'>
               The plan
             </h2>
             <dl className='mt-4 grid gap-3 text-sm leading-relaxed'>
-              <div className='flex gap-3'>
+              {(mine || joined) ? <div className='flex gap-3'>
                 <MapPin className='mt-0.5 size-5 shrink-0 text-primary' aria-hidden='true' />
                 <dt className='font-extrabold'>Meet:</dt>
                 <dd className='text-muted-foreground'>{plan.meet}</dd>
-              </div>
+              </div> : <p className='text-sm text-muted-foreground'>The exact meeting point appears after the host accepts your request.</p>}
               <div className='flex gap-3'>
                 <ShieldCheck className='mt-0.5 size-5 shrink-0 text-primary' aria-hidden='true' />
                 <dt className='font-extrabold'>Bring:</dt>
@@ -316,8 +345,7 @@ export function DetailScreen() {
                 <Clock3 className='mt-0.5 size-5 shrink-0 text-primary' aria-hidden='true' />
                 <dt className='font-extrabold'>Costs:</dt>
                 <dd className='text-muted-foreground'>
-                  Ask the host about venue or activity fees. Everyone covers their own costs unless
-                  the group agrees otherwise.
+                  {plan.costNote || 'Ask the host about venue or activity fees. Everyone covers their own costs unless the group agrees otherwise.'}
                 </dd>
               </div>
             </dl>
@@ -357,6 +385,7 @@ export function DetailScreen() {
                       <div className='min-w-0 flex-1'>
                         <strong className='block'>{request.name}</strong>
                         <span className='text-xs text-muted-foreground'>Interested in joining</span>
+                        {request.intro && <p className='mt-1 text-xs text-muted-foreground'>{request.intro}</p>}
                       </div>
                       <ActionButton
                         type='button'

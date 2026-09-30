@@ -43,6 +43,7 @@ export function CreateScreen() {
   const { publishPlan, busy } = useAlongPlans();
   const [category, setCategory] = useState('Fitness');
   const [size, setSize] = useState('2');
+  const [visibility, setVisibility] = useState('public');
   const [photoFile, setPhotoFile] = useState(null);
   const [preview, setPreview] = useState(null);
 
@@ -79,6 +80,8 @@ export function CreateScreen() {
         size: groupSize,
         spots: groupSize - 1,
         status: 'open',
+        visibility,
+        costNote: String(form.get('costNote') || '').trim(),
         title: String(form.get('title')).trim(),
         venue: String(form.get('venue')).trim(),
         intro: String(form.get('intro')).trim(),
@@ -194,9 +197,17 @@ export function CreateScreen() {
                 ]}
               />
             </div>
+            <SelectField
+              id='visibility'
+              label='Who can find this plan?'
+              value={visibility}
+              onChange={setVisibility}
+              options={[["public", "Public · Explore and shared link"], ["link_only", "Link only · shared link"]]}
+            />
+            <p className='-mt-2 mb-4 text-xs text-muted-foreground'>Anyone with a link can forward it. You approve every request to join.</p>
             <div className='mb-4 grid gap-2'>
               <Label htmlFor='venue' className='text-[13px] font-extrabold'>
-                Public venue
+                General location · visible on the invitation
               </Label>
               <Input
                 className='h-11 rounded-xl border-border bg-card'
@@ -206,6 +217,10 @@ export function CreateScreen() {
                 maxLength={90}
                 placeholder='Venue name and neighbourhood'
               />
+            </div>
+            <div className='mb-4 grid gap-2'>
+              <Label htmlFor='costNote' className='text-[13px] font-extrabold'>Cost information <span className='font-normal text-muted-foreground'>(optional)</span></Label>
+              <Input id='costNote' name='costNote' maxLength={120} className='h-11 rounded-xl border-border bg-card' placeholder='e.g. Pool entry paid separately' />
             </div>
             <div className='grid grid-cols-2 gap-4 max-[760px]:grid-cols-1'>
               <div className='mb-4 grid gap-2'>
@@ -233,6 +248,7 @@ export function CreateScreen() {
                 />
               </div>
             </div>
+            <p className='mb-4 text-xs text-muted-foreground'>The exact meeting point is shared only after you accept someone.</p>
             <div className='mb-4 grid gap-2'>
               <Label htmlFor='intro' className='text-[13px] font-extrabold'>
                 What should people know?

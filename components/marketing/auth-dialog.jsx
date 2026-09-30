@@ -5,14 +5,14 @@ import { useRouter } from 'next/navigation';
 import { ClerkAlongProvider, useAlongSession } from '@/components/providers/along';
 import { ClerkAuthScreen } from '@/components/auth/clerk-auth-screen';
 
-function DialogContent({ onClose }) {
+function DialogContent({ onClose, returnTo, planSummary }) {
   const router = useRouter();
   const { viewer } = useAlongSession();
   const panelRef = useRef(null);
 
   useEffect(() => {
-    if (viewer) router.replace('/app/explore');
-  }, [viewer, router]);
+    if (viewer) router.replace(returnTo || '/app/explore');
+  }, [viewer, router, returnTo]);
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -60,16 +60,16 @@ function DialogContent({ onClose }) {
         tabIndex={-1}
         className='my-auto w-full max-w-[510px] overflow-y-auto rounded-[28px] bg-white shadow-[0_35px_110px_rgba(0,0,0,.28)] outline-none max-h-[calc(100dvh-1.5rem)] sm:max-h-[calc(100dvh-4rem)]'
       >
-        <ClerkAuthScreen onClose={onClose} />
+        <ClerkAuthScreen onClose={onClose} returnTo={returnTo} planSummary={planSummary} />
       </section>
     </div>
   );
 }
 
-export function AuthDialog({ onClose }) {
+export function AuthDialog({ onClose, returnTo, planSummary }) {
   return (
     <ClerkAlongProvider>
-      <DialogContent onClose={onClose} />
+      <DialogContent onClose={onClose} returnTo={returnTo} planSummary={planSummary} />
     </ClerkAlongProvider>
   );
 }

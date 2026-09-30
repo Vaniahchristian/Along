@@ -36,7 +36,9 @@ export default function SsoCallbackPage() {
     hasRun.current = true;
 
     const navigate = async ({ decorateUrl }) => {
-      const url = decorateUrl('/app');
+      const requested = new URLSearchParams(window.location.search).get('returnTo');
+      const destination = /^\/p\/[0-9a-f-]{36}(\?join=1)?$/.test(requested || '') ? requested : '/app';
+      const url = decorateUrl(destination);
       if (url.startsWith('http')) window.location.assign(url);
       else router.replace(url);
     };
