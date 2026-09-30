@@ -15,6 +15,7 @@ import {
   publishPlan as dbPublishPlan,
   sendPlanMessage,
   sendPlanMedia,
+  loadPlanMessages,
   markCheckIn,
   markComplete,
   submitPlanReport,
@@ -301,6 +302,59 @@ export function AlongProvider({ children, clerkIdentity = null }) {
       }, message);
   }
 
+  const refreshPlanMessages = useCallback(
+    async (planId) => {
+      if (!viewer?.id || !planId) return;
+      const messages = await loadPlanMessages(viewer.id, planId);
+      setData((current) => {
+        const pending = (current.messages[planId] || []).filter(
+          (item) => item.pending || String(item.id).startsWith('temp-')
+        );
+        const merged = [...messages];
+        for (const item of pending) {
+          if (!merged.some((row) => row.id === item.id)) merged.push(item);
+        }
+        return {
+          ...current,
+          messages: { ...current.messages, [planId]: merged }
+        };
+      });
+    },
+    [viewer?.id]
+  );
+
+  function appendLocalMessage(planId, message) {
+    setData((current) => ({
+      ...current,
+      messages: {
+        ...current.messages,
+        [planId]: [...(current.messages[planId] || []), message]
+      }
+    }));
+  }
+
+  function removeLocalMessage(planId, messageId) {
+    setData((current) => ({
+      ...current,
+      messages: {
+        ...current.messages,
+        [planId]: (current.messages[planId] || []).filter((item) => item.id !== messageId)
+      }
+    }));
+  }
+
+  function patchLocalMessage(planId, tempId, next) {
+    setData((current) => ({
+      ...current,
+      messages: {
+        ...current.messages,
+        [planId]: (current.messages[planId] || []).map((item) =>
+          item.id === tempId ? { ...item, ...next } : item
+        )
+      }
+    }));
+  }
+
   function requestJoin(id) {
     return runAction(() => requestJoinPlan(viewer.id, id), 'Request sent.');
   }
@@ -352,11 +406,75 @@ export function AlongProvider({ children, clerkIdentity = null }) {
   }
 
   function sendMessage(id, text) {
-    return runAction(() => sendPlanMessage(viewer.id, id, text));
+    if (!viewer?.id) return;
+    const tempId = `temp-${crypto.randomUUID()}`;
+    const createdAt = new Date().toISOString();
+    appendLocalMessage(id, {
+      id: tempId,
+      mine: true,
+      senderId: viewer.id,
+      senderName: viewer.name,
+      senderInitials: viewer.name?.slice(0, 2).toUpperCase() || 'YO',
+      senderTone: '',
+      text: text.trim(),
+      mediaType: null,
+      mediaUrl: null,
+      createdAt,
+      time: '',
+      pending: true
+    });
+    return withBusy(async () => {
+      try {
+        const row = await sendPlanMessage(viewer.id, id, text);
+        patchLocalMessage(id, tempId, {
+          id: row.id,
+          createdAt: row.created_at,
+          pending: false
+        });
+      } catch (error) {
+        removeLocalMessage(id, tempId);
+        throw error;
+      }
+    });
   }
 
   function sendMedia(id, file, caption) {
-    return runAction(() => sendPlanMedia(id, file, caption));
+    if (!viewer?.id) return;
+    const tempId = `temp-${crypto.randomUUID()}`;
+    const createdAt = new Date().toISOString();
+    const localUrl = URL.createObjectURL(file);
+    const mediaType = file.type.startsWith('image/') ? 'image' : 'audio';
+    appendLocalMessage(id, {
+      id: tempId,
+      mine: true,
+      senderId: viewer.id,
+      senderName: viewer.name,
+      senderInitials: viewer.name?.slice(0, 2).toUpperCase() || 'YO',
+      senderTone: '',
+      text: caption?.trim() || (mediaType === 'image' ? 'Photo' : 'Voice note'),
+      mediaType,
+      mediaUrl: localUrl,
+      createdAt,
+      time: '',
+      pending: true
+    });
+    return withBusy(async () => {
+      try {
+        const result = await sendPlanMedia(id, file, caption);
+        URL.revokeObjectURL(localUrl);
+        patchLocalMessage(id, tempId, {
+          id: result.id,
+          createdAt: result.createdAt,
+          mediaType: result.mediaType,
+          mediaUrl: result.mediaUrl,
+          pending: false
+        });
+      } catch (error) {
+        URL.revokeObjectURL(localUrl);
+        removeLocalMessage(id, tempId);
+        throw error;
+      }
+    });
   }
 
   function checkIn(id) {
@@ -396,6 +514,7 @@ export function AlongProvider({ children, clerkIdentity = null }) {
     removePlanImage,
     sendMessage,
     sendMedia,
+    refreshPlanMessages,
     checkIn,
     complete,
     reportPlan,

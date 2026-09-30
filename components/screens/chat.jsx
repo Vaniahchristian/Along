@@ -50,7 +50,7 @@ export function ChatScreen() {
   const router = useRouter();
   const chatId = params?.id || null;
   const chatViewOpen = Boolean(chatId);
-  const { data, notifications, openChat, openPlan, navigate, sendMessage, sendMedia, checkIn, complete } =
+  const { data, notifications, viewer, openChat, openPlan, navigate, sendMessage, sendMedia, refreshPlanMessages, checkIn, complete } =
     useAlong();
   const [draft, setDraft] = useState('');
   const [query, setQuery] = useState('');
@@ -83,6 +83,11 @@ export function ChatScreen() {
   }, [chatViewOpen, plan?.id, messages.length]);
 
   useEffect(() => {
+    if (!plan?.id || !viewer?.id) return;
+    refreshPlanMessages(plan.id).catch(() => {});
+  }, [plan?.id, viewer?.id, refreshPlanMessages]);
+
+  useEffect(() => {
     if (!attachment) { setPreviewUrl(''); return; }
     const url = URL.createObjectURL(attachment);
     setPreviewUrl(url);
@@ -104,7 +109,7 @@ export function ChatScreen() {
       const mime = ['audio/webm', 'audio/mp4', 'audio/ogg'].find((type) => MediaRecorder.isTypeSupported(type));
       if (!mime) { stream.getTracks().forEach((track) => track.stop()); toast.error('This browser cannot record a supported audio format.'); return; }
       const chunks = [];
-      const recorder = new MediaRecorder(stream, { mimeType: mime });
+      const recorder = new MediaRecorder(stream, { mimeType: mime, audioBitsPerSecond: 48000 });
       streamRef.current = stream;
       recorderRef.current = recorder;
       recorder.ondataavailable = (event) => { if (event.data.size) chunks.push(event.data); };
@@ -313,7 +318,7 @@ export function ChatScreen() {
             )}
             {messages.map((message) => (
               <div
-                className={`flex max-w-[82%] items-end gap-2 max-[760px]:max-w-[88%] ${message.mine ? 'self-end' : 'self-start'}`}
+                className={`flex max-w-[82%] items-end gap-2 max-[760px]:max-w-[88%] ${message.mine ? 'self-end' : 'self-start'} ${message.pending ? 'opacity-70' : ''}`}
                 key={message.id}
               >
                 {!message.mine && (
@@ -338,14 +343,39 @@ export function ChatScreen() {
                   <div
                     className={`rounded-2xl px-3 py-2.5 text-[13px] shadow-[0_1px_3px_rgba(15,34,24,.07)] ${message.mine ? 'rounded-br-sm bg-primary text-white' : 'rounded-bl-sm border border-border bg-white text-forest'}`}
                   >
-                    {message.mediaType === 'image' && <a href={message.mediaUrl} target='_blank' rel='noopener noreferrer' aria-label='Open shared photo'><img src={message.mediaUrl} alt={message.text || `Photo shared by ${message.senderName}`} className='mb-1 max-h-72 w-full max-w-72 rounded-xl object-cover' /></a>}
-                    {message.mediaType === 'audio' && <audio controls preload='none' src={message.mediaUrl} className='mb-1 w-[min(68vw,260px)]' aria-label={`Voice note from ${message.senderName}`} />}
-                    {message.text && <p className='whitespace-pre-wrap break-words leading-relaxed'>{message.text}</p>}
+                    {message.mediaType === 'image' && (
+                      <a
+                        href={message.mediaUrl}
+                        target='_blank'
+                        rel='noopener noreferrer'
+                        aria-label='Open shared photo'
+                      >
+                        <img
+                          src={message.mediaUrl}
+                          alt={message.text || `Photo shared by ${message.senderName}`}
+                          loading='lazy'
+                          decoding='async'
+                          className='mb-1 max-h-72 w-full max-w-72 rounded-xl object-cover'
+                        />
+                      </a>
+                    )}
+                    {message.mediaType === 'audio' && (
+                      <audio
+                        controls
+                        preload='metadata'
+                        src={message.mediaUrl}
+                        className='mb-1 w-[min(68vw,260px)]'
+                        aria-label={`Voice note from ${message.senderName}`}
+                      />
+                    )}
+                    {message.text && (
+                      <p className='whitespace-pre-wrap break-words leading-relaxed'>{message.text}</p>
+                    )}
                     <time
                       dateTime={message.createdAt}
                       className='mt-1 block text-right text-[10px] opacity-65'
                     >
-                      {shortTime(message.createdAt) || message.time}
+                      {message.pending ? 'Sending…' : shortTime(message.createdAt) || message.time}
                     </time>
                   </div>
                 </div>
