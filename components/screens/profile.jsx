@@ -159,7 +159,7 @@ export function ProfileScreen() {
         <p className='mt-1 text-sm text-muted-foreground'>Let people get to know you.</p>
       </div>
       <div className='grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(280px,320px)] items-start gap-5 max-[1200px]:grid-cols-1'>
-        <div className='grid min-w-0 gap-4'>
+        <div className='grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4'>
           <Panel className='min-w-0 overflow-hidden p-0'>
             <div className='relative h-28 overflow-hidden bg-[#edf6e9]'>
               <span className='absolute -bottom-16 left-1/4 size-40 rounded-full bg-[#dcefd8]' />
@@ -274,7 +274,7 @@ export function ProfileScreen() {
           </Panel>
         </div>
 
-        <aside className='grid min-w-0 gap-4'>
+        <aside className='grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4'>
           <Panel className='p-5'>
             <h2 className='font-heading text-base font-extrabold text-forest'>Account settings</h2>
             <p className='mt-4 text-xs font-bold text-forest'>Email · Private</p>
