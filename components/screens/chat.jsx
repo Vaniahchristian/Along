@@ -50,10 +50,11 @@ export function ChatScreen() {
   const chatId = params?.id || null;
   const chatViewOpen = Boolean(chatId);
   const { notifications, viewer, openChat, openPlan, navigate } = useAlongSession();
-  const { data, sendMessage, sendMedia, refreshPlanMessages, checkIn, complete } = useAlongChat();
+  const { data, sendMessage, sendMedia, refreshPlanMessages, subscribePlanMessages, dismissFailedMessage, checkIn, complete } = useAlongChat();
   const [draft, setDraft] = useState('');
   const [query, setQuery] = useState('');
   const [sending, setSending] = useState(false);
+  const [offline, setOffline] = useState(false);
   const [attachment, setAttachment] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
   const [emojiOpen, setEmojiOpen] = useState(false);
@@ -86,7 +87,19 @@ export function ChatScreen() {
   useEffect(() => {
     if (!plan?.id || !viewer?.id) return;
     refreshPlanMessages(plan.id).catch(() => {});
-  }, [plan?.id, viewer?.id, refreshPlanMessages]);
+    return subscribePlanMessages(plan.id);
+  }, [plan?.id, viewer?.id, refreshPlanMessages, subscribePlanMessages]);
+
+  useEffect(() => {
+    const sync = () => setOffline(typeof navigator !== 'undefined' && navigator.onLine === false);
+    sync();
+    window.addEventListener('online', sync);
+    window.addEventListener('offline', sync);
+    return () => {
+      window.removeEventListener('online', sync);
+      window.removeEventListener('offline', sync);
+    };
+  }, []);
 
   useEffect(() => {
     if (!attachment) { setPreviewUrl(''); return; }
@@ -188,7 +201,8 @@ export function ChatScreen() {
             </p>
           )}
           {filtered.map((item) => {
-            const lastMessage = data.messages[item.id]?.at(-1);
+            const lastMessage =
+              data.messages[item.id]?.at(-1) || data.messagePreviews?.[item.id] || null;
             const unread = notifications.filter(
               (notice) => notice.plan_id === item.id && notice.kind === 'message' && !notice.read_at
             ).length;
@@ -314,7 +328,15 @@ export function ChatScreen() {
             Group chat is for plan details. Meet at the public venue and trust your judgement.
           </p>
 
-          <div
+            {offline && (
+              <p
+                role='status'
+                className='shrink-0 border-b border-[#f3c1d3] bg-[#fff2f7] px-5 py-2 text-center text-xs font-bold text-[#9f2849] max-[760px]:px-3'
+              >
+                You’re offline. Messages will send when you’re back online.
+              </p>
+            )}
+            <div
             ref={scrollRef}
             className='flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overscroll-contain bg-[#f8faf7] px-5 py-4 max-[760px]:px-3'
             aria-live='polite'
@@ -326,7 +348,7 @@ export function ChatScreen() {
             )}
             {messages.map((message) => (
               <div
-                className={`flex max-w-[82%] items-end gap-2 max-[760px]:max-w-[88%] ${message.mine ? 'self-end' : 'self-start'} ${message.pending ? 'opacity-70' : ''}`}
+                className={`flex max-w-[82%] items-end gap-2 max-[760px]:max-w-[88%] ${message.mine ? 'self-end' : 'self-start'} ${message.pending || message.failed ? 'opacity-80' : ''}`}
                 key={message.id}
               >
                 {!message.mine && (
@@ -349,9 +371,9 @@ export function ChatScreen() {
                     )}
                   </div>
                   <div
-                    className={`rounded-2xl px-3 py-2.5 text-[13px] shadow-[0_1px_3px_rgba(15,34,24,.07)] ${message.mine ? 'rounded-br-sm bg-primary text-white' : 'rounded-bl-sm border border-border bg-white text-forest'}`}
+                    className={`rounded-2xl px-3 py-2.5 text-[13px] shadow-[0_1px_3px_rgba(15,34,24,.07)] ${message.failed ? 'rounded-br-sm border border-[#f3c1d3] bg-[#fff2f7] text-[#9f2849]' : message.mine ? 'rounded-br-sm bg-primary text-white' : 'rounded-bl-sm border border-border bg-white text-forest'}`}
                   >
-                    {message.mediaType === 'image' && (
+                    {message.mediaType === 'image' && message.mediaUrl && (
                       <a
                         href={message.mediaUrl}
                         target='_blank'
@@ -367,7 +389,7 @@ export function ChatScreen() {
                         />
                       </a>
                     )}
-                    {message.mediaType === 'audio' && (
+                    {message.mediaType === 'audio' && message.mediaUrl && (
                       <audio
                         controls
                         preload='metadata'
@@ -383,8 +405,21 @@ export function ChatScreen() {
                       dateTime={message.createdAt}
                       className='mt-1 block text-right text-[10px] opacity-65'
                     >
-                      {message.pending ? 'Sending…' : shortTime(message.createdAt) || message.time}
+                      {message.pending
+                        ? 'Sending…'
+                        : message.failed
+                          ? 'Not sent'
+                          : shortTime(message.createdAt) || message.time}
                     </time>
+                    {message.failed && (
+                      <button
+                        type='button'
+                        onClick={() => dismissFailedMessage(plan.id, message.id)}
+                        className='mt-1 text-[11px] font-bold underline'
+                      >
+                        Dismiss
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -419,7 +454,7 @@ export function ChatScreen() {
             <button type='button' onClick={recording ? stopRecording : startRecording} aria-label={recording ? 'Stop voice recording' : 'Record voice note'} className={`grid size-10 shrink-0 place-items-center rounded-full ${recording ? 'bg-pink text-white' : 'text-primary hover:bg-soft-green'}`}>{recording ? <Square className='size-4' /> : <Mic className='size-5' />}</button>
             <ActionButton
               type='submit'
-              disabled={sending || recording || (!draft.trim() && !attachment)}
+              disabled={sending || recording || offline || (!draft.trim() && !attachment)}
               className='size-11 shrink-0 rounded-full bg-pink px-0 hover:bg-[#c82270]'
             >
               <SendHorizontal aria-hidden='true' />

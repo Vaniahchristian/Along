@@ -1,5 +1,6 @@
 import { ClerkAlongProvider } from '@/components/providers/along';
 import { AppShell } from '@/components/layout/shell';
+import { AppErrorBoundary } from '@/components/layout/app-error-boundary';
 
 export const metadata = {
   robots: {
@@ -15,7 +16,9 @@ export const metadata = {
 export default function AppShellLayout({ children }) {
   return (
     <ClerkAlongProvider>
-      <AppShell>{children}</AppShell>
+      <AppErrorBoundary>
+        <AppShell>{children}</AppShell>
+      </AppErrorBoundary>
     </ClerkAlongProvider>
   );
 }

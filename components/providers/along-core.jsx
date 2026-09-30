@@ -6,7 +6,7 @@ import { supabase, setClerkTokenGetter } from '@/lib/supabase/client';
 import {
   emptyAlongState,
   ensureClerkViewerProfile,
-  loadAlongState,
+  loadAppState,
   loadNotifications
 } from '@/lib/along';
 
@@ -35,8 +35,12 @@ export function AlongCoreProvider({ children, clerkIdentity = null }) {
 
   const refresh = useCallback(
     async (profileId) => {
-      const next = await loadAlongState(profileId);
-      setData(next);
+      const next = await loadAppState(profileId);
+      setData((current) => ({
+        ...next,
+        // Keep any already-opened chat threads across soft refreshes.
+        messages: { ...next.messages, ...current.messages }
+      }));
       setLoadError('');
       await refreshNotifications(profileId);
       return next;
