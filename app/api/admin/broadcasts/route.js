@@ -1,5 +1,6 @@
 import { auth } from '@clerk/nextjs/server';
 import { createClient } from '@supabase/supabase-js';
+import { dispatchEmails } from '@/lib/email/dispatch';
 
 export const dynamic = 'force-dynamic';
 
@@ -71,6 +72,13 @@ export async function POST(request) {
   if (sent.error) {
     if (sent.error.message.includes('No eligible recipients')) return fail('No eligible recipients.', 400);
     return fail('Could not send this broadcast.', 500);
+  }
+  if (channel === 'email' || channel === 'both') {
+    try {
+      await dispatchEmails({ actorId: context.adminId });
+    } catch {
+      /* Hourly cron will retry queued broadcast emails. */
+    }
   }
   return Response.json(sent.data, { headers: { 'Cache-Control': 'no-store' } });
 }
