@@ -59,7 +59,7 @@ export function AppShell({ children }) {
   const inMobileChat = pathname.startsWith('/app/chat/');
   const inMobileDetail = pathname.startsWith('/app/plans/') && pathname !== '/app/plans';
   const navClass = (id) =>
-    `flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left font-bold transition-colors ${screen === id ? 'bg-secondary text-primary' : 'text-muted-foreground hover:bg-card hover:text-foreground'}`;
+    `flex w-full min-w-0 items-center gap-3 rounded-xl px-3 py-3 text-left font-bold transition-colors ${screen === id ? 'bg-secondary text-primary' : 'text-muted-foreground hover:bg-secondary/70 hover:text-foreground'}`;
   const mobileClass = (id) =>
     `grid min-h-12 justify-items-center content-center gap-0.5 px-1 py-1 text-[10px] font-extrabold ${screen === id ? 'text-primary' : 'text-muted-foreground'}`;
 
@@ -100,9 +100,9 @@ export function AppShell({ children }) {
   return (
     <div className='min-h-screen bg-background text-foreground'>
       <div className='mx-auto grid max-w-[1440px] grid-cols-[248px_minmax(0,1fr)] max-[1050px]:grid-cols-[190px_minmax(0,1fr)] max-[760px]:block'>
-        <aside className='sticky top-0 flex h-screen flex-col border-r border-border px-[18px] pt-8 pb-6 pl-[30px] max-[1050px]:pl-4 max-[760px]:hidden'>
+        <aside className='sticky top-0 flex h-screen w-full min-w-0 flex-col overflow-x-hidden border-r border-border px-3.5 pt-8 pb-6 max-[1050px]:px-3 max-[760px]:hidden'>
           <TagwimiLogo compact className='mb-7' />
-          <nav className='grid gap-1' aria-label='Main navigation'>
+          <nav className='grid min-w-0 gap-1' aria-label='Main navigation'>
             {navigation.map(({ id, label, icon: Icon }) => (
               <button
                 key={id}
@@ -111,8 +111,8 @@ export function AppShell({ children }) {
                 onClick={() => navigate(id)}
                 aria-current={screen === id ? 'page' : undefined}
               >
-                <Icon className='size-5 stroke-[1.8]' aria-hidden='true' />
-                <span>{label}</span>
+                <Icon className='size-5 shrink-0 stroke-[1.8]' aria-hidden='true' />
+                <span className='truncate'>{label}</span>
               </button>
             ))}
             <button
@@ -121,10 +121,10 @@ export function AppShell({ children }) {
               onClick={() => navigate('notifications')}
               aria-current={screen === 'notifications' ? 'page' : undefined}
             >
-              <Bell className='size-5 stroke-[1.8]' aria-hidden='true' />
-              <span>Notifications</span>
+              <Bell className='size-5 shrink-0 stroke-[1.8]' aria-hidden='true' />
+              <span className='truncate'>Notifications</span>
               {unread > 0 && (
-                <span className='ml-auto rounded-full bg-[#ec4899] px-2 py-0.5 text-[10px] text-white'>
+                <span className='ml-auto shrink-0 rounded-full bg-[#ec4899] px-2 py-0.5 text-[10px] text-white'>
                   {unread > 99 ? '99+' : unread}
                 </span>
               )}
