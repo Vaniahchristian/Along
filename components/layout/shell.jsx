@@ -128,16 +128,25 @@ export function AppShell({ children }) {
               )}
             </button>
           </nav>
-          <div className='mt-auto border-t border-border px-2.5 pt-5'>
-            <div className='flex items-center gap-2.5'>
+          <div className='mt-auto border-t border-border px-2.5 pt-5 pb-1'>
+            <div className='flex min-w-0 items-center gap-2.5'>
               <PersonAvatar
                 initials={viewer.name.slice(0, 2).toUpperCase()}
                 name={viewer.name}
                 src={viewer.avatarUrl}
               />
-              <div>
-                <strong>{viewer.name}</strong>
-                <div className='text-xs text-muted-foreground'>{viewer.email}</div>
+              <div className='min-w-0 flex-1'>
+                <strong className='block truncate'>{viewer.name}</strong>
+                <button
+                  type='button'
+                  onClick={() => signOut()}
+                  className='mt-0.5 text-xs font-bold text-[#9f2849] hover:underline'
+                >
+                  Log out
+                </button>
+                <div className='truncate text-xs text-muted-foreground' title={viewer.email}>
+                  {viewer.email}
+                </div>
               </div>
             </div>
           </div>
