@@ -9,6 +9,7 @@ import {
   CalendarX2,
   MapPinCheck,
   Flag,
+  Megaphone,
   Trash2
 } from 'lucide-react';
 import { useAlongSession } from '@/components/providers/along';
@@ -20,7 +21,8 @@ const icons = {
   plan_closed: CalendarX2,
   check_in: MapPinCheck,
   plan_completed: CircleCheck,
-  report: Flag
+  report: Flag,
+  broadcast: Megaphone
 };
 const tones = {
   join_request: 'bg-[#fff2df] text-[#9b6415]',
@@ -29,7 +31,8 @@ const tones = {
   plan_closed: 'bg-[#f3eee9] text-[#765c4b]',
   check_in: 'bg-[#e7f5e9] text-[#3b793f]',
   plan_completed: 'bg-[#e9f1e8] text-[#2f5d34]',
-  report: 'bg-[#fff2f7] text-[#9f2849]'
+  report: 'bg-[#fff2f7] text-[#9f2849]',
+  broadcast: 'bg-[#e7f5e9] text-[#246b43]'
 };
 
 function dateLabel(value) {

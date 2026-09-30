@@ -93,7 +93,7 @@ export async function GET(request) {
       db
         .from('admin_actions')
         .select(
-          'id,actor_id,action,target_type,target_id,reason,created_at,actor:profiles!admin_actions_actor_id_fkey(display_name,email)',
+          'id,actor_id,action,target_type,target_id,reason,details,created_at,actor:profiles!admin_actions_actor_id_fkey(display_name,email)',
           { count: 'exact' }
         )
         .order('created_at', { ascending: false })

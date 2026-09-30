@@ -12,6 +12,7 @@ import {
   LayoutDashboard,
   LoaderCircle,
   Menu,
+  Megaphone,
   RefreshCw,
   Search,
   ShieldCheck,
@@ -21,6 +22,7 @@ import { useAuth, useUser } from '@clerk/nextjs';
 import { toast, Toaster } from 'sonner';
 import { TagwimiLogo } from '@/components/layout/logo';
 import { MobileDrawer } from '@/components/layout/mobile-drawer';
+import { Broadcasts } from '@/components/admin/broadcasts';
 import { ListPagination } from '@/components/ui/list-pagination';
 import { adminAction, getAdminAccess, loadAdminDashboard } from '@/lib/admin/api';
 import { setClerkTokenGetter } from '@/lib/supabase/client';
@@ -30,6 +32,7 @@ const tabs = [
   { id: 'plans', label: 'Plans', icon: CalendarDays },
   { id: 'members', label: 'Members', icon: Users },
   { id: 'reports', label: 'Reports', icon: Flag },
+  { id: 'broadcasts', label: 'Broadcasts', icon: Megaphone },
   { id: 'history', label: 'Admin history', icon: History }
 ];
 const date = (value) =>
@@ -606,6 +609,12 @@ function HistoryView({ data }) {
               {item.target_type} · {item.target_id}
             </p>
             <p className='mt-1 text-sm'>{item.reason}</p>
+            {item.action === 'send_broadcast' && <>
+              <p className='mt-1 text-xs text-[#68796b]'>
+                {item.details?.audience === 'all' ? 'All members' : 'One member'} · {item.details?.channel} · {item.details?.recipient_count} recipients · {item.details?.email_count} emails queued
+              </p>
+              <p className='mt-1 whitespace-pre-wrap break-words text-sm text-[#506653]'>{item.details?.body}</p>
+            </>}
           </div>
         ))}
         {!data.history.length && <Empty text='No admin actions recorded yet.' />}
@@ -769,6 +778,7 @@ export function AdminDashboard({ clerkIdentity }) {
           {tab === 'reports' && (
             <Reports data={data} run={run} busy={busy} selectedId={selectedReport} />
           )}
+          {tab === 'broadcasts' && <Broadcasts onSent={refresh} />}
           {tab === 'history' && <HistoryView data={data} />}
           {(data.counts.members > 100 ||
             data.counts.reports > 100 ||

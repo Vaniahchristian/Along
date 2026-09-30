@@ -67,7 +67,7 @@ Deno.serve(async (request) => {
         const response = await fetch('https://api.resend.com/emails', {
           method: 'POST',
           headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json', 'Idempotency-Key': item.dedupe_key },
-          body: JSON.stringify({ from: `${item.event_type === 'welcome' ? 'Tagwimi' : 'Tagwimi Plans'} <${item.event_type === 'welcome' ? 'hello' : 'notifications'}@tagwimi.com>`, to: [address], ...content }),
+          body: JSON.stringify({ from: `${['welcome', 'admin_broadcast'].includes(item.event_type) ? 'Tagwimi' : 'Tagwimi Plans'} <${item.event_type === 'welcome' ? 'hello' : 'notifications'}@tagwimi.com>`, to: [address], ...content }),
           signal: AbortSignal.timeout(15000)
         });
         const result = await response.json().catch(() => ({}));
