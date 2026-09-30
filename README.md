@@ -19,3 +19,5 @@ Run `npm run build` before deploying. The production build registers a Progressi
 ## Plan emails
 
 `database/transactional-emails.sql` is applied to the Tagwimi Supabase project. It queues welcome, join request, acceptance, decline, change, cancellation, and departure emails. New plans store `starts_at` for reminders; older plans do not have a trustworthy year in their text date, so they are not automatically reminded. The Vercel cron runs daily at 09:00 UTC and sends reminders for plans 12–36 hours away. It retries pending emails. Set server-only `RESEND_API_KEY` and `CRON_SECRET` in Vercel; the Resend Supabase SMTP integration alone does not send app plan emails. The sender domain must be verified for `hello@tagwimi.com` and `notifications@tagwimi.com`. Clerk continues to send account verification and password-reset messages. Members can turn reminders off in Profile → Account settings; chat summary preference is saved but chat emails are not yet sent.
+
+Vercel's Hobby tier supports this once-daily cron schedule. Redeploy after changing environment variables so the running function receives the new values.
