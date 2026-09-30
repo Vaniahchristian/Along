@@ -22,8 +22,7 @@ import { Input } from '@/components/ui/input';
 import { planImage } from '@/lib/media/activity-image';
 import { useAlong } from '@/components/providers/along';
 import { ActionButton, EmptyState, PersonAvatar, ReportForm } from '@/components/layout/shared';
-
-const quickEmoji = ['😀', '😊', '😂', '❤️', '🙌', '👍', '🎉', '🙏', '👋', '🔥', '💚', '☕', '🏊', '🥾', '🎨', '📍'];
+import { EmojiPicker } from './emoji-picker';
 
 function shortTime(value) {
   if (!value) return '';
@@ -58,6 +57,7 @@ export function ChatScreen() {
   const [attachment, setAttachment] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
   const [emojiOpen, setEmojiOpen] = useState(false);
+  const addEmoji = useRef((emoji) => setDraft((value) => value.length + emoji.length <= 500 ? value + emoji : value));
   const [recording, setRecording] = useState(false);
   const recorderRef = useRef(null);
   const streamRef = useRef(null);
@@ -388,7 +388,7 @@ export function ChatScreen() {
           >
             {attachment && <div className='mb-2 flex items-center gap-3 rounded-xl bg-soft-green p-2 text-sm'><span className='min-w-0 flex-1 truncate'>{attachment.type.startsWith('image/') ? 'Photo' : 'Voice note'} · {attachment.name}</span>{attachment.type.startsWith('image/') && previewUrl && <img src={previewUrl} alt='Selected photo preview' className='size-11 rounded-lg object-cover' />}{attachment.type.startsWith('audio/') && previewUrl && <audio controls src={previewUrl} className='max-w-40' aria-label='Preview voice note' />}<button type='button' onClick={() => setAttachment(null)} aria-label='Remove attachment' className='grid size-9 shrink-0 place-items-center rounded-full hover:bg-white'><X className='size-4' /></button></div>}
             {recording && <p role='status' className='mb-2 text-sm font-bold text-[#b51b63]'>Recording voice note… tap stop when finished.</p>}
-            {emojiOpen && <div className='mb-2 grid grid-cols-8 gap-1 rounded-xl border border-border bg-white p-2' aria-label='Choose an emoji'>{quickEmoji.map((emoji) => <button key={emoji} type='button' onClick={() => { setDraft((value) => value + emoji); setEmojiOpen(false); }} className='grid size-9 place-items-center rounded-lg text-xl hover:bg-soft-green' aria-label={`Add ${emoji}`}>{emoji}</button>)}</div>}
+            {emojiOpen && <EmojiPicker onSelect={addEmoji.current} onClose={() => setEmojiOpen(false)} />}
             <div className='flex items-center gap-1.5'>
             <input ref={fileRef} type='file' accept='image/jpeg,image/png,image/webp,audio/webm,audio/mp4,audio/ogg,audio/mpeg' onChange={chooseFile} className='sr-only' aria-label='Choose a photo or audio file' />
             <button type='button' onClick={() => fileRef.current?.click()} aria-label='Attach photo or audio' className='grid size-10 shrink-0 place-items-center rounded-full text-primary hover:bg-soft-green'><Paperclip className='size-5' /></button>
