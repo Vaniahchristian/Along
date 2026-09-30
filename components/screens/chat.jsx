@@ -62,6 +62,7 @@ export function ChatScreen() {
   const recorderRef = useRef(null);
   const streamRef = useRef(null);
   const fileRef = useRef(null);
+  const composerRef = useRef(null);
   const scrollRef = useRef(null);
   const available = data.plans.filter(
     (item) => data.joined.includes(item.id) || item.host === 'You'
@@ -95,6 +96,13 @@ export function ChatScreen() {
   }, [attachment]);
 
   useEffect(() => () => { if (recorderRef.current?.state === 'recording') recorderRef.current.stop(); streamRef.current?.getTracks().forEach((track) => track.stop()); }, []);
+
+  useEffect(() => {
+    const composer = composerRef.current;
+    if (!composer) return;
+    composer.style.height = '44px';
+    composer.style.height = `${Math.min(composer.scrollHeight, 128)}px`;
+  }, [draft]);
 
   function chooseFile(event) {
     const file = event.target.files?.[0];
@@ -389,17 +397,25 @@ export function ChatScreen() {
             {attachment && <div className='mb-2 flex items-center gap-3 rounded-xl bg-soft-green p-2 text-sm'><span className='min-w-0 flex-1 truncate'>{attachment.type.startsWith('image/') ? 'Photo' : 'Voice note'} · {attachment.name}</span>{attachment.type.startsWith('image/') && previewUrl && <img src={previewUrl} alt='Selected photo preview' className='size-11 rounded-lg object-cover' />}{attachment.type.startsWith('audio/') && previewUrl && <audio controls src={previewUrl} className='max-w-40' aria-label='Preview voice note' />}<button type='button' onClick={() => setAttachment(null)} aria-label='Remove attachment' className='grid size-9 shrink-0 place-items-center rounded-full hover:bg-white'><X className='size-4' /></button></div>}
             {recording && <p role='status' className='mb-2 text-sm font-bold text-[#b51b63]'>Recording voice note… tap stop when finished.</p>}
             {emojiOpen && <EmojiPicker onSelect={addEmoji.current} onClose={() => setEmojiOpen(false)} />}
-            <div className='flex items-center gap-1.5'>
+            <div className='flex items-end gap-1.5'>
             <input ref={fileRef} type='file' accept='image/jpeg,image/png,image/webp,audio/webm,audio/mp4,audio/ogg,audio/mpeg' onChange={chooseFile} className='sr-only' aria-label='Choose a photo or audio file' />
             <button type='button' onClick={() => fileRef.current?.click()} aria-label='Attach photo or audio' className='grid size-10 shrink-0 place-items-center rounded-full text-primary hover:bg-soft-green'><Paperclip className='size-5' /></button>
             <button type='button' onClick={() => setEmojiOpen((open) => !open)} aria-label='Choose emoji' aria-expanded={emojiOpen} className='grid size-10 shrink-0 place-items-center rounded-full text-primary hover:bg-soft-green'><Smile className='size-5' /></button>
-            <Input
-              className='h-11 min-w-0 flex-1 rounded-full border-border bg-[#f8faf7] px-4'
+            <textarea
+              ref={composerRef}
+              rows={1}
+              className='min-h-11 max-h-32 min-w-0 flex-1 resize-none overflow-y-auto rounded-[22px] border border-border bg-[#f8faf7] px-4 py-2.5 leading-6 text-foreground outline-none [overflow-wrap:anywhere] placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20'
               aria-label='Message the group'
               maxLength={500}
               placeholder='Message the group…'
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing && window.matchMedia('(pointer: fine)').matches) {
+                  event.preventDefault();
+                  if (draft.trim() || attachment) event.currentTarget.form?.requestSubmit();
+                }
+              }}
             />
             <button type='button' onClick={recording ? stopRecording : startRecording} aria-label={recording ? 'Stop voice recording' : 'Record voice note'} className={`grid size-10 shrink-0 place-items-center rounded-full ${recording ? 'bg-pink text-white' : 'text-primary hover:bg-soft-green'}`}>{recording ? <Square className='size-4' /> : <Mic className='size-5' />}</button>
             <ActionButton
