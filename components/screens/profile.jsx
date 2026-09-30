@@ -158,9 +158,9 @@ export function ProfileScreen() {
         </h1>
         <p className='mt-1 text-sm text-muted-foreground'>Let people get to know you.</p>
       </div>
-      <div className='grid grid-cols-[minmax(0,1fr)_minmax(255px,.44fr)] items-start gap-5 max-[900px]:grid-cols-1'>
-        <div className='grid gap-4'>
-          <Panel className='overflow-hidden p-0'>
+      <div className='grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(280px,320px)] items-start gap-5 max-[1200px]:grid-cols-1'>
+        <div className='grid min-w-0 gap-4'>
+          <Panel className='min-w-0 overflow-hidden p-0'>
             <div className='relative h-28 overflow-hidden bg-[#edf6e9]'>
               <span className='absolute -bottom-16 left-1/4 size-40 rounded-full bg-[#dcefd8]' />
               <span className='absolute -bottom-16 right-1/4 size-36 rounded-full bg-[#cde7c6]' />
@@ -183,12 +183,12 @@ export function ProfileScreen() {
                 {viewer.bio ||
                   'Add a short introduction so people know what you enjoy doing together.'}
               </p>
-              <div className='mt-5 grid grid-cols-2 gap-2 max-[480px]:grid-cols-1'>
-                <ActionButton type='button' onClick={() => setEditing(true)}>
+              <div className='mt-5 grid min-w-0 grid-cols-2 gap-2 max-[600px]:grid-cols-1'>
+                <ActionButton type='button' className='min-w-0 whitespace-normal text-center' onClick={() => setEditing(true)}>
                   <Pencil className='size-4' />
                   Edit profile
                 </ActionButton>
-                <ActionButton type='button' tone='secondary' onClick={() => setPreview(true)}>
+                <ActionButton type='button' tone='secondary' className='min-w-0 whitespace-normal text-center' onClick={() => setPreview(true)}>
                   <Eye className='size-4' />
                   See how others see you
                 </ActionButton>
@@ -274,7 +274,7 @@ export function ProfileScreen() {
           </Panel>
         </div>
 
-        <aside className='grid gap-4'>
+        <aside className='grid min-w-0 gap-4'>
           <Panel className='p-5'>
             <h2 className='font-heading text-base font-extrabold text-forest'>Account settings</h2>
             <p className='mt-4 text-xs font-bold text-forest'>Email · Private</p>
