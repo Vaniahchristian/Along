@@ -52,7 +52,7 @@ export async function POST(request) {
       return fail('Only group members can report a message.', 403);
     const message = await db
       .from('messages')
-      .select('id,body,sender_id')
+      .select('id,body,sender_id,media_path,media_type')
       .eq('id', body?.messageId || '')
       .eq('plan_id', planId)
       .maybeSingle();
@@ -60,6 +60,7 @@ export async function POST(request) {
     report.message_id = message.data.id;
     report.subject_profile_id = message.data.sender_id;
     report.evidence_text = message.data.body;
+    report.image_path = message.data.media_path;
   }
   const inserted = await db.from('plan_reports').insert(report).select('id').single();
   if (inserted.error) return fail('Could not send your report. Please try again.', 500);

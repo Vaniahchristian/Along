@@ -544,8 +544,8 @@ function Reports({ data, run, busy, selectedId }) {
               )}
               {report.image_path && (
                 <div>
-                  <dt className='font-bold'>Reported image path</dt>
-                  <dd className='break-all'>{report.image_path}</dd>
+                  <dt className='font-bold'>Reported attachment</dt>
+                  <dd><a href={`/api/admin/report-media/${report.id}`} target='_blank' rel='noopener noreferrer' className='font-bold text-[#256739] underline'>View reported media</a></dd>
                 </div>
               )}
               {report.review_note && (

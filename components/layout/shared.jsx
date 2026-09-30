@@ -197,7 +197,7 @@ export function ReportForm({ planId, hasPhoto = false, messages = [] }) {
             <option value=''>Choose a message</option>
             {messages.map((message) => (
               <option key={message.id} value={message.id}>
-                {message.senderName}: {message.text.slice(0, 80)}
+                {message.senderName}: {message.text?.slice(0, 80) || (message.mediaType === 'image' ? 'Photo' : message.mediaType === 'audio' ? 'Voice note' : 'Message')}
               </option>
             ))}
           </select>

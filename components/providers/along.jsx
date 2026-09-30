@@ -14,6 +14,7 @@ import {
   acceptHostRequest as dbAcceptHostRequest,
   publishPlan as dbPublishPlan,
   sendPlanMessage,
+  sendPlanMedia,
   markCheckIn,
   markComplete,
   submitPlanReport,
@@ -354,6 +355,10 @@ export function AlongProvider({ children, clerkIdentity = null }) {
     return runAction(() => sendPlanMessage(viewer.id, id, text));
   }
 
+  function sendMedia(id, file, caption) {
+    return runAction(() => sendPlanMedia(id, file, caption));
+  }
+
   function checkIn(id) {
     return runAction(() => markCheckIn(viewer.id, id), 'You’re checked in.');
   }
@@ -390,6 +395,7 @@ export function AlongProvider({ children, clerkIdentity = null }) {
     replacePlanImage,
     removePlanImage,
     sendMessage,
+    sendMedia,
     checkIn,
     complete,
     reportPlan,

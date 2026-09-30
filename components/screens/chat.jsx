@@ -3,19 +3,27 @@
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import {
   ArrowLeft,
   CalendarDays,
   MapPin,
   MoreVertical,
+  Mic,
+  Paperclip,
   Search,
   SendHorizontal,
+  Smile,
+  Square,
+  X,
   UsersRound
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { planImage } from '@/lib/media/activity-image';
 import { useAlong } from '@/components/providers/along';
 import { ActionButton, EmptyState, PersonAvatar, ReportForm } from '@/components/layout/shared';
+
+const quickEmoji = ['😀', '😊', '😂', '❤️', '🙌', '👍', '🎉', '🙏', '👋', '🔥', '💚', '☕', '🏊', '🥾', '🎨', '📍'];
 
 function shortTime(value) {
   if (!value) return '';
@@ -42,11 +50,18 @@ export function ChatScreen() {
   const router = useRouter();
   const chatId = params?.id || null;
   const chatViewOpen = Boolean(chatId);
-  const { data, notifications, openChat, openPlan, navigate, sendMessage, checkIn, complete } =
+  const { data, notifications, openChat, openPlan, navigate, sendMessage, sendMedia, checkIn, complete } =
     useAlong();
   const [draft, setDraft] = useState('');
   const [query, setQuery] = useState('');
   const [sending, setSending] = useState(false);
+  const [attachment, setAttachment] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState('');
+  const [emojiOpen, setEmojiOpen] = useState(false);
+  const [recording, setRecording] = useState(false);
+  const recorderRef = useRef(null);
+  const streamRef = useRef(null);
+  const fileRef = useRef(null);
   const scrollRef = useRef(null);
   const available = data.plans.filter(
     (item) => data.joined.includes(item.id) || item.host === 'You'
@@ -67,13 +82,52 @@ export function ChatScreen() {
     }
   }, [chatViewOpen, plan?.id, messages.length]);
 
+  useEffect(() => {
+    if (!attachment) { setPreviewUrl(''); return; }
+    const url = URL.createObjectURL(attachment);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [attachment]);
+
+  useEffect(() => () => { if (recorderRef.current?.state === 'recording') recorderRef.current.stop(); streamRef.current?.getTracks().forEach((track) => track.stop()); }, []);
+
+  function chooseFile(event) {
+    const file = event.target.files?.[0];
+    if (file) setAttachment(file);
+    event.target.value = '';
+  }
+
+  async function startRecording() {
+    if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) { toast.error('Voice recording is unavailable in this browser. You can attach an audio file instead.'); return; }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mime = ['audio/webm', 'audio/mp4', 'audio/ogg'].find((type) => MediaRecorder.isTypeSupported(type));
+      if (!mime) { stream.getTracks().forEach((track) => track.stop()); toast.error('This browser cannot record a supported audio format.'); return; }
+      const chunks = [];
+      const recorder = new MediaRecorder(stream, { mimeType: mime });
+      streamRef.current = stream;
+      recorderRef.current = recorder;
+      recorder.ondataavailable = (event) => { if (event.data.size) chunks.push(event.data); };
+      recorder.onstop = () => {
+        stream.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+        if (chunks.length) setAttachment(new File(chunks, `voice-note.${mime === 'audio/mp4' ? 'm4a' : mime.split('/')[1]}`, { type: mime }));
+        setRecording(false);
+      };
+      recorder.start();
+      setRecording(true);
+    } catch { setRecording(false); toast.error('Microphone access was not granted. Check your browser permissions.'); }
+  }
+
+  function stopRecording() { if (recorderRef.current?.state === 'recording') recorderRef.current.stop(); }
+
   async function submit(event) {
     event.preventDefault();
-    if (!draft.trim() || sending || !plan) return;
+    if ((!draft.trim() && !attachment) || sending || !plan || recording) return;
     setSending(true);
     try {
-      const result = await sendMessage(plan.id, draft);
-      if (result?.ok) setDraft('');
+      const result = attachment ? await sendMedia(plan.id, attachment, draft) : await sendMessage(plan.id, draft);
+      if (result?.ok) { setDraft(''); setAttachment(null); setEmojiOpen(false); }
     } finally {
       setSending(false);
     }
@@ -139,7 +193,7 @@ export function ChatScreen() {
                   </strong>
                   <span className='mt-1 block truncate text-xs text-muted-foreground'>
                     {lastMessage
-                      ? `${lastMessage.mine ? 'You' : lastMessage.senderName}: ${lastMessage.text}`
+                      ? `${lastMessage.mine ? 'You' : lastMessage.senderName}: ${lastMessage.mediaType === 'image' ? 'Photo' : lastMessage.mediaType === 'audio' ? 'Voice note' : lastMessage.text}`
                       : 'No messages yet · Say hello'}
                   </span>
                 </span>
@@ -284,7 +338,9 @@ export function ChatScreen() {
                   <div
                     className={`rounded-2xl px-3 py-2.5 text-[13px] shadow-[0_1px_3px_rgba(15,34,24,.07)] ${message.mine ? 'rounded-br-sm bg-primary text-white' : 'rounded-bl-sm border border-border bg-white text-forest'}`}
                   >
-                    <p className='whitespace-pre-wrap break-words leading-relaxed'>{message.text}</p>
+                    {message.mediaType === 'image' && <a href={message.mediaUrl} target='_blank' rel='noopener noreferrer' aria-label='Open shared photo'><img src={message.mediaUrl} alt={message.text || `Photo shared by ${message.senderName}`} className='mb-1 max-h-72 w-full max-w-72 rounded-xl object-cover' /></a>}
+                    {message.mediaType === 'audio' && <audio controls preload='none' src={message.mediaUrl} className='mb-1 w-[min(68vw,260px)]' aria-label={`Voice note from ${message.senderName}`} />}
+                    {message.text && <p className='whitespace-pre-wrap break-words leading-relaxed'>{message.text}</p>}
                     <time
                       dateTime={message.createdAt}
                       className='mt-1 block text-right text-[10px] opacity-65'
@@ -297,26 +353,34 @@ export function ChatScreen() {
             ))}
           </div>
           <form
-            className='flex shrink-0 items-center gap-2 border-t border-border bg-card px-4 py-3 max-[760px]:px-3 max-[760px]:pb-[calc(.75rem+env(safe-area-inset-bottom))]'
+            className='shrink-0 border-t border-border bg-card px-4 py-3 max-[760px]:px-3 max-[760px]:pb-[calc(.75rem+env(safe-area-inset-bottom))]'
             onSubmit={submit}
           >
+            {attachment && <div className='mb-2 flex items-center gap-3 rounded-xl bg-soft-green p-2 text-sm'><span className='min-w-0 flex-1 truncate'>{attachment.type.startsWith('image/') ? 'Photo' : 'Voice note'} · {attachment.name}</span>{attachment.type.startsWith('image/') && previewUrl && <img src={previewUrl} alt='Selected photo preview' className='size-11 rounded-lg object-cover' />}{attachment.type.startsWith('audio/') && previewUrl && <audio controls src={previewUrl} className='max-w-40' aria-label='Preview voice note' />}<button type='button' onClick={() => setAttachment(null)} aria-label='Remove attachment' className='grid size-9 shrink-0 place-items-center rounded-full hover:bg-white'><X className='size-4' /></button></div>}
+            {recording && <p role='status' className='mb-2 text-sm font-bold text-[#b51b63]'>Recording voice note… tap stop when finished.</p>}
+            {emojiOpen && <div className='mb-2 grid grid-cols-8 gap-1 rounded-xl border border-border bg-white p-2' aria-label='Choose an emoji'>{quickEmoji.map((emoji) => <button key={emoji} type='button' onClick={() => { setDraft((value) => value + emoji); setEmojiOpen(false); }} className='grid size-9 place-items-center rounded-lg text-xl hover:bg-soft-green' aria-label={`Add ${emoji}`}>{emoji}</button>)}</div>}
+            <div className='flex items-center gap-1.5'>
+            <input ref={fileRef} type='file' accept='image/jpeg,image/png,image/webp,audio/webm,audio/mp4,audio/ogg,audio/mpeg' onChange={chooseFile} className='sr-only' aria-label='Choose a photo or audio file' />
+            <button type='button' onClick={() => fileRef.current?.click()} aria-label='Attach photo or audio' className='grid size-10 shrink-0 place-items-center rounded-full text-primary hover:bg-soft-green'><Paperclip className='size-5' /></button>
+            <button type='button' onClick={() => setEmojiOpen((open) => !open)} aria-label='Choose emoji' aria-expanded={emojiOpen} className='grid size-10 shrink-0 place-items-center rounded-full text-primary hover:bg-soft-green'><Smile className='size-5' /></button>
             <Input
               className='h-11 min-w-0 flex-1 rounded-full border-border bg-[#f8faf7] px-4'
               aria-label='Message the group'
-              required
               maxLength={500}
               placeholder='Message the group…'
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
             />
+            <button type='button' onClick={recording ? stopRecording : startRecording} aria-label={recording ? 'Stop voice recording' : 'Record voice note'} className={`grid size-10 shrink-0 place-items-center rounded-full ${recording ? 'bg-pink text-white' : 'text-primary hover:bg-soft-green'}`}>{recording ? <Square className='size-4' /> : <Mic className='size-5' />}</button>
             <ActionButton
               type='submit'
-              disabled={sending || !draft.trim()}
+              disabled={sending || recording || (!draft.trim() && !attachment)}
               className='size-11 shrink-0 rounded-full bg-pink px-0 hover:bg-[#c82270]'
             >
               <SendHorizontal aria-hidden='true' />
               <span className='sr-only'>Send message</span>
             </ActionButton>
+            </div>
           </form>
         </section>
       ) : (
