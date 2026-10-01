@@ -97,12 +97,10 @@ export default function SsoCallbackPage() {
 
   return (
     <main className='grid min-h-dvh place-items-center bg-[#f7f9f4] px-5 text-center text-[#0f2218]'>
-      <div className='max-w-md'>
-        <p className='font-heading text-2xl font-extrabold'>
-          {error ? 'We couldn’t finish signing you in' : 'Finding your people…'}
-        </p>
+      <div className='w-full max-w-md'>
         {error ? (
           <>
+            <p className='font-heading text-2xl font-extrabold'>We couldn’t finish signing you in</p>
             <p role='alert' className='mt-3 text-sm leading-relaxed text-[#526756]'>
               {error}
             </p>
@@ -114,7 +112,12 @@ export default function SsoCallbackPage() {
             </Link>
           </>
         ) : (
-          <p className='mt-2 text-sm text-[#526756]'>Finishing your Google sign-in.</p>
+          <div role='status' aria-live='polite' aria-busy='true' className='grid justify-items-center gap-4'>
+            <span className='sr-only'>Finishing your Google sign-in…</span>
+            <div className='h-10 w-40 animate-pulse rounded-xl bg-[#d8e5d9]/80' />
+            <div className='h-4 w-56 animate-pulse rounded-lg bg-[#d8e5d9]/70' />
+            <div className='mt-2 h-3 w-40 animate-pulse rounded-lg bg-[#d8e5d9]/60' />
+          </div>
         )}
         <div id='clerk-captcha' />
       </div>

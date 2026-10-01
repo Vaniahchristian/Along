@@ -76,7 +76,6 @@ export function ProfileScreen() {
   const [interests, setInterests] = useState(viewer.interests || []);
   const [photo, setPhoto] = useState(null);
   const [photoPreview, setPhotoPreview] = useState('');
-  const [removePhoto, setRemovePhoto] = useState(false);
   const [emailReminders, setEmailReminders] = useState(viewer.emailReminders !== false);
   const [emailChatSummaries, setEmailChatSummaries] = useState(viewer.emailChatSummaries === true);
   const [savingEmails, setSavingEmails] = useState(false);
@@ -113,7 +112,6 @@ export function ProfileScreen() {
     setInterests(viewer.interests || []);
     setPhoto(null);
     setPhotoPreview('');
-    setRemovePhoto(false);
     setEditing(false);
     setShowInterests(false);
   }
@@ -122,20 +120,30 @@ export function ProfileScreen() {
     const file = event.target.files?.[0];
     event.target.value = '';
     if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Choose a photo under 5 MB.');
+      return;
+    }
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      toast.error('Use a JPG, PNG, or WebP photo.');
+      return;
+    }
     setPhoto(file);
     setPhotoPreview(URL.createObjectURL(file));
-    setRemovePhoto(false);
   }
 
   async function submit(event) {
     event.preventDefault();
+    if (!photo && !viewer.avatarUrl) {
+      toast.error('Add a profile photo so people can recognize you.');
+      return;
+    }
     const form = new FormData();
     form.set('name', name);
     form.set('city', city);
     form.set('bio', bio);
     form.set('interests', JSON.stringify(interests));
     if (photo) form.set('photo', photo);
-    if (removePhoto) form.set('removePhoto', 'true');
     const result = await saveProfile(form);
     if (result?.ok) {
       const updated = result.result;
@@ -145,7 +153,6 @@ export function ProfileScreen() {
       setInterests(updated.interests);
       setPhoto(null);
       setPhotoPreview('');
-      setRemovePhoto(false);
       setEditing(false);
       setShowInterests(false);
     }
@@ -368,7 +375,7 @@ export function ProfileScreen() {
             <form onSubmit={submit} className='mt-4 grid gap-4'>
               <div className='flex items-center gap-4'>
                 <div className='relative size-20 overflow-hidden rounded-full bg-soft-green'>
-                  {photoPreview || (!removePhoto && viewer.avatarUrl) ? (
+                  {photoPreview || viewer.avatarUrl ? (
                     <img
                       src={photoPreview || viewer.avatarUrl}
                       alt='Profile preview'
@@ -386,7 +393,7 @@ export function ProfileScreen() {
                     className='inline-flex min-h-9 cursor-pointer items-center gap-2 rounded-full border border-primary px-3 text-xs font-bold text-primary'
                   >
                     <Camera className='size-4' />
-                    Choose photo
+                    {viewer.avatarUrl || photoPreview ? 'Change photo' : 'Add photo'}
                   </label>
                   <input
                     id='profile-photo'
@@ -395,21 +402,8 @@ export function ProfileScreen() {
                     accept='image/jpeg,image/png,image/webp'
                     onChange={choosePhoto}
                   />
-                  {(viewer.avatarUrl || photoPreview) && (
-                    <button
-                      type='button'
-                      onClick={() => {
-                        setPhoto(null);
-                        setPhotoPreview('');
-                        setRemovePhoto(true);
-                      }}
-                      className='ml-2 text-xs text-muted-foreground hover:underline'
-                    >
-                      Remove
-                    </button>
-                  )}
                   <p className='mt-1 text-[11px] text-muted-foreground'>
-                    JPG, PNG, or WebP · up to 5 MB
+                    Required · JPG, PNG, or WebP · up to 5 MB
                   </p>
                 </div>
               </div>

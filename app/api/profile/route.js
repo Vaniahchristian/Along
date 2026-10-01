@@ -24,11 +24,13 @@ function profileResponse(profile, db) {
     emailChatSummaries: profile.email_chat_summaries === true,
     avatarUrl: profile.avatar_path
       ? db.storage.from('profile-photos').getPublicUrl(profile.avatar_path).data.publicUrl
-      : null
+      : null,
+    onboardingCompleted: Boolean(profile.onboarding_completed_at)
   };
 }
 
-const profileColumns = 'id,display_name,email,interests,bio,city,avatar_path,suspended_at,email_reminders,email_chat_summaries';
+const profileColumns =
+  'id,display_name,email,interests,bio,city,avatar_path,suspended_at,email_reminders,email_chat_summaries,onboarding_completed_at';
 
 export async function POST(request) {
   if (request.headers.get('origin') !== new URL(request.url).origin)
@@ -119,16 +121,22 @@ export async function POST(request) {
       const interests = Array.isArray(user.unsafeMetadata?.interests)
         ? user.unsafeMetadata.interests.filter((item) => typeof item === 'string').slice(0, 5)
         : [];
+      // Email signup stores display_name in unsafeMetadata before account creation.
+      // Google OAuth skips that step, so leave onboarding open for those accounts.
+      const onboardingCompletedAt = user.unsafeMetadata?.display_name
+        ? new Date().toISOString()
+        : null;
       const created = await db
         .from('profiles')
         .insert({
           clerk_user_id: userId,
-          display_name: name,
+          display_name: name || 'Friend',
           email,
-          initials: name.slice(0, 2).toUpperCase(),
+          initials: (name || 'FR').slice(0, 2).toUpperCase(),
           tone: '',
           interests,
-          is_demo_seed: false
+          is_demo_seed: false,
+          onboarding_completed_at: onboardingCompletedAt
         })
         .select(profileColumns)
         .single();
@@ -214,14 +222,16 @@ export async function PATCH(request) {
     return failure('Choose up to eight interests.', 400);
   const file = form.get('photo');
   const removePhoto = form.get('removePhoto') === 'true';
+  const hasNewPhoto = file instanceof File && file.size > 0;
+  if (removePhoto && !hasNewPhoto)
+    return failure('A profile photo is required. Choose a new photo instead of removing it.', 400);
   if (
-    file instanceof File &&
-    file.size > 0 &&
+    hasNewPhoto &&
     (file.size > 5 * 1024 * 1024 || !['image/jpeg', 'image/png', 'image/webp'].includes(file.type))
   )
     return failure('Choose a JPG, PNG, or WebP photo under 5 MB.', 400);
-  let avatarPath = removePhoto ? null : existing.data.avatar_path;
-  if (file instanceof File && file.size > 0) {
+  let avatarPath = existing.data.avatar_path;
+  if (hasNewPhoto) {
     let image;
     try {
       image = await sharp(Buffer.from(await file.arrayBuffer()), { limitInputPixels: 25_000_000 })
@@ -240,6 +250,7 @@ export async function PATCH(request) {
       .upload(avatarPath, image, { contentType: 'image/webp', cacheControl: '31536000' });
     if (upload.error) return failure('Could not upload your photo.', 500);
   }
+  if (!avatarPath) return failure('Add a profile photo to continue.', 400);
   const updated = await db
     .from('profiles')
     .update({
@@ -248,7 +259,8 @@ export async function PATCH(request) {
       bio,
       city,
       interests,
-      avatar_path: avatarPath
+      avatar_path: avatarPath,
+      onboarding_completed_at: existing.data.onboarding_completed_at || new Date().toISOString()
     })
     .eq('id', existing.data.id)
     .eq('clerk_user_id', userId)

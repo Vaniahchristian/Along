@@ -18,9 +18,11 @@ import {
 import { Toaster } from '@/components/ui/sonner';
 import { useAlongSession } from '@/components/providers/along';
 import { PersonAvatar } from '@/components/layout/shared';
-import { TagwimiLogo, TagwimiSplash } from '@/components/layout/logo';
+import { TagwimiLogo } from '@/components/layout/logo';
+import { AppShellSkeleton } from '@/components/layout/app-skeleton';
 import { MobileDrawer } from '@/components/layout/mobile-drawer';
 import { SupportPanel } from '@/components/support/support-panel';
+import { ProfileOnboarding } from '@/components/auth/profile-onboarding';
 
 const navigation = [
   { id: 'explore', href: '/app/explore', label: 'Explore', icon: Compass },
@@ -50,7 +52,9 @@ export function AppShell({ children }) {
     hydrated,
     loadError,
     refresh,
-    notifications
+    notifications,
+    busy,
+    saveProfile
   } = useAlongSession();
   const router = useRouter();
   const pathname = usePathname();
@@ -80,9 +84,9 @@ export function AppShell({ children }) {
     return () => window.removeEventListener('tagwimi:open-support', open);
   }, []);
 
-  if (!hydrated) return <TagwimiSplash />;
+  if (!hydrated) return <AppShellSkeleton />;
   if (!viewer) {
-    if (!clerkSignedIn) return <TagwimiSplash />;
+    if (!clerkSignedIn) return <AppShellSkeleton />;
     return (
       <main className='grid min-h-dvh place-items-center bg-[#f7f9f4] px-5 text-center text-forest'>
         <div className='max-w-md'>
@@ -112,6 +116,9 @@ export function AppShell({ children }) {
 
   return (
     <div className='min-h-screen bg-background text-foreground'>
+      {(!viewer.onboardingCompleted || !viewer.avatarUrl) && (
+        <ProfileOnboarding viewer={viewer} busy={busy} onSave={saveProfile} />
+      )}
       <div className='mx-auto grid max-w-[1440px] grid-cols-[248px_minmax(0,1fr)] max-[1050px]:grid-cols-[190px_minmax(0,1fr)] max-[760px]:block'>
         <aside className='sticky top-0 flex h-screen w-full min-w-0 flex-col overflow-x-hidden border-r border-border px-3.5 pt-8 pb-6 max-[1050px]:px-3 max-[760px]:hidden'>
           <TagwimiLogo compact className='mb-7' />
