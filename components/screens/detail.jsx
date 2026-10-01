@@ -331,11 +331,35 @@ export function DetailScreen() {
               The plan
             </h2>
             <dl className='mt-4 grid gap-3 text-sm leading-relaxed'>
-              {(mine || joined) ? <div className='flex gap-3'>
-                <MapPin className='mt-0.5 size-5 shrink-0 text-primary' aria-hidden='true' />
-                <dt className='shrink-0 font-extrabold'>Meet:</dt>
-                <dd className='min-w-0 flex-1 break-words text-muted-foreground'>{plan.meet}</dd>
-              </div> : <p className='text-sm text-muted-foreground'>The exact meeting point appears after the host accepts your request.</p>}
+              {(mine || joined) ? (
+                <>
+                  <div className='flex gap-3'>
+                    <MapPin className='mt-0.5 size-5 shrink-0 text-primary' aria-hidden='true' />
+                    <dt className='shrink-0 font-extrabold'>Meet:</dt>
+                    <dd className='min-w-0 flex-1 break-words text-muted-foreground'>{plan.meet}</dd>
+                  </div>
+                  {plan.mapsUrl ? (
+                    <div className='flex gap-3'>
+                      <MapPin className='mt-0.5 size-5 shrink-0 text-primary' aria-hidden='true' />
+                      <dt className='shrink-0 font-extrabold'>Maps:</dt>
+                      <dd className='min-w-0 flex-1 break-words'>
+                        <a
+                          href={plan.mapsUrl}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className='font-semibold text-primary underline-offset-2 hover:underline'
+                        >
+                          Open pin in Google Maps
+                        </a>
+                      </dd>
+                    </div>
+                  ) : null}
+                </>
+              ) : (
+                <p className='text-sm text-muted-foreground'>
+                  The exact meeting point appears after the host accepts your request.
+                </p>
+              )}
               <div className='flex gap-3'>
                 <ShieldCheck className='mt-0.5 size-5 shrink-0 text-primary' aria-hidden='true' />
                 <dt className='shrink-0 font-extrabold'>Bring:</dt>

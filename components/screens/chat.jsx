@@ -335,6 +335,16 @@ export function ChatScreen() {
             {plan.meet && plan.meet !== plan.venue && (
               <p className='mt-1.5 truncate px-3 text-[11px] text-muted-foreground'>{plan.venue}</p>
             )}
+            {plan.mapsUrl ? (
+              <a
+                href={plan.mapsUrl}
+                target='_blank'
+                rel='noopener noreferrer'
+                className='mt-1.5 inline-flex items-center gap-1.5 px-3 text-[11px] font-bold text-primary hover:underline'
+              >
+                <MapPin className='size-3.5' /> Open Google Maps pin
+              </a>
+            ) : null}
           </div>
           <p className='shrink-0 border-b border-border/70 px-5 py-2 text-[11px] leading-snug text-muted-foreground max-[760px]:px-3'>
             Group chat is for plan details. Meet at the public venue and trust your judgement.

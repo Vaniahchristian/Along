@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/select';
 import { useAlongPlans } from '@/components/providers/along';
 import { preparePlanImage } from '@/lib/media/prepare-plan-image';
+import { normalizeMapsUrl } from '@/lib/along/maps-url';
 import { ActionButton, BackButton, PageHeading, Panel } from '@/components/layout/shared';
 
 function SelectField({ id, label, value, onChange, options }) {
@@ -74,6 +75,12 @@ export function CreateScreen() {
     if (Number.isNaN(date.getTime())) return toast.error('Choose a valid date and time.');
     if (date <= new Date()) return toast.error('Choose a future date for your plan.');
     const groupSize = Number(size);
+    let mapsUrl = null;
+    try {
+      mapsUrl = normalizeMapsUrl(form.get('mapsUrl'));
+    } catch (error) {
+      return toast.error(error.message);
+    }
     publishPlan(
       {
         category,
@@ -94,6 +101,7 @@ export function CreateScreen() {
         time: date.toLocaleTimeString('en-UG', { timeZone: 'Africa/Kampala', hour: 'numeric', minute: '2-digit' }),
         startsAt: date.toISOString(),
         meet: String(form.get('meet')).trim(),
+        mapsUrl,
         bring: String(form.get('bring')).trim() || 'Whatever you need for the activity'
       },
       photoFile
@@ -288,6 +296,23 @@ export function CreateScreen() {
                   placeholder='e.g. Comfortable shoes'
                 />
               </div>
+            </div>
+            <div className='mb-4 grid gap-2'>
+              <Label htmlFor='mapsUrl' className='text-[13px] font-extrabold'>
+                Google Maps pin <span className='font-normal text-muted-foreground'>(optional)</span>
+              </Label>
+              <Input
+                className='h-11 rounded-xl border-border bg-card'
+                id='mapsUrl'
+                name='mapsUrl'
+                type='url'
+                inputMode='url'
+                maxLength={500}
+                placeholder='Paste a maps.app.goo.gl or Google Maps link'
+              />
+              <small className='text-xs text-muted-foreground'>
+                Shared only after you accept someone — same as the exact meeting point.
+              </small>
             </div>
             <ActionButton type='submit' disabled={busy}>
               {busy ? 'Publishing…' : 'Publish plan'} <ArrowRight aria-hidden='true' />
