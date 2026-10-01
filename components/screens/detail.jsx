@@ -7,6 +7,7 @@ import {
   CalendarDays,
   Clock3,
   ImagePlus,
+  Pencil,
   Share2,
   Copy,
   MapPin,
@@ -20,6 +21,7 @@ import { planImage } from '@/lib/media/activity-image';
 import { preparePlanImage } from '@/lib/media/prepare-plan-image';
 import { sharePlan, planShareUrl } from '@/lib/along/share-plan';
 import { useAlongSession, useAlongPlans } from '@/components/providers/along';
+import Link from 'next/link';
 import {
   ActionButton,
   BackButton,
@@ -214,7 +216,15 @@ export function DetailScreen() {
     <>
       <div className='mb-4 flex flex-wrap items-center justify-between gap-3'>
         <BackButton />
-        <div className='flex gap-2'>
+        <div className='flex flex-wrap gap-2'>
+          {mine && (
+            <Link
+              href={`/app/plans/${plan.id}/edit`}
+              className='inline-flex min-h-10 items-center gap-2 rounded-full border border-primary px-3 text-xs font-bold text-primary hover:bg-secondary'
+            >
+              <Pencil className='size-4' /> Edit plan
+            </Link>
+          )}
           <button type='button' onClick={copyLink} className='inline-flex min-h-10 items-center gap-2 rounded-full border border-border px-3 text-xs font-bold text-primary'><Copy className='size-4' /> Copy link</button>
           <button type='button' onClick={handleShare} className='inline-flex min-h-10 items-center gap-2 rounded-full bg-primary px-4 text-xs font-bold text-white'><Share2 className='size-4' /> Share plan</button>
         </div>

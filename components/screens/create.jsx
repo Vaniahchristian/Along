@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ArrowRight, ImagePlus, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
@@ -40,19 +40,39 @@ function SelectField({ id, label, value, onChange, options }) {
   );
 }
 
-export function CreateScreen() {
-  const { publishPlan, busy } = useAlongPlans();
-  const [category, setCategory] = useState('Fitness');
-  const [size, setSize] = useState('2');
-  const [visibility, setVisibility] = useState('public');
+function kampalaParts(iso) {
+  if (!iso) return { date: '', time: '' };
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return { date: '', time: '' };
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Africa/Kampala',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  }).formatToParts(date);
+  const get = (type) => parts.find((part) => part.type === type)?.value || '';
+  return { date: `${get('year')}-${get('month')}-${get('day')}`, time: `${get('hour')}:${get('minute')}` };
+}
+
+export function CreateScreen({ plan = null } = {}) {
+  const editing = Boolean(plan);
+  const { publishPlan, updatePlan, busy } = useAlongPlans();
+  const initialWhen = useMemo(() => kampalaParts(plan?.startsAt), [plan?.startsAt]);
+  const [category, setCategory] = useState(plan?.category || 'Fitness');
+  const [size, setSize] = useState(String(plan?.size || 2));
+  const [visibility, setVisibility] = useState(plan?.visibility || 'public');
   const [photoFile, setPhotoFile] = useState(null);
-  const [preview, setPreview] = useState(null);
+  const [preview, setPreview] = useState(plan?.imageUrl || null);
+  const [previewIsObjectUrl, setPreviewIsObjectUrl] = useState(false);
 
   useEffect(
     () => () => {
-      if (preview) URL.revokeObjectURL(preview);
+      if (previewIsObjectUrl && preview) URL.revokeObjectURL(preview);
     },
-    [preview]
+    [preview, previewIsObjectUrl]
   );
 
   async function choosePhoto(event) {
@@ -61,8 +81,10 @@ export function CreateScreen() {
     if (!file) return;
     try {
       const prepared = await preparePlanImage(file);
+      if (previewIsObjectUrl && preview) URL.revokeObjectURL(preview);
       setPhotoFile(prepared);
       setPreview(URL.createObjectURL(prepared));
+      setPreviewIsObjectUrl(true);
     } catch (error) {
       toast.error(error.message);
     }
@@ -73,7 +95,11 @@ export function CreateScreen() {
     const form = new FormData(event.currentTarget);
     const date = new Date(`${form.get('date')}T${form.get('time')}:00+03:00`);
     if (Number.isNaN(date.getTime())) return toast.error('Choose a valid date and time.');
-    if (date <= new Date()) return toast.error('Choose a future date for your plan.');
+    const unchangedStart =
+      editing && plan?.startsAt && Math.abs(date.getTime() - new Date(plan.startsAt).getTime()) < 60_000;
+    if (!unchangedStart && date <= new Date()) {
+      return toast.error('Choose a future date for your plan.');
+    }
     const groupSize = Number(size);
     let mapsUrl = null;
     try {
@@ -81,40 +107,50 @@ export function CreateScreen() {
     } catch (error) {
       return toast.error(error.message);
     }
-    publishPlan(
-      {
-        category,
-        size: groupSize,
-        spots: groupSize - 1,
-        status: 'open',
-        visibility,
-        costNote: String(form.get('costNote') || '').trim(),
-        title: String(form.get('title')).trim(),
-        venue: String(form.get('venue')).trim(),
-        intro: String(form.get('intro')).trim(),
-        date: date.toLocaleDateString('en-UG', {
-          timeZone: 'Africa/Kampala',
-          weekday: 'short',
-          day: 'numeric',
-          month: 'short'
-        }),
-        time: date.toLocaleTimeString('en-UG', { timeZone: 'Africa/Kampala', hour: 'numeric', minute: '2-digit' }),
-        startsAt: date.toISOString(),
-        meet: String(form.get('meet')).trim(),
-        mapsUrl,
-        bring: String(form.get('bring')).trim() || 'Whatever you need for the activity'
-      },
-      photoFile
-    );
+    const payload = {
+      category,
+      size: groupSize,
+      spots: groupSize - 1,
+      status: 'open',
+      visibility,
+      costNote: String(form.get('costNote') || '').trim(),
+      title: String(form.get('title')).trim(),
+      venue: String(form.get('venue')).trim(),
+      intro: String(form.get('intro')).trim(),
+      date: date.toLocaleDateString('en-UG', {
+        timeZone: 'Africa/Kampala',
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short'
+      }),
+      time: date.toLocaleTimeString('en-UG', {
+        timeZone: 'Africa/Kampala',
+        hour: 'numeric',
+        minute: '2-digit'
+      }),
+      startsAt: date.toISOString(),
+      meet: String(form.get('meet')).trim(),
+      mapsUrl,
+      bring: String(form.get('bring')).trim() || 'Whatever you need for the activity'
+    };
+    if (editing) updatePlan(plan.id, payload, photoFile);
+    else publishPlan(payload, photoFile);
   }
 
   return (
     <>
       <BackButton />
-      <PageHeading title='Make a plan' description='Give people a clear reason to say “I’m in.”' />
+      <PageHeading
+        title={editing ? 'Edit plan' : 'Make a plan'}
+        description={
+          editing
+            ? 'Update the details people see before they ask to join.'
+            : 'Give people a clear reason to say “I’m in.”'
+        }
+      />
       <div className='grid grid-cols-[minmax(0,1.2fr)_minmax(260px,.8fr)] gap-5 max-[760px]:grid-cols-1'>
         <Panel>
-          <form onSubmit={submit}>
+          <form key={plan?.id || 'new'} onSubmit={submit}>
             <div className='mb-4 grid gap-2'>
               <Label htmlFor='activity' className='text-[13px] font-extrabold'>
                 What do you want to do?
@@ -125,6 +161,7 @@ export function CreateScreen() {
                 name='title'
                 required
                 maxLength={80}
+                defaultValue={plan?.title || ''}
                 placeholder='e.g. Try the Saturday beginner swim class'
               />
               <small className='text-xs text-muted-foreground'>
@@ -169,21 +206,25 @@ export function CreateScreen() {
                   onChange={choosePhoto}
                   className='sr-only'
                 />
-                {preview && (
+                {photoFile && (
                   <button
                     type='button'
                     onClick={() => {
+                      if (previewIsObjectUrl && preview) URL.revokeObjectURL(preview);
                       setPhotoFile(null);
-                      setPreview(null);
+                      setPreview(plan?.imageUrl || null);
+                      setPreviewIsObjectUrl(false);
                     }}
                     className='inline-flex min-h-10 items-center gap-1 text-xs font-bold text-muted-foreground hover:text-forest'
                   >
-                    <X className='size-4' aria-hidden='true' /> Remove
+                    <X className='size-4' aria-hidden='true' /> Undo new photo
                   </button>
                 )}
               </div>
               <p className='mt-1 text-xs text-muted-foreground'>
-                If you skip this, Tagwimi will show a labeled activity illustration instead.
+                {editing
+                  ? 'Leave this as is to keep the current photo, or choose a new one.'
+                  : 'If you skip this, Tagwimi will show a labeled activity illustration instead.'}
               </p>
             </div>
             <div className='grid grid-cols-2 gap-4 max-[760px]:grid-cols-1'>
@@ -212,9 +253,14 @@ export function CreateScreen() {
               label='Who can find this plan?'
               value={visibility}
               onChange={setVisibility}
-              options={[["public", "Public · Explore and shared link"], ["link_only", "Link only · shared link"]]}
+              options={[
+                ['public', 'Public · Explore and shared link'],
+                ['link_only', 'Link only · shared link']
+              ]}
             />
-            <p className='-mt-2 mb-4 text-xs text-muted-foreground'>Anyone with a link can forward it. You approve every request to join.</p>
+            <p className='-mt-2 mb-4 text-xs text-muted-foreground'>
+              Anyone with a link can forward it. You approve every request to join.
+            </p>
             <div className='mb-4 grid gap-2'>
               <Label htmlFor='venue' className='text-[13px] font-extrabold'>
                 General location · visible on the invitation
@@ -225,12 +271,22 @@ export function CreateScreen() {
                 name='venue'
                 required
                 maxLength={90}
+                defaultValue={plan?.venue || ''}
                 placeholder='Venue name and neighbourhood'
               />
             </div>
             <div className='mb-4 grid gap-2'>
-              <Label htmlFor='costNote' className='text-[13px] font-extrabold'>Cost information <span className='font-normal text-muted-foreground'>(optional)</span></Label>
-              <Input id='costNote' name='costNote' maxLength={120} className='h-11 rounded-xl border-border bg-card' placeholder='e.g. Pool entry paid separately' />
+              <Label htmlFor='costNote' className='text-[13px] font-extrabold'>
+                Cost information <span className='font-normal text-muted-foreground'>(optional)</span>
+              </Label>
+              <Input
+                id='costNote'
+                name='costNote'
+                maxLength={120}
+                defaultValue={plan?.costNote || ''}
+                className='h-11 rounded-xl border-border bg-card'
+                placeholder='e.g. Pool entry paid separately'
+              />
             </div>
             <div className='grid grid-cols-2 gap-4 max-[760px]:grid-cols-1'>
               <div className='mb-4 grid gap-2'>
@@ -243,6 +299,7 @@ export function CreateScreen() {
                   name='date'
                   type='date'
                   required
+                  defaultValue={initialWhen.date}
                 />
               </div>
               <div className='mb-4 grid gap-2'>
@@ -255,10 +312,13 @@ export function CreateScreen() {
                   name='time'
                   type='time'
                   required
+                  defaultValue={initialWhen.time}
                 />
               </div>
             </div>
-            <p className='mb-4 text-xs text-muted-foreground'>The exact meeting point is shared only after you accept someone.</p>
+            <p className='mb-4 text-xs text-muted-foreground'>
+              The exact meeting point is shared only after you accept someone.
+            </p>
             <div className='mb-4 grid gap-2'>
               <Label htmlFor='intro' className='text-[13px] font-extrabold'>
                 What should people know?
@@ -269,6 +329,7 @@ export function CreateScreen() {
                 name='intro'
                 required
                 maxLength={320}
+                defaultValue={plan?.intro || ''}
                 placeholder="The pace, vibe, and why you'd like company"
               />
             </div>
@@ -282,6 +343,7 @@ export function CreateScreen() {
                   id='meet'
                   name='meet'
                   required
+                  defaultValue={plan?.meet || ''}
                   placeholder='e.g. At the front entrance'
                 />
               </div>
@@ -293,6 +355,7 @@ export function CreateScreen() {
                   className='h-11 rounded-xl border-border bg-card'
                   id='bring'
                   name='bring'
+                  defaultValue={plan?.bring || ''}
                   placeholder='e.g. Comfortable shoes'
                 />
               </div>
@@ -308,6 +371,7 @@ export function CreateScreen() {
                 type='url'
                 inputMode='url'
                 maxLength={500}
+                defaultValue={plan?.mapsUrl || ''}
                 placeholder='Paste a maps.app.goo.gl or Google Maps link'
               />
               <small className='text-xs text-muted-foreground'>
@@ -315,7 +379,8 @@ export function CreateScreen() {
               </small>
             </div>
             <ActionButton type='submit' disabled={busy}>
-              {busy ? 'Publishing…' : 'Publish plan'} <ArrowRight aria-hidden='true' />
+              {busy ? (editing ? 'Saving…' : 'Publishing…') : editing ? 'Save changes' : 'Publish plan'}{' '}
+              <ArrowRight aria-hidden='true' />
             </ActionButton>
           </form>
         </Panel>

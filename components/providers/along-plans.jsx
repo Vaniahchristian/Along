@@ -8,6 +8,7 @@ import {
   cancelJoinRequest,
   acceptHostRequest as dbAcceptHostRequest,
   publishPlan as dbPublishPlan,
+  updatePlan as dbUpdatePlan,
   updatePlanVisibility as dbUpdatePlanVisibility,
   submitPlanReport
 } from '@/lib/along';
@@ -16,8 +17,11 @@ import { useAlongCore } from '@/components/providers/along-core';
 const AlongPlansContext = createContext(null);
 
 async function flushPlanEmails() {
-  try { await fetch('/api/email/dispatch', { method: 'POST', credentials: 'same-origin' }); }
-  catch { /* Queued messages are retried by the scheduled worker. */ }
+  try {
+    await fetch('/api/email/dispatch', { method: 'POST', credentials: 'same-origin' });
+  } catch {
+    /* Queued messages are retried by the scheduled worker. */
+  }
 }
 
 export function AlongPlansProvider({ children }) {
@@ -25,7 +29,11 @@ export function AlongPlansProvider({ children }) {
   const { data, viewer, busy, refresh, withBusy, runAction } = useAlongCore();
 
   const requestJoin = useCallback(
-    (id, intro = '') => runAction(async () => { await requestJoinPlan(viewer.id, id, intro); await flushPlanEmails(); }, 'Request sent.'),
+    (id, intro = '') =>
+      runAction(async () => {
+        await requestJoinPlan(viewer.id, id, intro);
+        await flushPlanEmails();
+      }, 'Request sent.'),
     [runAction, viewer?.id]
   );
 
@@ -35,12 +43,17 @@ export function AlongPlansProvider({ children }) {
   );
 
   const updateVisibility = useCallback(
-    (id, visibility) => runAction(() => dbUpdatePlanVisibility(viewer.id, id, visibility), 'Sharing setting updated.'),
+    (id, visibility) =>
+      runAction(() => dbUpdatePlanVisibility(viewer.id, id, visibility), 'Sharing setting updated.'),
     [runAction, viewer?.id]
   );
 
   const approveRequest = useCallback(
-    (planId, requestId) => runAction(async () => { await dbAcceptHostRequest(planId, requestId); await flushPlanEmails(); }, 'Request accepted.'),
+    (planId, requestId) =>
+      runAction(async () => {
+        await dbAcceptHostRequest(planId, requestId);
+        await flushPlanEmails();
+      }, 'Request accepted.'),
     [runAction]
   );
 
@@ -77,6 +90,27 @@ export function AlongPlansProvider({ children }) {
     [imageRequest, refresh, router, viewer?.id, withBusy]
   );
 
+  const updatePlan = useCallback(
+    (id, plan, file) => {
+      if (!viewer?.id) return;
+      return withBusy(async () => {
+        await dbUpdatePlan(viewer.id, id, plan);
+        let imageError = null;
+        if (file)
+          try {
+            await imageRequest(id, 'POST', file);
+          } catch (error) {
+            imageError = error.message;
+          }
+        await refresh(viewer.id);
+        router.push(`/app/plans/${id}`);
+        if (imageError) toast.error(`Plan updated, but the photo was not saved: ${imageError}`);
+        else toast.success('Plan updated.');
+      });
+    },
+    [imageRequest, refresh, router, viewer?.id, withBusy]
+  );
+
   const replacePlanImage = useCallback(
     (id, file) => runAction(() => imageRequest(id, 'POST', file), 'Photo updated.'),
     [imageRequest, runAction]
@@ -105,6 +139,7 @@ export function AlongPlansProvider({ children }) {
       cancelRequest,
       approveRequest,
       publishPlan,
+      updatePlan,
       replacePlanImage,
       removePlanImage,
       reportPlan
@@ -119,6 +154,7 @@ export function AlongPlansProvider({ children }) {
       replacePlanImage,
       reportPlan,
       requestJoin,
+      updatePlan,
       updateVisibility
     ]
   );
