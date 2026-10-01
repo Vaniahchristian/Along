@@ -16,6 +16,7 @@ import {
 import { useAlongPlans } from '@/components/providers/along';
 import { preparePlanImage } from '@/lib/media/prepare-plan-image';
 import { normalizeMapsUrl } from '@/lib/along/maps-url';
+import { defaultEndsAt } from '@/lib/along/plan-lifecycle';
 import { ActionButton, BackButton, PageHeading, Panel } from '@/components/layout/shared';
 
 function SelectField({ id, label, value, onChange, options }) {
@@ -61,12 +62,35 @@ export function CreateScreen({ plan = null } = {}) {
   const editing = Boolean(plan);
   const { publishPlan, updatePlan, busy } = useAlongPlans();
   const initialWhen = useMemo(() => kampalaParts(plan?.startsAt), [plan?.startsAt]);
+  const initialEnd = useMemo(() => {
+    if (plan?.endsAt) return kampalaParts(plan.endsAt);
+    if (plan?.startsAt) return kampalaParts(defaultEndsAt(plan.startsAt));
+    return { date: '', time: '' };
+  }, [plan?.endsAt, plan?.startsAt]);
   const [category, setCategory] = useState(plan?.category || 'Fitness');
   const [size, setSize] = useState(String(plan?.size || 2));
   const [visibility, setVisibility] = useState(plan?.visibility || 'public');
+  const [startDate, setStartDate] = useState(initialWhen.date);
+  const [startTime, setStartTime] = useState(initialWhen.time);
+  const [endDate, setEndDate] = useState(initialEnd.date);
+  const [endTime, setEndTime] = useState(initialEnd.time);
+  const [endTouched, setEndTouched] = useState(Boolean(plan?.endsAt));
   const [photoFile, setPhotoFile] = useState(null);
   const [preview, setPreview] = useState(plan?.imageUrl || null);
   const [previewIsObjectUrl, setPreviewIsObjectUrl] = useState(false);
+
+  useEffect(() => {
+    if (endTouched || !startDate || !startTime) return;
+    try {
+      const start = new Date(`${startDate}T${startTime}:00+03:00`);
+      if (Number.isNaN(start.getTime())) return;
+      const parts = kampalaParts(defaultEndsAt(start.toISOString()));
+      setEndDate(parts.date);
+      setEndTime(parts.time);
+    } catch {
+      /* ignore while typing */
+    }
+  }, [startDate, startTime, endTouched]);
 
   useEffect(
     () => () => {
@@ -93,13 +117,16 @@ export function CreateScreen({ plan = null } = {}) {
   function submit(event) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    const date = new Date(`${form.get('date')}T${form.get('time')}:00+03:00`);
-    if (Number.isNaN(date.getTime())) return toast.error('Choose a valid date and time.');
+    const date = new Date(`${startDate}T${startTime}:00+03:00`);
+    if (Number.isNaN(date.getTime())) return toast.error('Choose a valid start date and time.');
     const unchangedStart =
       editing && plan?.startsAt && Math.abs(date.getTime() - new Date(plan.startsAt).getTime()) < 60_000;
     if (!unchangedStart && date <= new Date()) {
-      return toast.error('Choose a future date for your plan.');
+      return toast.error('Choose a future start time for your plan.');
     }
+    const end = new Date(`${endDate}T${endTime}:00+03:00`);
+    if (Number.isNaN(end.getTime())) return toast.error('Choose a valid end date and time.');
+    if (end < date) return toast.error('End time must be after the start time.');
     const groupSize = Number(size);
     let mapsUrl = null;
     try {
@@ -129,6 +156,7 @@ export function CreateScreen({ plan = null } = {}) {
         minute: '2-digit'
       }),
       startsAt: date.toISOString(),
+      endsAt: end.toISOString(),
       meet: String(form.get('meet')).trim(),
       mapsUrl,
       bring: String(form.get('bring')).trim() || 'Whatever you need for the activity'
@@ -291,7 +319,7 @@ export function CreateScreen({ plan = null } = {}) {
             <div className='grid grid-cols-2 gap-4 max-[760px]:grid-cols-1'>
               <div className='mb-4 grid gap-2'>
                 <Label htmlFor='date' className='text-[13px] font-extrabold'>
-                  Date
+                  Starts
                 </Label>
                 <Input
                   className='h-11 rounded-xl border-border bg-card'
@@ -299,12 +327,13 @@ export function CreateScreen({ plan = null } = {}) {
                   name='date'
                   type='date'
                   required
-                  defaultValue={initialWhen.date}
+                  value={startDate}
+                  onChange={(event) => setStartDate(event.target.value)}
                 />
               </div>
               <div className='mb-4 grid gap-2'>
                 <Label htmlFor='time' className='text-[13px] font-extrabold'>
-                  Time
+                  Start time
                 </Label>
                 <Input
                   className='h-11 rounded-xl border-border bg-card'
@@ -312,10 +341,51 @@ export function CreateScreen({ plan = null } = {}) {
                   name='time'
                   type='time'
                   required
-                  defaultValue={initialWhen.time}
+                  value={startTime}
+                  onChange={(event) => setStartTime(event.target.value)}
                 />
               </div>
             </div>
+            <div className='grid grid-cols-2 gap-4 max-[760px]:grid-cols-1'>
+              <div className='mb-4 grid gap-2'>
+                <Label htmlFor='endDate' className='text-[13px] font-extrabold'>
+                  Ends
+                </Label>
+                <Input
+                  className='h-11 rounded-xl border-border bg-card'
+                  id='endDate'
+                  name='endDate'
+                  type='date'
+                  required
+                  value={endDate}
+                  onChange={(event) => {
+                    setEndTouched(true);
+                    setEndDate(event.target.value);
+                  }}
+                />
+              </div>
+              <div className='mb-4 grid gap-2'>
+                <Label htmlFor='endTime' className='text-[13px] font-extrabold'>
+                  End time
+                </Label>
+                <Input
+                  className='h-11 rounded-xl border-border bg-card'
+                  id='endTime'
+                  name='endTime'
+                  type='time'
+                  required
+                  value={endTime}
+                  onChange={(event) => {
+                    setEndTouched(true);
+                    setEndTime(event.target.value);
+                  }}
+                />
+              </div>
+            </div>
+            <p className='-mt-2 mb-4 text-xs text-muted-foreground'>
+              Defaults to 24 hours after start. Extend it for longer trips. People can still join until
+              then, then the plan closes.
+            </p>
             <p className='mb-4 text-xs text-muted-foreground'>
               The exact meeting point is shared only after you accept someone.
             </p>

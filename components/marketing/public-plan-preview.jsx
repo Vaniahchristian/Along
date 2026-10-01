@@ -9,6 +9,7 @@ import { ClerkAlongProvider, useAlongPlans, useAlongSession } from '@/components
 import { AuthDialog } from '@/components/marketing/auth-dialog';
 import { TagwimiLogo } from '@/components/layout/logo';
 import { sharePlan, planShareUrl } from '@/lib/along/share-plan';
+import { isPlanJoinable } from '@/lib/along/plan-lifecycle';
 
 function Invitation({ plan }) {
   const { viewer, hydrated, loadError } = useAlongSession();
@@ -19,7 +20,7 @@ function Invitation({ plan }) {
   const isHost = viewer?.id === plan.hostId;
   const joined = data.joined.includes(plan.id);
   const requested = data.requests.includes(plan.id);
-  const available = plan.status === 'open' && plan.spots > 0;
+  const available = isPlanJoinable(plan);
 
   useEffect(() => {
     if (!hydrated || !viewer || !available) return;

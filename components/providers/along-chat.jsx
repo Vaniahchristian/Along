@@ -263,8 +263,15 @@ export function AlongChatProvider({ children }) {
   );
 
   const complete = useCallback(
-    (id) => runAction(() => markComplete(viewer.id, id), 'Plan completed.'),
-    [runAction, viewer?.id]
+    (id) => {
+      const plan = data.plans.find((item) => item.id === id);
+      const hostClosing = plan?.hostId === viewer?.id;
+      return runAction(
+        () => markComplete(viewer.id, id),
+        hostClosing ? 'Plan marked completed and closed.' : 'Plan completed.'
+      );
+    },
+    [data.plans, runAction, viewer?.id]
   );
 
   const deleteConversation = useCallback(

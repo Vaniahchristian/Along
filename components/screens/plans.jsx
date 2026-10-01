@@ -202,17 +202,18 @@ export function PlansScreen() {
     .filter(
       (plan) =>
         (data.joined.includes(plan.id) || hosted.some((item) => item.id === plan.id)) &&
-        !data.completed.includes(plan.id)
+        !data.completed.includes(plan.id) &&
+        plan.status === 'open'
     )
     .sort((a, b) => planDate(a) - planDate(b));
   const requests = data.plans
-    .filter((plan) => data.requests.includes(plan.id))
+    .filter((plan) => data.requests.includes(plan.id) && plan.status === 'open')
     .sort((a, b) => planDate(a) - planDate(b));
   const past = data.plans
     .filter(
       (plan) =>
-        data.completed.includes(plan.id) &&
-        (data.joined.includes(plan.id) || hosted.some((item) => item.id === plan.id))
+        (data.joined.includes(plan.id) || hosted.some((item) => item.id === plan.id)) &&
+        (data.completed.includes(plan.id) || plan.status !== 'open')
     )
     .sort((a, b) => planDate(b) - planDate(a));
   const featured = tab === 'upcoming' ? upcoming[0] : null;

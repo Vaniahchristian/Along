@@ -20,6 +20,7 @@ import { toast } from 'sonner';
 import { planImage } from '@/lib/media/activity-image';
 import { preparePlanImage } from '@/lib/media/prepare-plan-image';
 import { sharePlan, planShareUrl } from '@/lib/along/share-plan';
+import { isPlanJoinable } from '@/lib/along/plan-lifecycle';
 import { useAlongSession, useAlongPlans } from '@/components/providers/along';
 import Link from 'next/link';
 import {
@@ -32,43 +33,81 @@ import {
   ReportForm
 } from '@/components/layout/shared';
 
-function JoinAction({ plan, mine, joined, requested, busy, openChat, requestJoin, cancelRequest }) {
-  return mine || joined ? (
-    <ActionButton type='button' className='w-full' onClick={() => openChat(plan.id)}>
-      Open group chat
-    </ActionButton>
-  ) : requested ? (
-    <>
-      <ActionButton
-        type='button'
-        tone='secondary'
-        className='w-full'
-        disabled={busy}
-        onClick={() => cancelRequest(plan.id)}
-      >
-        {busy ? 'Cancelling…' : 'Cancel request'}
-      </ActionButton>
-      <p className='mt-2 text-center text-xs leading-relaxed text-muted-foreground'>
-        Your request is waiting for the host.
-      </p>
-    </>
-  ) : plan.spots > 0 ? (
-    <>
-      <button
-        type='button'
-        disabled={busy}
-        onClick={() => requestJoin(plan.id)}
-        className='min-h-12 w-full rounded-full bg-gradient-to-r from-pink to-amber px-5 text-sm font-extrabold text-forest shadow-[0_8px_18px_rgba(236,72,153,.15)] transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest disabled:cursor-not-allowed disabled:opacity-50'
-      >
-        {busy ? 'Sending request…' : 'Ask to join'}
-      </button>
-      <p className='mt-2 text-center text-xs leading-relaxed text-muted-foreground'>
-        The host will review your request before chat opens.
-      </p>
-    </>
-  ) : (
+function JoinAction({
+  plan,
+  mine,
+  joined,
+  requested,
+  done,
+  busy,
+  openChat,
+  requestJoin,
+  cancelRequest,
+  completePlan
+}) {
+  if (mine || joined) {
+    return (
+      <div className='grid gap-2'>
+        <ActionButton type='button' className='w-full' onClick={() => openChat(plan.id)}>
+          Open group chat
+        </ActionButton>
+        {(mine || joined) && (
+          <ActionButton
+            type='button'
+            tone='secondary'
+            className='w-full'
+            disabled={busy || done || plan.status !== 'open'}
+            onClick={() => completePlan(plan.id)}
+          >
+            {done || plan.status !== 'open' ? 'Plan completed' : mine ? 'Mark completed · close plan' : 'Mark completed'}
+          </ActionButton>
+        )}
+        {mine && plan.status === 'open' && (
+          <p className='text-center text-xs leading-relaxed text-muted-foreground'>
+            Marking completed closes the plan for new joiners and moves everyone to Past.
+          </p>
+        )}
+      </div>
+    );
+  }
+  if (requested) {
+    return (
+      <>
+        <ActionButton
+          type='button'
+          tone='secondary'
+          className='w-full'
+          disabled={busy}
+          onClick={() => cancelRequest(plan.id)}
+        >
+          {busy ? 'Cancelling…' : 'Cancel request'}
+        </ActionButton>
+        <p className='mt-2 text-center text-xs leading-relaxed text-muted-foreground'>
+          Your request is waiting for the host.
+        </p>
+      </>
+    );
+  }
+  if (isPlanJoinable(plan)) {
+    return (
+      <>
+        <button
+          type='button'
+          disabled={busy}
+          onClick={() => requestJoin(plan.id)}
+          className='min-h-12 w-full rounded-full bg-gradient-to-r from-pink to-amber px-5 text-sm font-extrabold text-forest shadow-[0_8px_18px_rgba(236,72,153,.15)] transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest disabled:cursor-not-allowed disabled:opacity-50'
+        >
+          {busy ? 'Sending request…' : 'Ask to join'}
+        </button>
+        <p className='mt-2 text-center text-xs leading-relaxed text-muted-foreground'>
+          The host will review your request before chat opens.
+        </p>
+      </>
+    );
+  }
+  return (
     <p className='rounded-xl bg-secondary p-3 text-center text-sm text-muted-foreground'>
-      This plan is full.
+      {plan.status !== 'open' ? 'This plan is closed.' : plan.spots <= 0 ? 'This plan is full.' : 'This plan is no longer accepting people.'}
     </p>
   );
 }
@@ -78,10 +117,12 @@ function JoinPanel({
   mine,
   joined,
   requested,
+  done,
   busy,
   openChat,
   requestJoin,
   cancelRequest,
+  completePlan,
   showHostProfile
 }) {
   const going = Math.max(0, plan.size - plan.spots);
@@ -136,10 +177,12 @@ function JoinPanel({
         mine={mine}
         joined={joined}
         requested={requested}
+        done={done}
         busy={busy}
         openChat={openChat}
         requestJoin={requestJoin}
         cancelRequest={cancelRequest}
+        completePlan={completePlan}
       />
     </Panel>
   );
@@ -157,6 +200,7 @@ export function DetailScreen() {
     replacePlanImage,
     removePlanImage,
     updateVisibility,
+    completePlan,
     busy
   } = useAlongPlans();
   const { viewer, openChat } = useAlongSession();
@@ -175,16 +219,19 @@ export function DetailScreen() {
   const requested = data.requests.includes(plan.id);
   const joined = data.joined.includes(plan.id);
   const mine = plan.hostId === viewer?.id;
+  const done = data.completed.includes(plan.id) || plan.status !== 'open';
   const incoming = data.hostRequests.filter((request) => request.planId === plan.id);
   const joinProps = {
     plan,
     mine,
     joined,
     requested,
+    done,
     busy,
     openChat,
     requestJoin,
     cancelRequest,
+    completePlan,
     showHostProfile: () => setHostPreview(true)
   };
   const going = Math.max(0, plan.size - plan.spots);

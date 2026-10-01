@@ -10,6 +10,7 @@ import {
   publishPlan as dbPublishPlan,
   updatePlan as dbUpdatePlan,
   updatePlanVisibility as dbUpdatePlanVisibility,
+  markComplete as dbMarkComplete,
   submitPlanReport
 } from '@/lib/along';
 import { useAlongCore } from '@/components/providers/along-core';
@@ -130,6 +131,18 @@ export function AlongPlansProvider({ children }) {
     [runAction, viewer?.id]
   );
 
+  const completePlan = useCallback(
+    (id) => {
+      const plan = data.plans.find((item) => item.id === id);
+      const hostClosing = plan?.hostId === viewer?.id;
+      return runAction(
+        () => dbMarkComplete(viewer.id, id),
+        hostClosing ? 'Plan marked completed and closed.' : 'Plan completed.'
+      );
+    },
+    [data.plans, runAction, viewer?.id]
+  );
+
   const value = useMemo(
     () => ({
       data,
@@ -142,12 +155,14 @@ export function AlongPlansProvider({ children }) {
       updatePlan,
       replacePlanImage,
       removePlanImage,
-      reportPlan
+      reportPlan,
+      completePlan
     }),
     [
       approveRequest,
       busy,
       cancelRequest,
+      completePlan,
       data,
       publishPlan,
       removePlanImage,

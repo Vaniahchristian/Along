@@ -79,7 +79,7 @@ export function ChatScreen() {
     : available[0] || null;
   const messages = plan ? (data.messages[plan.id] ?? []) : [];
   const checked = plan && data.checkins.includes(plan.id);
-  const done = plan && data.completed.includes(plan.id);
+  const done = plan && (data.completed.includes(plan.id) || plan.status !== 'open');
   const members = plan ? Math.max(1, Number(plan.size || 0) - Number(plan.spots || 0)) : 0;
 
   useEffect(() => {
@@ -299,11 +299,15 @@ export function ChatScreen() {
                 </button>
                 <button
                   type='button'
-                  disabled={done}
+                  disabled={done || plan.status !== 'open'}
                   onClick={() => complete(plan.id)}
                   className='rounded-xl px-3 py-2 text-left text-sm font-bold text-forest hover:bg-secondary disabled:opacity-50'
                 >
-                  {done ? 'Plan completed' : 'Mark completed'}
+                  {done || plan.status !== 'open'
+                    ? 'Plan completed'
+                    : plan.hostId === viewer?.id
+                      ? 'Mark completed · close plan'
+                      : 'Mark completed'}
                 </button>
                 <ReportForm planId={plan.id} hasPhoto={Boolean(plan.imageUrl)} messages={messages} />
                 <button

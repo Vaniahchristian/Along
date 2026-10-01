@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { ListPagination } from '@/components/ui/list-pagination';
 import { planImage } from '@/lib/media/activity-image';
 import { useAlongSession, useAlongPlans } from '@/components/providers/along';
+import { isPlanJoinable } from '@/lib/along/plan-lifecycle';
 import { BeginnerBadge, CategoryBadge, EmptyState, PersonAvatar } from '@/components/layout/shared';
 
 const categories = ['All', 'Fitness', 'Outings', 'Learning'];
@@ -93,9 +94,8 @@ export function ExploreScreen() {
     () =>
       data.plans.filter(
         (plan) =>
-          plan.status === 'open' &&
+          isPlanJoinable(plan) &&
           plan.visibility !== 'link_only' &&
-          plan.spots > 0 &&
           (category === 'All' || plan.category === category) &&
           `${plan.title} ${plan.venue} ${plan.category}`.toLowerCase().includes(query.toLowerCase())
       ),
