@@ -19,7 +19,7 @@ grant update (
 
 grant select (starts_at) on public.plans to authenticated;
 
-grant update (meet, maps_url) on public.plan_meeting_details to authenticated;
+grant select, insert, update on table public.plan_meeting_details to authenticated;
 
 drop policy if exists "hosts update meeting points" on public.plan_meeting_details;
 create policy "hosts update meeting points" on public.plan_meeting_details
