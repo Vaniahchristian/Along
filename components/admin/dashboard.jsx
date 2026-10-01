@@ -1,21 +1,18 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   ArrowLeft,
-  BarChart3,
   CalendarDays,
   ClipboardList,
   Flag,
   History,
   LayoutDashboard,
   LifeBuoy,
-  LoaderCircle,
   Menu,
   Megaphone,
   RefreshCw,
-  Search,
   ShieldCheck,
   Users
 } from 'lucide-react';
@@ -25,6 +22,17 @@ import { TagwimiLogo } from '@/components/layout/logo';
 import { MobileDrawer } from '@/components/layout/mobile-drawer';
 import { Broadcasts } from '@/components/admin/broadcasts';
 import { SupportInbox } from '@/components/admin/support';
+import { Plans } from '@/components/admin/plans';
+import { Members } from '@/components/admin/members';
+import {
+  Badge,
+  Empty,
+  button,
+  card,
+  field,
+  formatDate as date,
+  scheduled
+} from '@/components/admin/shared';
 import { ListPagination } from '@/components/ui/list-pagination';
 import { adminAction, getAdminAccess, loadAdminDashboard } from '@/lib/admin/api';
 import { setClerkTokenGetter } from '@/lib/supabase/client';
@@ -38,41 +46,7 @@ const tabs = [
   { id: 'broadcasts', label: 'Broadcasts', icon: Megaphone },
   { id: 'history', label: 'Admin history', icon: History }
 ];
-const date = (value) =>
-  value
-    ? new Date(value).toLocaleDateString('en-UG', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric'
-      })
-    : '—';
-const scheduled = (plan) => {
-  const label = String(plan.date_label || '').replace(/^[A-Za-z]{3},?\s+/, '');
-  const year = new Date(plan.created_at).getUTCFullYear();
-  let stamp = Date.parse(`${label} ${year} ${plan.time_label} GMT+0300`);
-  if (stamp < new Date(plan.created_at).getTime() - 864e5)
-    stamp = Date.parse(`${label} ${year + 1} ${plan.time_label} GMT+0300`);
-  return stamp;
-};
-const field =
-  'min-h-11 w-full rounded-xl border border-[#d7e3d8] bg-white px-3 text-sm outline-none focus:border-[#3b793f]';
-const button =
-  'min-h-10 rounded-xl bg-[#256739] px-4 text-sm font-bold text-white disabled:opacity-50';
-const card =
-  'rounded-[22px] border border-[#dde8df] bg-white p-5 shadow-[0_7px_30px_rgba(15,34,24,.035)]';
-
-function Badge({ children, tone = 'green' }) {
-  return (
-    <span
-      className={`inline-flex rounded-full px-2.5 py-1 text-xs font-bold ${tone === 'pink' ? 'bg-[#ffe5f0] text-[#9a285e]' : tone === 'yellow' ? 'bg-[#fff1c8] text-[#805800]' : tone === 'gray' ? 'bg-[#edf1ee] text-[#526457]' : 'bg-[#e6f3e9] text-[#226337]'}`}
-    >
-      {children}
-    </span>
-  );
-}
-function Empty({ text }) {
-  return <p className='rounded-xl bg-[#f4f8f2] p-5 text-sm text-[#586e5e]'>{text}</p>;
-}
+const tabLabels = Object.fromEntries(tabs.map((tab) => [tab.id, tab.label]));
 function ActionForm({ label, action, id, run, extra, busy }) {
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState('');
@@ -273,203 +247,6 @@ function Overview({ data, go, run, busy }) {
         Active members are members with a hosted plan in the past 30 days or a plan membership. Plan
         dates show scheduled activity; they do not verify attendance.
       </p>
-    </>
-  );
-}
-function Plans({ data, run, busy }) {
-  const [query, setQuery] = useState('');
-  const [status, setStatus] = useState('all');
-  const [page, setPage] = useState(1);
-  const list = useMemo(
-    () =>
-      data.plans.filter(
-        (plan) =>
-          `${plan.title} ${plan.host?.display_name} ${plan.host?.email} ${plan.venue} ${plan.category} ${plan.date_label}`
-            .toLowerCase()
-            .includes(query.toLowerCase()) &&
-          (status === 'all' ||
-            (status === 'cancelled'
-              ? Boolean(plan.cancelled_at)
-              : status === 'hidden'
-                ? Boolean(plan.hidden_at)
-                : plan.status === status))
-      ),
-    [data.plans, query, status]
-  );
-  return (
-    <>
-      <h1 className='font-heading text-3xl font-extrabold'>Plans</h1>
-      <p className='mb-5 text-sm text-[#657467]'>
-        Review plans, cancel or hide them with a reason.
-      </p>
-      <div className='mb-4 grid gap-2 sm:grid-cols-[1fr_170px]'>
-        <label className='relative'>
-          <Search className='absolute left-3 top-3.5 size-4' />
-          <input
-            className={`${field} pl-9`}
-            placeholder='Search host, activity, place, date'
-            value={query}
-            onChange={(e) => {
-              setPage(1);
-              setQuery(e.target.value);
-            }}
-          />
-        </label>
-        <select
-          className={field}
-          value={status}
-          onChange={(e) => {
-            setPage(1);
-            setStatus(e.target.value);
-          }}
-        >
-          <option value='all'>All statuses</option>
-          <option value='open'>Open</option>
-          <option value='closed'>Closed</option>
-          <option value='cancelled'>Cancelled</option>
-          <option value='hidden'>Hidden</option>
-        </select>
-      </div>
-      <div className='grid gap-3'>
-        {list.slice((page - 1) * 10, page * 10).map((plan) => (
-          <article key={plan.id} className={card}>
-            <div className='flex flex-wrap justify-between gap-3'>
-              <div>
-                <div className='flex flex-wrap items-center gap-2'>
-                  <h2 className='font-heading text-lg font-extrabold'>{plan.title}</h2>
-                  <Badge
-                    tone={
-                      plan.hidden_at
-                        ? 'pink'
-                        : plan.cancelled_at
-                          ? 'yellow'
-                          : plan.status === 'open'
-                            ? 'green'
-                            : 'gray'
-                    }
-                  >
-                    {plan.hidden_at
-                      ? 'Hidden'
-                      : plan.cancelled_at
-                        ? 'Cancelled'
-                        : plan.status === 'open'
-                          ? 'Open'
-                          : 'Closed'}
-                  </Badge>
-                </div>
-                <p className='text-sm text-[#617164]'>
-                  {plan.host?.display_name || 'Host'} · {plan.category} · {plan.venue}
-                </p>
-                <p className='mt-1 text-xs text-[#68796b]'>
-                  {plan.date_label} at {plan.time_label} · {plan.spots} spots open
-                </p>
-                {(plan.cancelled_reason || plan.hidden_reason) && (
-                  <p className='mt-2 text-xs text-[#9a285e]'>
-                    Reason: {plan.cancelled_reason || plan.hidden_reason}
-                  </p>
-                )}
-              </div>
-              <div className='flex flex-wrap items-start gap-2'>
-                {plan.status === 'open' ? (
-                  <>
-                    <ActionForm
-                      label='Cancel plan'
-                      action='cancel_plan'
-                      id={plan.id}
-                      run={run}
-                      busy={busy}
-                    />
-                    <ActionForm
-                      label='Hide content'
-                      action='hide_plan'
-                      id={plan.id}
-                      run={run}
-                      busy={busy}
-                    />
-                  </>
-                ) : (
-                  <ActionForm
-                    label='Reopen plan'
-                    action='reopen_plan'
-                    id={plan.id}
-                    run={run}
-                    busy={busy}
-                  />
-                )}
-              </div>
-            </div>
-          </article>
-        ))}
-      </div>
-      {!list.length && <Empty text='No plans match these filters.' />}
-      <ListPagination page={page} pageSize={10} total={list.length} onPageChange={setPage} />
-    </>
-  );
-}
-function Members({ data, run, busy }) {
-  const [query, setQuery] = useState('');
-  const [page, setPage] = useState(1);
-  const list = data.members.filter((person) =>
-    `${person.display_name} ${person.email}`.toLowerCase().includes(query.toLowerCase())
-  );
-  return (
-    <>
-      <h1 className='font-heading text-3xl font-extrabold'>Members</h1>
-      <p className='mb-5 text-sm text-[#657467]'>
-        See participation and account status. Suspensions require a reason.
-      </p>
-      <input
-        className={`${field} mb-4 max-w-md`}
-        placeholder='Search members'
-        value={query}
-        onChange={(e) => {
-          setQuery(e.target.value);
-          setPage(1);
-        }}
-      />
-      <div className='grid gap-3'>
-        {list.slice((page - 1) * 10, page * 10).map((person) => (
-          <article key={person.id} className={card}>
-            <div className='flex flex-wrap items-start justify-between gap-3'>
-              <div>
-                <strong className='font-heading text-lg'>{person.display_name}</strong>
-                <p className='text-sm text-[#657467]'>{person.email}</p>
-                <div className='mt-2 flex flex-wrap gap-2'>
-                  <Badge tone={person.suspended_at ? 'pink' : 'green'}>
-                    {person.suspended_at ? 'Suspended' : 'Active'}
-                  </Badge>
-                  <Badge tone='gray'>
-                    {data.plans.filter((plan) => plan.host_id === person.id).length} hosted
-                  </Badge>
-                  <Badge tone='gray'>
-                    {data.memberships.filter((member) => member.profile_id === person.id).length}{' '}
-                    joined
-                  </Badge>
-                  <Badge tone='yellow'>
-                    {
-                      data.reports.filter((report) => report.subject_profile_id === person.id)
-                        .length
-                    }{' '}
-                    reports received
-                  </Badge>
-                </div>
-                {person.suspension_reason && (
-                  <p className='mt-2 text-xs text-[#9a285e]'>Reason: {person.suspension_reason}</p>
-                )}
-              </div>
-              <ActionForm
-                label={person.suspended_at ? 'Reinstate member' : 'Suspend member'}
-                action={person.suspended_at ? 'reinstate_member' : 'suspend_member'}
-                id={person.id}
-                run={run}
-                busy={busy}
-              />
-            </div>
-          </article>
-        ))}
-      </div>
-      {!list.length && <Empty text='No matching members.' />}
-      <ListPagination page={page} pageSize={10} total={list.length} onPageChange={setPage} />
     </>
   );
 }
@@ -759,15 +536,26 @@ export function AdminDashboard({ clerkIdentity }) {
             >
               <Menu className='size-5' />
             </button>
-            <span className='text-sm font-bold'>Tagwimi admin</span>
+            <span className='text-sm font-semibold text-[#657467]'>
+              Admin workspace <span className='text-[#b3c0b5]'>›</span>{' '}
+              <span className='font-bold text-[#10251a]'>{tabLabels[tab]}</span>
+            </span>
           </div>
-          <button
-            className='grid size-10 place-items-center rounded-xl border border-[#dce7dd] bg-white'
-            aria-label='Refresh'
-            onClick={refresh}
-          >
-            <RefreshCw className='size-4' />
-          </button>
+          <div className='flex items-center gap-2'>
+            <button
+              className='grid size-10 place-items-center rounded-xl border border-[#dce7dd] bg-white'
+              aria-label='Refresh'
+              onClick={refresh}
+            >
+              <RefreshCw className='size-4' />
+            </button>
+            <div className='hidden items-center gap-2 rounded-xl border border-[#dce7dd] bg-white py-1.5 pl-1.5 pr-3 sm:flex'>
+              <span className='grid size-8 place-items-center rounded-full bg-[#e8f2e8] text-xs font-extrabold text-[#246538]'>
+                {(access?.user?.email || 'A').slice(0, 1).toUpperCase()}
+              </span>
+              <span className='text-xs font-bold'>Admin</span>
+            </div>
+          </div>
         </header>
         <main className='mx-auto max-w-[1450px] px-4 py-7 md:px-8'>
           {error && (
@@ -777,7 +565,14 @@ export function AdminDashboard({ clerkIdentity }) {
           )}
           {tab === 'overview' && <Overview data={data} go={go} run={run} busy={busy} />}
           {tab === 'plans' && <Plans data={data} run={run} busy={busy} />}
-          {tab === 'members' && <Members data={data} run={run} busy={busy} />}
+          {tab === 'members' && (
+            <Members
+              data={data}
+              run={run}
+              busy={busy}
+              onReviewReport={(reportId) => go('reports', reportId)}
+            />
+          )}
           {tab === 'reports' && (
             <Reports data={data} run={run} busy={busy} selectedId={selectedReport} />
           )}
