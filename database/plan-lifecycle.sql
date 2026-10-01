@@ -111,13 +111,18 @@ set search_path = public
 as $$
 declare
   viewer uuid := private.current_along_profile_id();
-  host_id uuid;
+  plan_host_id uuid;
   is_host boolean;
 begin
   if viewer is null then raise exception 'Sign in to continue.'; end if;
-  select p.host_id into host_id from public.plans p where p.id = target_plan_id;
-  if host_id is null then raise exception 'Plan not found.'; end if;
-  is_host := host_id = viewer;
+
+  select p.host_id into plan_host_id
+  from public.plans p
+  where p.id = target_plan_id;
+
+  if plan_host_id is null then raise exception 'Plan not found.'; end if;
+  is_host := plan_host_id = viewer;
+
   if not is_host and not exists (
     select 1 from public.memberships m
     where m.plan_id = target_plan_id and m.profile_id = viewer
@@ -125,17 +130,21 @@ begin
     raise exception 'Only people on this plan can mark it completed.';
   end if;
 
-  update public.memberships
+  update public.memberships m
   set completed = true
-  where plan_id = target_plan_id and profile_id = viewer;
+  where m.plan_id = target_plan_id and m.profile_id = viewer;
 
   if is_host then
-    update public.plans
+    update public.plans p
     set status = 'closed'
-    where id = target_plan_id and host_id = viewer and status = 'open';
-    update public.memberships
+    where p.id = target_plan_id
+      and p.host_id = viewer
+      and p.status = 'open';
+
+    update public.memberships m
     set completed = true
-    where plan_id = target_plan_id and coalesce(completed, false) = false;
+    where m.plan_id = target_plan_id
+      and coalesce(m.completed, false) = false;
   end if;
 end;
 $$;
