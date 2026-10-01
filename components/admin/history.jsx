@@ -322,7 +322,7 @@ export function HistoryView({ data }) {
         </section>
 
         {selected && (
-          <aside className={`${card} sticky top-20 flex max-h-[calc(100dvh-7rem)] flex-col overflow-hidden !p-0`}>
+          <aside className={`${card} flex max-h-[min(70dvh,640px)] flex-col overflow-hidden !p-0 xl:sticky xl:top-20 xl:max-h-[calc(100dvh-7rem)]`}>
             <div className='flex items-start justify-between gap-3 border-b border-[#e4ece5] px-4 py-4'>
               <div className='flex items-start gap-3'>
                 <span className='grid size-10 place-items-center rounded-2xl bg-[#ffe5f0] text-[#9a285e]'>

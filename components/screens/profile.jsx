@@ -166,7 +166,7 @@ export function ProfileScreen() {
         </h1>
         <p className='mt-1 text-sm text-muted-foreground'>Let people get to know you.</p>
       </div>
-      <div className='grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(280px,320px)] items-start gap-5 max-[1200px]:grid-cols-1'>
+      <div className='grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(280px,320px)] items-start gap-5 max-[1200px]:grid-cols-1 max-[760px]:gap-4'>
         <div className='grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4'>
           <Panel className='min-w-0 overflow-hidden p-0'>
             <div className='relative h-28 overflow-hidden bg-[#edf6e9]'>

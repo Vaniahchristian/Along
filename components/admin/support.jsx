@@ -155,7 +155,7 @@ export function SupportInbox() {
         </button>
       </div>
 
-      <div className={`grid min-h-[560px] overflow-hidden lg:grid-cols-[320px_minmax(0,1fr)] ${card}`}>
+      <div className={`grid min-h-[420px] overflow-hidden lg:min-h-[560px] lg:grid-cols-[320px_minmax(0,1fr)] ${card}`}>
         <aside className='border-b border-[#edf1ed] lg:border-b-0 lg:border-r'>
           <div className='border-b border-[#edf1ed] px-4 py-3 text-xs font-bold uppercase tracking-wider text-[#728473]'>
             Conversations

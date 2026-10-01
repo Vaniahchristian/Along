@@ -136,7 +136,7 @@ export function ReasonBar({
   tone = 'pink'
 }) {
   return (
-    <div className='fixed inset-x-0 bottom-0 z-40 border-t border-[#dce7dd] bg-[#f3f6f1] px-4 py-4 shadow-[0_-8px_30px_rgba(15,34,24,.08)] md:px-8'>
+    <div className='fixed inset-x-0 bottom-0 z-40 border-t border-[#dce7dd] bg-[#f3f6f1] px-4 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-[0_-8px_30px_rgba(15,34,24,.08)] md:px-8'>
       <div className='mx-auto flex max-w-[1450px] flex-col gap-4 lg:flex-row lg:items-end'>
         <div className='min-w-0 flex-1'>
           <p className='text-xs font-extrabold uppercase tracking-[.14em] text-[#68796b]'>{title}</p>

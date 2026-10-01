@@ -138,7 +138,7 @@ function PlanItem({ plan, featured, data, busy, openPlan, openChat, cancelReques
           </div>
         </div>
       </div>
-      <div className='mt-3 flex justify-end gap-2 max-[760px]:ml-[94px] max-[760px]:grid max-[760px]:grid-cols-2 max-[760px]:gap-2'>
+      <div className='mt-3 flex justify-end gap-2 max-[760px]:ml-0 max-[760px]:grid max-[760px]:grid-cols-2 max-[760px]:gap-2'>
         <ActionButton
           type='button'
           tone='secondary'

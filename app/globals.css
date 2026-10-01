@@ -132,8 +132,14 @@
   * {
     @apply border-border outline-ring/50;
   }
-  html { @apply scroll-smooth; }
-  body { @apply bg-background font-sans text-foreground antialiased; }
+  html {
+    @apply scroll-smooth;
+    overflow-x: clip;
+  }
+  body {
+    @apply bg-background font-sans text-foreground antialiased;
+    overflow-x: clip;
+  }
   button:not(:disabled) { cursor: pointer; }
   ::selection { background: #fce7f3; color: #0a0a0a; }
 }

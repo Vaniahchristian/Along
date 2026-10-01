@@ -179,11 +179,11 @@ export function ChatScreen() {
 
   return (
     <div
-      className={`grid h-[min(760px,calc(100dvh-8rem))] min-h-[540px] grid-cols-[minmax(290px,320px)_minmax(0,1fr)] overflow-hidden rounded-[20px] border border-border bg-card max-[760px]:block max-[760px]:h-auto max-[760px]:min-h-0 max-[760px]:overflow-visible max-[760px]:rounded-none max-[760px]:border-0 ${chatViewOpen ? 'max-[760px]:h-dvh' : ''}`}
+      className={`grid h-[min(760px,calc(100dvh-8rem))] min-h-[480px] grid-cols-[minmax(260px,300px)_minmax(0,1fr)] overflow-hidden rounded-[20px] border border-border bg-card max-[1100px]:block max-[1100px]:h-auto max-[1100px]:min-h-0 max-[1100px]:overflow-visible max-[1100px]:rounded-none max-[1100px]:border-0 max-[760px]:min-h-0 ${chatViewOpen ? 'max-[1100px]:h-[calc(100dvh-2rem)] max-[760px]:h-dvh' : ''}`}
     >
       <section
         aria-label='Conversations'
-        className={`min-h-0 overflow-y-auto border-r border-border px-3 py-5 max-[760px]:overflow-visible max-[760px]:border-0 max-[760px]:px-0 max-[760px]:py-4 ${chatViewOpen ? 'max-[760px]:hidden' : ''}`}
+        className={`min-h-0 overflow-y-auto border-r border-border px-3 py-5 max-[1100px]:overflow-visible max-[1100px]:border-0 max-[1100px]:px-0 max-[1100px]:py-4 ${chatViewOpen ? 'max-[1100px]:hidden' : ''}`}
       >
         <h1 className='px-2 font-heading text-2xl font-extrabold tracking-[-.03em]'>Messages</h1>
         <label className='relative mt-4 block'>
@@ -216,7 +216,7 @@ export function ChatScreen() {
                 key={item.id}
                 type='button'
                 onClick={() => openChat(item.id)}
-                className={`flex w-full items-center gap-3 border-b border-border/70 px-2 py-3 text-left transition-colors hover:bg-secondary focus-visible:outline-2 focus-visible:outline-primary max-[760px]:min-h-[78px] ${plan?.id === item.id ? 'bg-soft-green max-[760px]:bg-transparent' : ''}`}
+                className={`flex w-full items-center gap-3 border-b border-border/70 px-2 py-3 text-left transition-colors hover:bg-secondary focus-visible:outline-2 focus-visible:outline-primary max-[1100px]:min-h-[78px] ${plan?.id === item.id ? 'bg-soft-green max-[1100px]:bg-transparent' : ''}`}
               >
                 <PlanThumbnail plan={item} />
                 <span className='min-w-0 flex-1'>
@@ -254,14 +254,14 @@ export function ChatScreen() {
       {plan ? (
         <section
           aria-label={`Chat for ${plan.title}`}
-          className={`flex min-h-0 flex-col overflow-hidden max-[760px]:h-dvh max-[760px]:bg-card ${chatViewOpen ? '' : 'max-[760px]:hidden'}`}
+          className={`flex min-h-0 flex-col overflow-hidden max-[1100px]:h-[calc(100dvh-2rem)] max-[760px]:h-dvh max-[1100px]:bg-card ${chatViewOpen ? '' : 'max-[1100px]:hidden'}`}
         >
           <header className='flex shrink-0 items-center gap-3 border-b border-border px-5 py-3 max-[760px]:gap-2 max-[760px]:px-3 max-[760px]:pt-[max(.65rem,env(safe-area-inset-top))]'>
             <button
               type='button'
               onClick={() => router.push('/app/chat')}
               aria-label='Back to conversations'
-              className='hidden size-10 shrink-0 place-items-center rounded-full text-forest hover:bg-secondary max-[760px]:grid'
+              className='hidden size-10 shrink-0 place-items-center rounded-full text-forest hover:bg-secondary max-[1100px]:grid'
             >
               <ArrowLeft className='size-5' />
             </button>
@@ -443,14 +443,14 @@ export function ChatScreen() {
           >
             {attachment && <div className='mb-2 flex items-center gap-3 rounded-xl bg-soft-green p-2 text-sm'><span className='min-w-0 flex-1 truncate'>{attachment.type.startsWith('image/') ? 'Photo' : 'Voice note'} · {attachment.name}</span>{attachment.type.startsWith('image/') && previewUrl && <img src={previewUrl} alt='Selected photo preview' className='size-11 rounded-lg object-cover' />}{attachment.type.startsWith('audio/') && previewUrl && <audio controls src={previewUrl} className='max-w-40' aria-label='Preview voice note' />}<button type='button' onClick={() => setAttachment(null)} aria-label='Remove attachment' className='grid size-9 shrink-0 place-items-center rounded-full hover:bg-white'><X className='size-4' /></button></div>}
             {recording && <p role='status' className='mb-2 text-sm font-bold text-[#b51b63]'>Recording voice note… tap stop when finished.</p>}
-            <div className='flex items-end gap-1.5'>
+            <div className='flex items-end gap-1.5 max-[420px]:flex-wrap'>
             <input ref={fileRef} type='file' accept='image/jpeg,image/png,image/webp,audio/webm,audio/mp4,audio/ogg,audio/mpeg' onChange={chooseFile} className='sr-only' aria-label='Choose a photo or audio file' />
             <button type='button' onClick={() => fileRef.current?.click()} aria-label='Attach photo or audio' className='grid size-10 shrink-0 place-items-center rounded-full text-primary hover:bg-soft-green'><Paperclip className='size-5' /></button>
-            <button type='button' onClick={() => setEmojiOpen((open) => !open)} aria-label='Choose emoji' aria-expanded={emojiOpen} className='grid size-10 shrink-0 place-items-center rounded-full text-primary hover:bg-soft-green'><Smile className='size-5' /></button>
+            <button type='button' onClick={() => setEmojiOpen((open) => !open)} aria-label='Choose emoji' aria-expanded={emojiOpen} className='grid size-10 shrink-0 place-items-center rounded-full text-primary hover:bg-soft-green max-[420px]:hidden'><Smile className='size-5' /></button>
             <textarea
               ref={composerRef}
               rows={1}
-              className='min-h-11 max-h-32 min-w-0 flex-1 resize-none overflow-y-auto rounded-[22px] border border-border bg-[#f8faf7] px-4 py-2.5 leading-6 text-foreground outline-none [overflow-wrap:anywhere] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20'
+              className='min-h-11 max-h-32 min-w-0 flex-1 resize-none overflow-y-auto rounded-[22px] border border-border bg-[#f8faf7] px-4 py-2.5 leading-6 text-foreground outline-none [overflow-wrap:anywhere] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 max-[420px]:order-last max-[420px]:basis-full'
               aria-label='Message the group'
               maxLength={500}
               placeholder='Message the group…'
@@ -477,7 +477,7 @@ export function ChatScreen() {
           </form>
         </section>
       ) : (
-        <section className='hidden place-items-center p-8 text-sm text-muted-foreground max-[760px]:hidden min-[761px]:grid'>
+        <section className='hidden place-items-center p-8 text-sm text-muted-foreground max-[1100px]:hidden min-[1101px]:grid'>
           {chatId ? 'This conversation is unavailable.' : 'Select a conversation'}
         </section>
       )}

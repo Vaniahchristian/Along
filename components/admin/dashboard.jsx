@@ -75,10 +75,10 @@ function Overview({ data, go, run, busy }) {
   return (
     <>
       <header className='mb-7'>
-        <h1 className='font-heading text-4xl font-extrabold tracking-[-.05em]'>Overview</h1>
+        <h1 className='font-heading text-[clamp(1.9rem,4vw,2.5rem)] font-extrabold tracking-[-.05em]'>Overview</h1>
         <p className='mt-1 text-[#657467]'>Keep plans active and the community supported.</p>
       </header>
-      <div className='grid grid-cols-2 gap-3 xl:grid-cols-4'>
+      <div className='grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4'>
         {totals.map(({ label, value, icon: Icon, tone }) => (
           <div key={label} className={card}>
             <span
@@ -333,7 +333,7 @@ export function AdminDashboard({ clerkIdentity }) {
             >
               <Menu className='size-5' />
             </button>
-            <span className='text-sm font-semibold text-[#657467]'>
+            <span className='min-w-0 truncate text-sm font-semibold text-[#657467]'>
               Admin workspace <span className='text-[#b3c0b5]'>›</span>{' '}
               <span className='font-bold text-[#10251a]'>{tabLabels[tab]}</span>
             </span>

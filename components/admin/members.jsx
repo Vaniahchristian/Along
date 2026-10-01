@@ -104,7 +104,7 @@ export function Members({ data, run, busy, onReviewReport }) {
   }
 
   return (
-    <>
+    <div className={pendingAction ? 'pb-44' : undefined}>
       <PageHeader
         title='Members'
         description='Manage accounts, participation and member reports.'
@@ -311,7 +311,7 @@ export function Members({ data, run, busy, onReviewReport }) {
         </section>
 
         {selected && (
-          <aside className={`${card} sticky top-20 flex max-h-[calc(100dvh-7rem)] flex-col overflow-hidden !p-0`}>
+          <aside className={`${card} flex max-h-[min(70dvh,640px)] flex-col overflow-hidden !p-0 xl:sticky xl:top-20 xl:max-h-[calc(100dvh-7rem)]`}>
             <div className='flex items-start justify-between gap-3 border-b border-[#e4ece5] px-4 py-4'>
               <div className='flex min-w-0 items-start gap-3'>
                 <span className='grid size-14 shrink-0 place-items-center overflow-hidden rounded-full bg-[#e8f2e8] text-sm font-extrabold text-[#246538]'>
@@ -475,6 +475,6 @@ export function Members({ data, run, busy, onReviewReport }) {
           tone={pendingAction.reinstate ? 'green' : 'pink'}
         />
       )}
-    </>
+    </div>
   );
 }

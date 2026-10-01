@@ -131,14 +131,14 @@ export function HomePage() {
         </button>
       </header>
 
-      <section className='relative mx-auto grid min-h-[710px] max-w-[1340px] items-center gap-8 px-6 pb-20 pt-12 md:grid-cols-[.95fr_1.05fr] md:px-10 md:pb-24 md:pt-14'>
+      <section className='relative mx-auto grid min-h-[520px] max-w-[1340px] items-center gap-8 px-6 pb-16 pt-10 md:min-h-[710px] md:grid-cols-[.95fr_1.05fr] md:px-10 md:pb-24 md:pt-14'>
         <div className='relative z-10 max-w-[660px]'>
           <div className='mb-7 inline-flex rotate-[-3deg] items-center gap-2 rounded-full bg-[#ffdc58] px-4 py-2 text-xs font-extrabold uppercase tracking-[.09em] text-forest'>
             <Sparkles className='size-4' /> Make the plan. Find your people. Go.
           </div>
-          <h1 className='font-heading text-[clamp(3.6rem,7.2vw,7.5rem)] leading-[.99] font-extrabold tracking-[-.085em]'>
+          <h1 className='font-heading text-[clamp(2.6rem,10vw,7.5rem)] leading-[.99] font-extrabold tracking-[-.085em] md:text-[clamp(3.6rem,7.2vw,7.5rem)]'>
             Go do{' '}
-            <span className='relative whitespace-nowrap text-[#ec4899]'>
+            <span className='relative text-[#ec4899] md:whitespace-nowrap'>
               the thing
               <span className='absolute -bottom-2 left-0 h-[7px] w-full rotate-[-2deg] rounded-full bg-[#ffb900]' />
             </span>{' '}

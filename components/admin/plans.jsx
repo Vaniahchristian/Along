@@ -130,7 +130,7 @@ export function Plans({ data, run, busy }) {
   }
 
   return (
-    <>
+    <div className={pendingAction ? 'pb-44' : undefined}>
       <PageHeader
         title='Plans'
         description='Review activity plans, participation and moderation.'
@@ -315,7 +315,7 @@ export function Plans({ data, run, busy }) {
         </section>
 
         {selected && (
-          <aside className={`${card} sticky top-20 flex max-h-[calc(100dvh-7rem)] flex-col overflow-hidden !p-0`}>
+          <aside className={`${card} flex max-h-[min(70dvh,640px)] flex-col overflow-hidden !p-0 xl:sticky xl:top-20 xl:max-h-[calc(100dvh-7rem)]`}>
             <div className='flex items-start justify-between gap-3 border-b border-[#e4ece5] px-4 py-4'>
               <div className='min-w-0'>
                 <h2 className='font-heading text-xl font-extrabold tracking-tight'>{selected.title}</h2>
@@ -566,6 +566,6 @@ export function Plans({ data, run, busy }) {
           tone={pendingAction.action === 'cancel_plan' ? 'pink' : 'green'}
         />
       )}
-    </>
+    </div>
   );
 }

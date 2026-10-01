@@ -285,7 +285,7 @@ export function DetailScreen() {
               sizes='(max-width: 900px) 100vw, 58vw'
               className='object-cover'
             />
-            <span className='absolute bottom-3 left-3 rounded-full bg-forest/85 px-3 py-1.5 text-xs font-bold text-white'>
+            <span className='absolute bottom-3 left-3 max-w-[calc(100%-1.5rem)] truncate rounded-full bg-forest/85 px-3 py-1.5 text-xs font-bold text-white'>
               {plan.imageUrl ? 'Photo added by host' : 'Activity illustration · not the venue'}
             </span>
           </div>
@@ -333,18 +333,18 @@ export function DetailScreen() {
             <dl className='mt-4 grid gap-3 text-sm leading-relaxed'>
               {(mine || joined) ? <div className='flex gap-3'>
                 <MapPin className='mt-0.5 size-5 shrink-0 text-primary' aria-hidden='true' />
-                <dt className='font-extrabold'>Meet:</dt>
-                <dd className='text-muted-foreground'>{plan.meet}</dd>
+                <dt className='shrink-0 font-extrabold'>Meet:</dt>
+                <dd className='min-w-0 flex-1 break-words text-muted-foreground'>{plan.meet}</dd>
               </div> : <p className='text-sm text-muted-foreground'>The exact meeting point appears after the host accepts your request.</p>}
               <div className='flex gap-3'>
                 <ShieldCheck className='mt-0.5 size-5 shrink-0 text-primary' aria-hidden='true' />
-                <dt className='font-extrabold'>Bring:</dt>
-                <dd className='text-muted-foreground'>{plan.bring}</dd>
+                <dt className='shrink-0 font-extrabold'>Bring:</dt>
+                <dd className='min-w-0 flex-1 break-words text-muted-foreground'>{plan.bring}</dd>
               </div>
               <div className='flex gap-3'>
                 <Clock3 className='mt-0.5 size-5 shrink-0 text-primary' aria-hidden='true' />
-                <dt className='font-extrabold'>Costs:</dt>
-                <dd className='text-muted-foreground'>
+                <dt className='shrink-0 font-extrabold'>Costs:</dt>
+                <dd className='min-w-0 flex-1 break-words text-muted-foreground'>
                   {plan.costNote || 'Ask the host about venue or activity fees. Everyone covers their own costs unless the group agrees otherwise.'}
                 </dd>
               </div>

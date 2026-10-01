@@ -413,7 +413,11 @@ export function AppShell({ children }) {
           </section>
         </div>
       )}
-      <Toaster position='bottom-right' />
+      <Toaster
+        position='bottom-right'
+        offset={16}
+        mobileOffset={{ bottom: '88px' }}
+      />
     </div>
   );
 }

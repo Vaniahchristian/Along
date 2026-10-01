@@ -106,33 +106,33 @@ export function ExploreScreen() {
 
   return (
     <>
-      <section className='relative mb-9 grid min-h-[300px] grid-cols-[minmax(0,1fr)_minmax(280px,.78fr)] overflow-hidden rounded-[28px] bg-forest text-white max-[700px]:mb-5 max-[700px]:min-h-[215px] max-[700px]:grid-cols-1 max-[700px]:rounded-[19px]'>
-        <div className='relative z-[1] flex flex-col items-start justify-center p-9 max-[760px]:p-5 max-[700px]:pr-[38%]'>
-          <h1 className='max-w-[650px] font-heading text-[clamp(2rem,3.7vw,3.5rem)] leading-[1.09] font-extrabold tracking-[-.04em] max-[700px]:text-[clamp(1.5rem,6.6vw,2rem)]'>
+      <section className='relative mb-9 grid min-h-[300px] grid-cols-[minmax(0,1fr)_minmax(280px,.78fr)] overflow-hidden rounded-[28px] bg-forest text-white max-[1050px]:mb-5 max-[1050px]:min-h-[215px] max-[1050px]:grid-cols-1 max-[1050px]:rounded-[19px]'>
+        <div className='relative z-[1] flex flex-col items-start justify-center p-9 max-[1050px]:p-5 max-[1050px]:pr-[40%] max-[600px]:pr-[34%]'>
+          <h1 className='max-w-[650px] font-heading text-[clamp(2rem,3.7vw,3.5rem)] leading-[1.09] font-extrabold tracking-[-.04em] max-[1050px]:text-[clamp(1.45rem,5.2vw,2rem)]'>
             The good stuff happens <span className='text-[#6ce681]'>when you go.</span>
           </h1>
-          <p className='mt-3 max-w-[35ch] text-base leading-relaxed text-white/85 max-[700px]:hidden'>
+          <p className='mt-3 max-w-[35ch] text-base leading-relaxed text-white/85 max-[1050px]:hidden'>
             Find someone to do it with. Small plans, real places, good company.
           </p>
           <button
             type='button'
             onClick={() => navigate('create')}
-            className='mt-6 inline-flex min-h-12 items-center gap-2 rounded-full bg-gradient-to-r from-pink to-amber px-6 text-sm font-extrabold text-forest shadow-[0_8px_20px_rgba(0,0,0,.16)] transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white max-[700px]:mt-4 max-[700px]:min-h-10 max-[700px]:whitespace-nowrap max-[700px]:px-4 max-[700px]:text-[12px]'
+            className='mt-6 inline-flex min-h-12 items-center gap-2 rounded-full bg-gradient-to-r from-pink to-amber px-6 text-sm font-extrabold text-forest shadow-[0_8px_20px_rgba(0,0,0,.16)] transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white max-[1050px]:mt-4 max-[1050px]:min-h-10 max-[1050px]:px-4 max-[1050px]:text-[12px]'
           >
-            <Plus className='size-5 max-[700px]:size-4' aria-hidden='true' /> Start a plan
+            <Plus className='size-5 max-[1050px]:size-4' aria-hidden='true' /> Start a plan
           </button>
         </div>
-        <div className='relative min-h-[300px] overflow-hidden max-[700px]:absolute max-[700px]:inset-y-0 max-[700px]:right-0 max-[700px]:w-[65%] max-[700px]:min-h-0'>
+        <div className='relative min-h-[300px] overflow-hidden max-[1050px]:absolute max-[1050px]:inset-y-0 max-[1050px]:right-0 max-[1050px]:w-[58%] max-[1050px]:min-h-0 max-[600px]:w-[62%]'>
           <Image
             src='/activity/hero-people.webp'
             alt='Illustration of friends enjoying an outing together'
             fill
             priority
-            sizes='(max-width: 700px) 65vw, 40vw'
-            className='object-cover max-[700px]:object-[58%_center]'
+            sizes='(max-width: 1050px) 58vw, 40vw'
+            className='object-cover max-[1050px]:object-[58%_center]'
           />
-          <div className='absolute inset-0 bg-gradient-to-r from-forest/50 via-transparent to-transparent max-[700px]:bg-gradient-to-r max-[700px]:from-forest max-[700px]:via-forest/25 max-[700px]:to-transparent' />
-          <div className='absolute bottom-4 right-4 rounded-2xl bg-forest/85 px-4 py-3 text-right text-sm font-extrabold text-white shadow-[0_6px_18px_rgba(0,0,0,.2)] max-[700px]:hidden'>
+          <div className='absolute inset-0 bg-gradient-to-r from-forest/50 via-transparent to-transparent max-[1050px]:bg-gradient-to-r max-[1050px]:from-forest max-[1050px]:via-forest/25 max-[1050px]:to-transparent' />
+          <div className='absolute bottom-4 right-4 rounded-2xl bg-forest/85 px-4 py-3 text-right text-sm font-extrabold text-white shadow-[0_6px_18px_rgba(0,0,0,.2)] max-[1050px]:hidden'>
             Same activities.
             <br />
             <span className='text-[#ffd54a]'>New people.</span>
@@ -153,7 +153,7 @@ export function ExploreScreen() {
         </span>
       </div>
       <div className='mb-6 flex flex-wrap items-center gap-3'>
-        <label className='relative min-w-[210px] flex-1'>
+        <label className='relative min-w-0 flex-1 basis-[min(100%,210px)]'>
           <Search
             className='pointer-events-none absolute left-4 top-3.5 size-[18px] text-muted-foreground'
             aria-hidden='true'
