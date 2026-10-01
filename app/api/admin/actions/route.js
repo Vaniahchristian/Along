@@ -11,7 +11,8 @@ const allowed = new Set([
   'resolve_report',
   'reopen_report',
   'prioritize_report',
-  'assign_report'
+  'assign_report',
+  'note_report'
 ]);
 const tableFor = (action) =>
   action.endsWith('_plan') ? 'plans' : action.endsWith('_member') ? 'profiles' : 'plan_reports';
@@ -100,6 +101,13 @@ export async function POST(request) {
       break;
     case 'assign_report':
       patch = { assigned_admin_id: profile.data.id };
+      break;
+    case 'note_report':
+      patch = {
+        review_note: reason,
+        reviewed_by: profile.data.id,
+        reviewed_at: now
+      };
       break;
   }
   const changed = await db.from(table).update(patch).eq('id', id).select('id').single();

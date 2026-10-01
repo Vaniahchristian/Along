@@ -84,7 +84,7 @@ export async function GET(request) {
     db
       .from('plan_reports')
       .select(
-        'id,plan_id,reporter_id,reason,status,review_note,reviewed_at,created_at,target_type,subject_profile_id,message_id,evidence_text,image_path,priority,assigned_admin_id,plan:plans!plan_reports_plan_id_fkey(id,title,status),reporter:profiles!plan_reports_reporter_id_fkey(display_name,email)',
+        'id,plan_id,reporter_id,reason,status,review_note,reviewed_at,created_at,target_type,subject_profile_id,message_id,evidence_text,image_path,priority,assigned_admin_id,plan:plans!plan_reports_plan_id_fkey(id,title,status,venue,date_label,time_label,image_path),reporter:profiles!plan_reports_reporter_id_fkey(display_name,email,initials,avatar_path),subject:profiles!plan_reports_subject_profile_id_fkey(display_name,email,initials,avatar_path)',
         { count: 'exact' }
       )
       .order('created_at', { ascending: false })
@@ -159,7 +159,35 @@ export async function GET(request) {
       ? db.storage.from('profile-photos').getPublicUrl(person.avatar_path).data.publicUrl
       : null
   }));
-  const reportList = reports.data || [];
+  const reportList = (reports.data || []).map((report) => ({
+    ...report,
+    plan: report.plan
+      ? {
+          ...report.plan,
+          imageUrl: report.plan.image_path
+            ? db.storage.from('plan-images').getPublicUrl(report.plan.image_path).data.publicUrl
+            : null
+        }
+      : null,
+    reporter: report.reporter
+      ? {
+          ...report.reporter,
+          avatarUrl: report.reporter.avatar_path
+            ? db.storage.from('profile-photos').getPublicUrl(report.reporter.avatar_path).data
+                .publicUrl
+            : null
+        }
+      : null,
+    subject: report.subject
+      ? {
+          ...report.subject,
+          avatarUrl: report.subject.avatar_path
+            ? db.storage.from('profile-photos').getPublicUrl(report.subject.avatar_path).data
+                .publicUrl
+            : null
+        }
+      : null
+  }));
   const now = Date.now();
   const upcoming = planList.filter(
     (plan) => plan.status === 'open' && !plan.cancelled_at && planTime(plan) > now
@@ -176,6 +204,28 @@ export async function GET(request) {
   const membersWithReports = new Set(
     reportList.map((report) => report.subject_profile_id).filter(Boolean)
   ).size;
+  const openUnassigned = reportList.filter(
+    (report) => report.status === 'open' && !report.assigned_admin_id
+  ).length;
+  const inReview = reportList.filter(
+    (report) => report.status === 'open' && report.assigned_admin_id
+  ).length;
+  const highPriority = reportList.filter(
+    (report) => report.status === 'open' && report.priority === 'high'
+  ).length;
+  const resolvedReports = reportList.filter((report) => report.status === 'resolved').length;
+  const historyList = history.data || [];
+  const startOfDay = new Date();
+  startOfDay.setHours(0, 0, 0, 0);
+  const actionsToday = historyList.filter(
+    (item) => new Date(item.created_at).getTime() >= startOfDay.getTime()
+  ).length;
+  const broadcastsQueued = historyList.filter((item) => item.action === 'send_broadcast').length;
+  const moderationActions = historyList.filter((item) =>
+    /^(cancel_plan|hide_plan|reopen_plan|suspend_member|reinstate_member|resolve_report|reopen_report|prioritize_report|assign_report|note_report)$/.test(
+      item.action
+    )
+  ).length;
   const activeIds = new Set([
     ...planList
       .filter((plan) => new Date(plan.created_at).getTime() > now - 30 * 864e5)
@@ -190,7 +240,7 @@ export async function GET(request) {
       reports: reportList,
       plans: planList,
       members: memberList,
-      history: history.data || [],
+      history: historyList,
       memberships: membershipList,
       joinRequests: joinRequests.data || [],
       counts: {
@@ -205,7 +255,14 @@ export async function GET(request) {
         suspended: suspendedCount.count || 0,
         membersWithReports,
         activeMembers: activeIds.size,
-        openReports: openReportCount.count || 0
+        openReports: openReportCount.count || 0,
+        openUnassigned,
+        inReview,
+        highPriority,
+        resolvedReports,
+        actionsToday,
+        broadcastsQueued,
+        moderationActions
       }
     },
     { headers: { 'Cache-Control': 'no-store' } }

@@ -24,16 +24,16 @@ import { Broadcasts } from '@/components/admin/broadcasts';
 import { SupportInbox } from '@/components/admin/support';
 import { Plans } from '@/components/admin/plans';
 import { Members } from '@/components/admin/members';
+import { Reports } from '@/components/admin/reports';
+import { HistoryView } from '@/components/admin/history';
 import {
   Badge,
   Empty,
   button,
   card,
-  field,
   formatDate as date,
   scheduled
 } from '@/components/admin/shared';
-import { ListPagination } from '@/components/ui/list-pagination';
 import { adminAction, getAdminAccess, loadAdminDashboard } from '@/lib/admin/api';
 import { setClerkTokenGetter } from '@/lib/supabase/client';
 
@@ -47,51 +47,6 @@ const tabs = [
   { id: 'history', label: 'Admin history', icon: History }
 ];
 const tabLabels = Object.fromEntries(tabs.map((tab) => [tab.id, tab.label]));
-function ActionForm({ label, action, id, run, extra, busy }) {
-  const [open, setOpen] = useState(false);
-  const [reason, setReason] = useState('');
-  return open ? (
-    <form
-      className='mt-3 grid gap-2 rounded-xl bg-[#f5f8f3] p-3'
-      onSubmit={async (event) => {
-        event.preventDefault();
-        if (await run(action, id, reason, extra)) {
-          setOpen(false);
-          setReason('');
-        }
-      }}
-    >
-      <label className='text-xs font-bold' htmlFor={`${action}-${id}`}>
-        Reason for {label.toLowerCase()}
-      </label>
-      <input
-        id={`${action}-${id}`}
-        className={field}
-        value={reason}
-        onChange={(event) => setReason(event.target.value)}
-        maxLength={500}
-        required
-        placeholder='Record why you are taking this action'
-      />
-      <div className='flex gap-2'>
-        <button disabled={busy} className={button}>
-          Confirm
-        </button>
-        <button type='button' className='min-h-10 px-3 text-sm' onClick={() => setOpen(false)}>
-          Back
-        </button>
-      </div>
-    </form>
-  ) : (
-    <button
-      type='button'
-      onClick={() => setOpen(true)}
-      className='min-h-10 rounded-xl border border-[#cadacb] px-3 text-sm font-bold text-[#276837]'
-    >
-      {label}
-    </button>
-  );
-}
 function Overview({ data, go, run, busy }) {
   const now = Date.now();
   const open = data.reports
@@ -247,164 +202,6 @@ function Overview({ data, go, run, busy }) {
         Active members are members with a hosted plan in the past 30 days or a plan membership. Plan
         dates show scheduled activity; they do not verify attendance.
       </p>
-    </>
-  );
-}
-function Reports({ data, run, busy, selectedId }) {
-  const [selected, setSelected] = useState(selectedId);
-  const [page, setPage] = useState(1);
-  useEffect(() => {
-    if (selectedId) setSelected(selectedId);
-  }, [selectedId]);
-  const report = data.reports.find((item) => item.id === selected) || data.reports[0];
-  return (
-    <>
-      <h1 className='font-heading text-3xl font-extrabold'>Reports</h1>
-      <p className='mb-5 text-sm text-[#657467]'>
-        Investigate reported content. Only the message attached to a report is shown.
-      </p>
-      <div className='grid gap-4 lg:grid-cols-[minmax(0,.9fr)_minmax(0,1.1fr)]'>
-        <section className={`${card} !p-0 overflow-hidden`}>
-          {data.reports.slice((page - 1) * 10, page * 10).map((item) => (
-            <button
-              key={item.id}
-              className={`block w-full border-b border-[#e8eee8] p-4 text-left hover:bg-[#f4f8f3] ${report?.id === item.id ? 'bg-[#edf5ec]' : ''}`}
-              onClick={() => setSelected(item.id)}
-            >
-              <span className='flex justify-between gap-2'>
-                <strong className='text-sm'>{item.plan?.title || 'Reported content'}</strong>
-                <Badge tone={item.status === 'open' ? 'pink' : 'gray'}>{item.status}</Badge>
-              </span>
-              <span className='mt-1 block text-xs text-[#68796b]'>
-                {item.target_type} · {item.priority} priority · {date(item.created_at)}
-              </span>
-            </button>
-          ))}
-          {!data.reports.length && (
-            <div className='p-4'>
-              <Empty text='No reports yet.' />
-            </div>
-          )}
-          <ListPagination
-            page={page}
-            pageSize={10}
-            total={data.reports.length}
-            onPageChange={setPage}
-          />
-        </section>
-        {report && (
-          <section className={card}>
-            <div className='flex flex-wrap justify-between gap-2'>
-              <h2 className='font-heading text-xl font-extrabold'>Report details</h2>
-              <Badge tone={report.priority === 'high' ? 'pink' : 'yellow'}>
-                {report.priority} priority
-              </Badge>
-            </div>
-            <dl className='mt-5 grid gap-3 text-sm'>
-              <div>
-                <dt className='font-bold'>Plan</dt>
-                <dd>{report.plan?.title || 'Removed plan'}</dd>
-              </div>
-              <div>
-                <dt className='font-bold'>Reported by</dt>
-                <dd>{report.reporter?.display_name || 'Member'}</dd>
-              </div>
-              <div>
-                <dt className='font-bold'>Subject</dt>
-                <dd className='capitalize'>{report.target_type}</dd>
-              </div>
-              <div>
-                <dt className='font-bold'>Concern</dt>
-                <dd className='whitespace-pre-wrap rounded-xl bg-[#fff2f7] p-3'>{report.reason}</dd>
-              </div>
-              {report.target_type === 'message' && (
-                <div>
-                  <dt className='font-bold'>Reported message only</dt>
-                  <dd className='whitespace-pre-wrap rounded-xl bg-[#f2f6f2] p-3'>
-                    {report.evidence_text || 'Message unavailable'}
-                  </dd>
-                </div>
-              )}
-              {report.image_path && (
-                <div>
-                  <dt className='font-bold'>Reported attachment</dt>
-                  <dd><a href={`/api/admin/report-media/${report.id}`} target='_blank' rel='noopener noreferrer' className='font-bold text-[#256739] underline'>View reported media</a></dd>
-                </div>
-              )}
-              {report.review_note && (
-                <div>
-                  <dt className='font-bold'>Last review note</dt>
-                  <dd>{report.review_note}</dd>
-                </div>
-              )}
-            </dl>
-            <div className='mt-5 flex flex-wrap gap-2'>
-              {!report.assigned_admin_id && (
-                <ActionForm
-                  label='Assign to me'
-                  action='assign_report'
-                  id={report.id}
-                  run={run}
-                  busy={busy}
-                />
-              )}
-              <ActionForm
-                label={report.status === 'open' ? 'Resolve report' : 'Reopen report'}
-                action={report.status === 'open' ? 'resolve_report' : 'reopen_report'}
-                id={report.id}
-                run={run}
-                busy={busy}
-              />
-              {report.status === 'open' && (
-                <ActionForm
-                  label={report.priority === 'high' ? 'Set normal priority' : 'Set high priority'}
-                  action='prioritize_report'
-                  id={report.id}
-                  run={run}
-                  busy={busy}
-                  extra={{ priority: report.priority === 'high' ? 'normal' : 'high' }}
-                />
-              )}
-            </div>
-          </section>
-        )}
-      </div>
-    </>
-  );
-}
-function HistoryView({ data }) {
-  const [page, setPage] = useState(1);
-  return (
-    <>
-      <h1 className='font-heading text-3xl font-extrabold'>Admin history</h1>
-      <p className='mb-5 text-sm text-[#657467]'>Who changed what, when, and why.</p>
-      <div className={card}>
-        {data.history.slice((page - 1) * 15, page * 15).map((item) => (
-          <div key={item.id} className='border-b border-[#e8eee8] py-3 last:border-0'>
-            <strong className='capitalize'>{item.action.replaceAll('_', ' ')}</strong>
-            <p className='text-sm'>
-              {item.actor?.display_name || item.actor?.email || 'Admin'} · {date(item.created_at)}
-            </p>
-            <p className='mt-1 text-xs text-[#68796b]'>
-              {item.target_type} · {item.target_id}
-            </p>
-            <p className='mt-1 text-sm'>{item.reason}</p>
-            {item.action === 'send_broadcast' && <>
-              <p className='mt-1 text-xs text-[#68796b]'>
-                {item.details?.audience === 'all' ? 'All members' : 'One member'} · {item.details?.channel} · {item.details?.recipient_count} recipients · {item.details?.email_count} emails queued
-              </p>
-              <p className='mt-1 whitespace-pre-wrap break-words text-sm text-[#506653]'>{item.details?.body}</p>
-            </>}
-          </div>
-        ))}
-        {!data.history.length && <Empty text='No admin actions recorded yet.' />}
-      </div>
-      <ListPagination
-        page={page}
-        pageSize={15}
-        total={data.history.length}
-        onPageChange={setPage}
-      />
     </>
   );
 }

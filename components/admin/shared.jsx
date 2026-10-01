@@ -17,6 +17,45 @@ export function formatDate(value) {
     : '—';
 }
 
+export function formatDateTime(value) {
+  return value
+    ? new Date(value).toLocaleString('en-UG', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        timeZone: 'Africa/Kampala',
+        timeZoneName: 'short'
+      })
+    : '—';
+}
+
+export function shortId(prefix, id) {
+  if (!id) return `${prefix}-—`;
+  return `${prefix}-${String(id).replace(/-/g, '').slice(0, 4).toUpperCase()}`;
+}
+
+export function actionLabel(action) {
+  const labels = {
+    send_broadcast: 'Broadcast queued',
+    cancel_plan: 'Plan cancelled',
+    hide_plan: 'Plan hidden',
+    reopen_plan: 'Plan reopened',
+    suspend_member: 'Member suspended',
+    reinstate_member: 'Member reinstated',
+    resolve_report: 'Report resolved',
+    reopen_report: 'Report reopened',
+    prioritize_report: 'Report priority changed',
+    assign_report: 'Report assigned',
+    note_report: 'Report note saved'
+  };
+  if (labels[action]) return labels[action];
+  return String(action || '')
+    .replaceAll('_', ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
 export function scheduled(plan) {
   const label = String(plan.date_label || '').replace(/^[A-Za-z]{3},?\s+/, '');
   const year = new Date(plan.created_at).getUTCFullYear();
@@ -31,6 +70,7 @@ export function Badge({ children, tone = 'green' }) {
     green: 'bg-[#e6f3e9] text-[#226337]',
     pink: 'bg-[#ffe5f0] text-[#9a285e]',
     yellow: 'bg-[#fff1c8] text-[#805800]',
+    orange: 'bg-[#ffe8d6] text-[#9a3412]',
     gray: 'bg-[#edf1ee] text-[#526457]',
     blue: 'bg-[#e4f0ff] text-[#1d4f8c]',
     red: 'bg-[#ffe8e8] text-[#9b2c2c]'
@@ -53,6 +93,7 @@ export function StatCard({ label, value, icon: Icon, tone = 'green' }) {
     green: 'bg-[#e8f4ea] text-[#246538]',
     pink: 'bg-[#ffe5f0] text-[#9a285e]',
     yellow: 'bg-[#fff1c8] text-[#805800]',
+    orange: 'bg-[#ffe8d6] text-[#9a3412]',
     gray: 'bg-[#edf1ee] text-[#526457]',
     red: 'bg-[#ffe8e8] text-[#9b2c2c]'
   };
