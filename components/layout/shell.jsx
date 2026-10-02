@@ -255,10 +255,40 @@ export function AppShell({ children }) {
         </main>
       </div>
       <nav
-        className={`fixed inset-x-0 bottom-0 z-20 hidden grid-cols-4 border-t border-border bg-card px-2 pt-1 pb-[calc(.4rem+env(safe-area-inset-bottom))] shadow-[0_-6px_20px_rgba(15,34,24,.04)] ${inMobileChat || inMobileDetail ? '' : 'max-[760px]:grid'}`}
+        className={`fixed inset-x-0 bottom-0 z-20 hidden grid-cols-5 items-end border-t border-border bg-card px-1.5 pt-1 pb-[calc(.35rem+env(safe-area-inset-bottom))] shadow-[0_-6px_20px_rgba(15,34,24,.04)] ${inMobileChat || inMobileDetail ? '' : 'max-[760px]:grid'}`}
         aria-label='Mobile navigation'
       >
-        {navigation.map(({ id, label, icon: Icon }) => (
+        {navigation.slice(0, 2).map(({ id, label, icon: Icon }) => (
+          <button
+            key={id}
+            type='button'
+            className={mobileClass(id)}
+            onClick={() => navigate(id)}
+            aria-current={screen === id ? 'page' : undefined}
+          >
+            <span
+              className={`grid size-7 place-items-center rounded-full ${screen === id ? 'bg-primary text-white' : ''}`}
+            >
+              <Icon className='size-[18px]' aria-hidden='true' />
+            </span>
+            <span>{label}</span>
+          </button>
+        ))}
+        <button
+          type='button'
+          onClick={() => navigate('create')}
+          aria-current={screen === 'create' ? 'page' : undefined}
+          aria-label='Create a plan'
+          className='relative -mt-5 mb-0.5 grid justify-items-center gap-0.5 px-1 text-[10px] font-extrabold text-[#9b1c62]'
+        >
+          <span
+            className={`grid size-14 place-items-center rounded-[18px] bg-[#ec4899] text-white shadow-[0_10px_22px_rgba(236,72,153,.38)] transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ec4899] ${screen === 'create' ? 'ring-2 ring-[#ffb900] ring-offset-2 ring-offset-card' : ''}`}
+          >
+            <Plus className='size-7' strokeWidth={2.5} aria-hidden='true' />
+          </span>
+          <span className={screen === 'create' ? 'text-[#ec4899]' : 'text-muted-foreground'}>Create</span>
+        </button>
+        {navigation.slice(2).map(({ id, label, icon: Icon }) => (
           <button
             key={id}
             type='button'

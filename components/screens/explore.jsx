@@ -101,6 +101,11 @@ export function ExploreScreen() {
       ),
     [data.plans, category, query]
   );
+  const openPlans = useMemo(
+    () => data.plans.filter((plan) => isPlanJoinable(plan) && plan.visibility !== 'link_only'),
+    [data.plans]
+  );
+  const searching = Boolean(query.trim()) || category !== 'All';
   const currentPage = Math.min(page, Math.max(1, Math.ceil(filtered.length / PAGE_SIZE)));
   const visible = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
@@ -194,12 +199,23 @@ export function ExploreScreen() {
       <div className='grid grid-cols-2 gap-4 max-[1050px]:grid-cols-1'>
         {filtered.length ? (
           visible.map((plan) => <PlanCard key={plan.id} plan={plan} />)
-        ) : (
+        ) : searching && openPlans.length ? (
           <EmptyState
             title='No plans match that search.'
             description='Try another activity or put your own plan out there.'
-            action='Make a plan'
+            action='Create a plan'
             onAction={() => navigate('create')}
+          />
+        ) : (
+          <EmptyState
+            tone='soft'
+            imageSrc='/activity/hero-people.webp'
+            imageAlt='Friends high-fiving over plans to go out together'
+            title='No plans nearby yet.'
+            description='Start one and invite people to join.'
+            action='Create a plan'
+            onAction={() => navigate('create')}
+            hint='Swimming, coffee, a class — what’s your plan?'
           />
         )}
       </div>

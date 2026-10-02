@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { ArrowLeft, Flag } from 'lucide-react';
+import { ArrowLeft, Flag, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -120,12 +120,44 @@ export function PageHeading({ title, description }) {
   );
 }
 
-export function EmptyState({ title, description, action, onAction }) {
+export function EmptyState({
+  title,
+  description,
+  action,
+  onAction,
+  hint = '',
+  imageSrc = '',
+  imageAlt = '',
+  tone = 'default'
+}) {
+  const soft = tone === 'soft';
   return (
-    <div className='col-span-full rounded-[18px] border border-dashed border-border bg-card px-6 py-10 text-center'>
-      <h3 className='font-heading text-xl font-extrabold'>{title}</h3>
-      <p className='mt-2 mb-5 text-muted-foreground'>{description}</p>
-      <ActionButton onClick={onAction}>{action}</ActionButton>
+    <div
+      className={cn(
+        'col-span-full px-6 py-10 text-center',
+        soft
+          ? 'rounded-[28px] border-0 bg-[#e9f1e8] px-5 py-12'
+          : 'rounded-[18px] border border-dashed border-border bg-card'
+      )}
+    >
+      {imageSrc ? (
+        <div className='relative mx-auto mb-6 aspect-[1.35] w-full max-w-[220px] overflow-hidden rounded-[22px] bg-white/50'>
+          <Image src={imageSrc} alt={imageAlt || ''} fill sizes='220px' className='object-cover' />
+        </div>
+      ) : null}
+      <h3 className='font-heading text-xl font-extrabold text-forest'>{title}</h3>
+      <p className='mx-auto mt-2 max-w-[34ch] text-muted-foreground'>{description}</p>
+      {action ? (
+        <button
+          type='button'
+          onClick={onAction}
+          className='mt-6 inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#ec4899] px-6 text-sm font-extrabold text-white shadow-[0_10px_22px_rgba(236,72,153,.28)] transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ec4899]'
+        >
+          <Plus className='size-4' aria-hidden='true' />
+          {action}
+        </button>
+      ) : null}
+      {hint ? <p className='mt-5 text-xs font-semibold text-[#5a6f5d]'>{hint}</p> : null}
     </div>
   );
 }
