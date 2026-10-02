@@ -6,6 +6,7 @@ const allowed = new Set([
   'cancel_plan',
   'hide_plan',
   'reopen_plan',
+  'set_plan_visibility',
   'suspend_member',
   'reinstate_member',
   'resolve_report',
@@ -15,7 +16,11 @@ const allowed = new Set([
   'note_report'
 ]);
 const tableFor = (action) =>
-  action.endsWith('_plan') ? 'plans' : action.endsWith('_member') ? 'profiles' : 'plan_reports';
+  action.endsWith('_plan') || action === 'set_plan_visibility'
+    ? 'plans'
+    : action.endsWith('_member')
+      ? 'profiles'
+      : 'plan_reports';
 const fail = (error, status) =>
   Response.json({ error }, { status, headers: { 'Cache-Control': 'no-store' } });
 
@@ -74,6 +79,14 @@ export async function POST(request) {
         hidden_reason: null
       };
       break;
+    case 'set_plan_visibility': {
+      const visibility = body.visibility === 'link_only' ? 'link_only' : body.visibility === 'public' ? 'public' : null;
+      if (!visibility) return fail('Choose public or link-only.', 400);
+      if ((before.data.visibility || 'public') === visibility)
+        return fail('This plan already has that visibility.', 400);
+      patch = { visibility };
+      break;
+    }
     case 'suspend_member':
       patch = { suspended_at: now, suspension_reason: reason };
       break;

@@ -122,11 +122,22 @@ export function Plans({ data, run, busy }) {
 
   async function confirmAction() {
     if (!pendingAction) return;
-    const ok = await run(pendingAction.action, pendingAction.id, reason);
+    const ok = await run(pendingAction.action, pendingAction.id, reason, pendingAction.extra);
     if (ok) {
       setPendingAction(null);
       setReason('');
     }
+  }
+
+  function queueVisibility(plan, visibility) {
+    setPendingAction({
+      action: 'set_plan_visibility',
+      id: plan.id,
+      label: plan.title,
+      visibility,
+      extra: { visibility }
+    });
+    setReason('');
   }
 
   return (
@@ -386,6 +397,35 @@ export function Plans({ data, run, busy }) {
                     {selected.hidden_at ? 'Hidden' : visibilityMeta(selected.visibility).label}
                   </Badge>
                 </div>
+                {!selected.hidden_at && (
+                  <div>
+                    <dt className='text-xs font-bold text-[#68796b]'>Change visibility</dt>
+                    <dd className='mt-2 flex flex-wrap gap-2'>
+                      {[
+                        ['public', 'Public'],
+                        ['link_only', 'Link-only']
+                      ].map(([value, label]) => {
+                        const active = (selected.visibility || 'public') === value;
+                        return (
+                          <button
+                            key={value}
+                            type='button'
+                            disabled={busy || active}
+                            onClick={() => queueVisibility(selected, value)}
+                            aria-pressed={active}
+                            className={`min-h-9 rounded-full px-3 text-xs font-bold ${
+                              active
+                                ? 'bg-[#246538] text-white'
+                                : 'border border-[#cadacb] bg-white text-[#276837] hover:bg-[#edf6ec]'
+                            }`}
+                          >
+                            {label}
+                          </button>
+                        );
+                      })}
+                    </dd>
+                  </div>
+                )}
               </dl>
 
               {capacityLabel(selected).full && (
@@ -547,7 +587,11 @@ export function Plans({ data, run, busy }) {
       {pendingAction && (
         <ReasonBar
           title='Moderation action'
-          prompt={`${pendingAction.action === 'hide_plan' ? 'Hide' : pendingAction.action === 'cancel_plan' ? 'Cancel' : 'Reopen'} “${pendingAction.label}”? Provide a reason. This will be recorded in admin history.`}
+          prompt={
+            pendingAction.action === 'set_plan_visibility'
+              ? `Set “${pendingAction.label}” to ${pendingAction.visibility === 'link_only' ? 'link-only' : 'public'}? Provide a reason. This will be recorded in admin history.`
+              : `${pendingAction.action === 'hide_plan' ? 'Hide' : pendingAction.action === 'cancel_plan' ? 'Cancel' : 'Reopen'} “${pendingAction.label}”? Provide a reason. This will be recorded in admin history.`
+          }
           reason={reason}
           setReason={setReason}
           onCancel={() => {
@@ -556,11 +600,15 @@ export function Plans({ data, run, busy }) {
           }}
           onConfirm={confirmAction}
           confirmLabel={
-            pendingAction.action === 'hide_plan'
-              ? 'Confirm hide'
-              : pendingAction.action === 'cancel_plan'
-                ? 'Confirm cancel'
-                : 'Confirm reopen'
+            pendingAction.action === 'set_plan_visibility'
+              ? pendingAction.visibility === 'link_only'
+                ? 'Make link-only'
+                : 'Make public'
+              : pendingAction.action === 'hide_plan'
+                ? 'Confirm hide'
+                : pendingAction.action === 'cancel_plan'
+                  ? 'Confirm cancel'
+                  : 'Confirm reopen'
           }
           busy={busy}
           tone={pendingAction.action === 'cancel_plan' ? 'pink' : 'green'}
