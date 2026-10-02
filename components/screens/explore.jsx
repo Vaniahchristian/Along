@@ -209,8 +209,8 @@ export function ExploreScreen() {
         ) : (
           <EmptyState
             tone='soft'
-            imageSrc='/activity/hero-people.webp'
-            imageAlt='Friends high-fiving over plans to go out together'
+            imageSrc='/activity/empty-plans.png'
+            imageAlt='Friends celebrating plans on a calendar'
             title='No plans nearby yet.'
             description='Start one and invite people to join.'
             action='Create a plan'

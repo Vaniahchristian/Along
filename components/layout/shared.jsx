@@ -141,8 +141,8 @@ export function EmptyState({
       )}
     >
       {imageSrc ? (
-        <div className='relative mx-auto mb-6 aspect-[1.35] w-full max-w-[220px] overflow-hidden rounded-[22px] bg-white/50'>
-          <Image src={imageSrc} alt={imageAlt || ''} fill sizes='220px' className='object-cover' />
+        <div className='relative mx-auto mb-6 aspect-[4/3] w-full max-w-[280px] overflow-hidden'>
+          <Image src={imageSrc} alt={imageAlt || ''} fill sizes='280px' className='object-contain' />
         </div>
       ) : null}
       <h3 className='font-heading text-xl font-extrabold text-forest'>{title}</h3>
