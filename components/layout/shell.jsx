@@ -282,7 +282,7 @@ export function AppShell({ children }) {
           className='relative -mt-5 mb-0.5 grid justify-items-center gap-0.5 px-1 text-[10px] font-extrabold text-[#9b1c62]'
         >
           <span
-            className={`grid size-14 place-items-center rounded-[18px] bg-[#ec4899] text-white shadow-[0_10px_22px_rgba(236,72,153,.38)] transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ec4899] ${screen === 'create' ? 'ring-2 ring-[#ffb900] ring-offset-2 ring-offset-card' : ''}`}
+            className={`grid size-14 place-items-center rounded-[18px] bg-[#ec4899] text-white transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ec4899] ${screen === 'create' ? 'ring-2 ring-[#ffb900] ring-offset-2 ring-offset-card' : ''}`}
           >
             <Plus className='size-7' strokeWidth={2.5} aria-hidden='true' />
           </span>
