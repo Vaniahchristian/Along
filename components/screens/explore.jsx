@@ -10,7 +10,7 @@ import { useAlongSession, useAlongPlans } from '@/components/providers/along';
 import { isPlanJoinable } from '@/lib/along/plan-lifecycle';
 import { BeginnerBadge, CategoryBadge, EmptyState, PersonAvatar } from '@/components/layout/shared';
 
-const categories = ['All', 'Fitness', 'Outings', 'Learning'];
+const categories = ['All', 'Fitness', 'Outings', 'Learning', 'Parties'];
 const PAGE_SIZE = 6;
 
 function PlanCard({ plan }) {

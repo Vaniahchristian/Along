@@ -85,7 +85,8 @@ export function CategoryBadge({ category }) {
   const colors = {
     Fitness: 'bg-soft-green text-forest',
     Outings: 'bg-muted text-forest',
-    Learning: 'bg-accent text-accent-foreground'
+    Learning: 'bg-accent text-accent-foreground',
+    Parties: 'bg-[#ffe1ef] text-[#8e285b]'
   };
   return (
     <Badge

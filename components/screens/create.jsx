@@ -261,7 +261,7 @@ export function CreateScreen({ plan = null } = {}) {
                 label='Category'
                 value={category}
                 onChange={setCategory}
-                options={['Fitness', 'Outings', 'Learning'].map((value) => [value, value])}
+                options={['Fitness', 'Outings', 'Learning', 'Parties'].map((value) => [value, value])}
               />
               <SelectField
                 id='size'
