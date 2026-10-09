@@ -119,13 +119,22 @@ export function ExploreScreen() {
           <p className='mt-3 max-w-[35ch] text-base leading-relaxed text-white/85 max-[1050px]:hidden'>
             Find someone to do it with. Small plans, real places, good company.
           </p>
-          <button
-            type='button'
-            onClick={() => navigate('create')}
-            className='mt-6 inline-flex min-h-12 items-center gap-2 rounded-full bg-gradient-to-r from-pink to-amber px-6 text-sm font-extrabold text-forest shadow-[0_8px_20px_rgba(0,0,0,.16)] transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white max-[1050px]:mt-4 max-[1050px]:min-h-10 max-[1050px]:px-4 max-[1050px]:text-[12px]'
-          >
-            <Plus className='size-5 max-[1050px]:size-4' aria-hidden='true' /> Start a plan
-          </button>
+          <div className='mt-6 flex flex-wrap items-center gap-3 max-[1050px]:mt-4'>
+            <button
+              type='button'
+              onClick={() => navigate('create')}
+              className='inline-flex min-h-12 items-center gap-2 rounded-full bg-gradient-to-r from-pink to-amber px-6 text-sm font-extrabold text-forest shadow-[0_8px_20px_rgba(0,0,0,.16)] transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white max-[1050px]:min-h-10 max-[1050px]:px-4 max-[1050px]:text-[12px]'
+            >
+              <Plus className='size-5 max-[1050px]:size-4' aria-hidden='true' /> Start a plan
+            </button>
+            <button
+              type='button'
+              onClick={() => navigate('free')}
+              className='inline-flex min-h-12 items-center gap-2 rounded-full border border-white/40 px-6 text-sm font-extrabold text-white transition-colors hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white max-[1050px]:min-h-10 max-[1050px]:px-4 max-[1050px]:text-[12px]'
+            >
+              I’m free
+            </button>
+          </div>
         </div>
         <div className='relative min-h-[300px] overflow-hidden max-[1050px]:absolute max-[1050px]:inset-y-0 max-[1050px]:right-0 max-[1050px]:w-[58%] max-[1050px]:min-h-0 max-[600px]:w-[62%]'>
           <Image
