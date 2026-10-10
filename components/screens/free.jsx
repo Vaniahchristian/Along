@@ -1,14 +1,23 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { CalendarClock, Sparkles, Timer } from 'lucide-react';
+import { CalendarClock, Check, Search, Sparkles, Timer, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import { useAlongSession } from '@/components/providers/along';
-import { ActionButton, EmptyState, PageHeading, Panel } from '@/components/layout/shared';
+import { ActionButton, EmptyState, PageHeading, Panel, PersonAvatar } from '@/components/layout/shared';
 import { Skeleton } from '@/components/layout/app-skeleton';
-import { loadMyAvailability, saveAvailability } from '@/lib/along/im-free';
+import {
+  acceptProposal,
+  declineProposal,
+  findMatches,
+  loadMyAvailability,
+  loadMyProposals,
+  loadProposalPeers,
+  saveAvailability
+} from '@/lib/along/im-free';
 
 function kampalaInputParts(iso) {
   if (!iso) return { date: '', time: '' };
@@ -45,6 +54,37 @@ function isRescheduleBlocked(error) {
   return message.includes('unresolved') || message.includes('proposal') || error?.code === '23505';
 }
 
+function matchErrorMessage(error) {
+  const message = String(error?.message || '');
+  if (/no active availability/i.test(message)) {
+    return 'Save a free window that has not ended yet, then try again.';
+  }
+  if (/suspended/i.test(message)) {
+    return 'This account cannot search for matches right now.';
+  }
+  return message || 'Could not search for matches.';
+}
+
+function decisionErrorMessage(error, action) {
+  const message = String(error?.message || '');
+  if (/already responded|already-decided|not a pending participant/i.test(message)) {
+    return 'This invitation was already decided. Refreshing the list.';
+  }
+  if (/already formed or closed|formed|closed/i.test(message)) {
+    return 'This invitation is no longer open. Refreshing the list.';
+  }
+  if (/already passed|window has already/i.test(message)) {
+    return 'This match window has already passed.';
+  }
+  if (/not a participant/i.test(message)) {
+    return 'You are not part of this invitation.';
+  }
+  if (/proposal not found/i.test(message)) {
+    return 'This invitation no longer exists. Refreshing the list.';
+  }
+  return message || `Could not ${action} this invitation.`;
+}
+
 function defaultEndFor(startIso) {
   const start = new Date(startIso);
   if (Number.isNaN(start.getTime())) return '';
@@ -63,17 +103,34 @@ export function FreeScreen() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [loadError, setLoadError] = useState('');
+  const [proposals, setProposals] = useState([]);
+  const [peers, setPeers] = useState(new Map());
+  const [proposalsError, setProposalsError] = useState('');
+  const [finding, setFinding] = useState(false);
+  const [lastSearch, setLastSearch] = useState(null);
+  const [actingId, setActingId] = useState(null);
+  const loadProposals = useCallback(async () => {
+    setProposalsError('');
+    try {
+      const rows = await loadMyProposals();
+      setProposals(rows);
+      setPeers(await loadProposalPeers(rows));
+    } catch (error) {
+      setProposalsError(error.message || 'Could not load your invitations.');
+    }
+  }, []);
   const load = useCallback(async () => {
     setLoading(true);
     setLoadError('');
     try {
       setSaved(await loadMyAvailability());
+      await loadProposals();
     } catch (error) {
       setLoadError(error.message || 'Could not load your availability.');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [loadProposals]);
 
   useEffect(() => {
     if (hydrated && viewer) load();
@@ -120,6 +177,58 @@ export function FreeScreen() {
     }
   }
 
+  const pendingProposals = useMemo(
+    () => proposals.filter((row) => row.myDecision === 'pending' && row.status !== 'closed'),
+    [proposals]
+  );
+
+  async function searchMatches() {
+    if (finding) return;
+    if (!saved) return toast.error('Save a free window first, then search.');
+    setFinding(true);
+    try {
+      const rows = await findMatches();
+      setLastSearch({ at: new Date().toISOString(), count: rows.length });
+      await loadProposals();
+      if (!rows.length) {
+        toast.success('Search complete — no new matches right now.');
+      } else {
+        toast.success(`Found ${rows.length} ${rows.length === 1 ? 'match' : 'matches'}.`);
+      }
+    } catch (error) {
+      toast.error(matchErrorMessage(error));
+    } finally {
+      setFinding(false);
+    }
+  }
+
+  async function decide(id, action) {
+    if (actingId) return;
+    setActingId(id);
+    try {
+      if (action === 'accept') {
+        const row = await acceptProposal(id);
+        await loadProposals();
+        if (row?.group_id) {
+          toast.success('Match accepted — your group is ready. Group chat arrives in the next step.');
+        } else if (row?.status === 'formed') {
+          toast.success('Match accepted — the group is already formed.');
+        } else {
+          toast.success('Invitation accepted. Waiting on the other person.');
+        }
+      } else {
+        await declineProposal(id);
+        await loadProposals();
+        toast.success('Invitation declined.');
+      }
+    } catch (error) {
+      toast.error(decisionErrorMessage(error, action === 'accept' ? 'accept' : 'decline'));
+      await loadProposals();
+    } finally {
+      setActingId(null);
+    }
+  }
+
   async function submit(event) {
     event.preventDefault();
     let start;
@@ -163,8 +272,9 @@ export function FreeScreen() {
   }
   return (
     <>
-      <PageHeading title='I’m Free.' description='Tell people when you are around. Matches come next.' />
+      <PageHeading title='I’m Free.' description='Save your window, search for overlapping people, then answer your invitations.' />
       <div className='grid grid-cols-[minmax(0,1.2fr)_minmax(260px,.8fr)] gap-5 max-[760px]:grid-cols-1'>
+        <div className='grid min-w-0 gap-5'>
         <Panel>
           {loadError ? (
             <div role='alert' className='flex flex-wrap items-center gap-3 rounded-xl border border-[#f4c5d8] bg-[#fff2f7] p-4 text-sm text-[#9f2849]'>
@@ -226,6 +336,93 @@ export function FreeScreen() {
             </div>
           )}
         </Panel>
+        <Panel>
+          <h2 className='font-heading text-xl font-extrabold text-forest'>Find people free at the same time</h2>
+          <p className='mt-1.5 text-sm leading-relaxed text-muted-foreground'>
+            Search checks overlapping free windows with at least one shared interest. Nothing runs until you ask.
+          </p>
+          <div className='mt-4'>
+            <ActionButton type='button' onClick={searchMatches} disabled={finding || saving || !saved}>
+              <Search aria-hidden='true' /> {finding ? 'Searching…' : 'Find compatible people'}
+            </ActionButton>
+          </div>
+          {lastSearch && (
+            <p className='mt-3 text-xs text-muted-foreground' aria-live='polite'>
+              Last search {formatWindow(lastSearch.at)} — {lastSearch.count} {lastSearch.count === 1 ? 'match' : 'matches'} found.
+            </p>
+          )}
+        </Panel>
+        <Panel>
+          <h2 className='font-heading text-xl font-extrabold text-forest'>Invitations to connect</h2>
+          <p className='mt-1.5 text-sm leading-relaxed text-muted-foreground'>
+            An invitation is a nudge to connect, not a confirmed meetup. Accepting twice forms a group in the next step.
+          </p>
+          {proposalsError ? (
+            <div role='alert' className='mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-[#f4c5d8] bg-[#fff2f7] p-4 text-sm text-[#9f2849]'>
+              <span>{proposalsError}</span>
+              <button type='button' onClick={loadProposals} className='font-bold underline'>Try again</button>
+            </div>
+          ) : pendingProposals.length ? (
+            <ul className='mt-4 grid gap-3'>
+              {pendingProposals.map((proposal) => {
+                const busy = actingId === proposal.id;
+                const peer = peers.get(proposal.id) || null;
+                return (
+                  <li key={proposal.id} className='rounded-2xl border border-border bg-secondary/50 p-4'>
+                    {peer ? (
+                      <div className='flex min-w-0 items-center gap-3'>
+                        <PersonAvatar
+                          initials={peer.initials}
+                          name={peer.name}
+                          tone={peer.tone}
+                          src={peer.avatarUrl}
+                        />
+                        <div className='min-w-0'>
+                          <strong className='block truncate text-sm font-extrabold text-forest'>
+                            {peer.name}
+                          </strong>
+                          <span className='block truncate text-xs text-muted-foreground'>
+                            {[peer.city, peer.bio].filter(Boolean).join(' · ') || 'Tagwimi member'}
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className='text-xs leading-relaxed text-muted-foreground'>
+                        The other person’s profile will appear here once identity sharing is enabled.
+                      </p>
+                    )}
+                    <div className='mt-3 flex flex-wrap items-center gap-2'>
+                      <Badge className='h-auto rounded-full border-0 bg-soft-green px-2.5 py-1 text-[11px] font-extrabold text-forest'>
+                        {proposal.sharedInterest}
+                      </Badge>
+                      <span className='text-xs font-bold text-muted-foreground'>
+                        {proposal.status} · {formatWindow(proposal.createdAt)}
+                      </span>
+                    </div>
+                    <div className='mt-3 flex flex-wrap gap-2'>
+                      <ActionButton type='button' disabled={Boolean(actingId)} onClick={() => decide(proposal.id, 'accept')}>
+                        <Check aria-hidden='true' /> {busy ? 'Working…' : 'Accept'}
+                      </ActionButton>
+                      <ActionButton type='button' tone='secondary' disabled={Boolean(actingId)} onClick={() => decide(proposal.id, 'decline')}>
+                        <X aria-hidden='true' /> {busy ? 'Working…' : 'Decline'}
+                      </ActionButton>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <div className='mt-4'>
+              <EmptyState tone='soft' title='No invitations yet.' description='Run a search above. When someone overlaps your window and shares an interest, their invitation appears here.' />
+            </div>
+          )}
+          {proposals.length > pendingProposals.length && (
+            <p className='mt-4 text-xs text-muted-foreground'>
+              {proposals.length - pendingProposals.length} decided or closed {proposals.length - pendingProposals.length === 1 ? 'invitation' : 'invitations'} hidden.
+            </p>
+          )}
+        </Panel>
+        </div>
         <Panel className='h-fit border-0 bg-soft-green'>
           <h2 className='mb-3 font-heading text-[22px] font-extrabold text-forest'>Small windows match best.</h2>
           <p className='text-forest'>Pick a few hours you can actually keep.</p>
