@@ -256,6 +256,15 @@ export function FreeScreen() {
     [proposals]
   );
 
+  // Empty-state guidance must match when search is actually available: the
+  // search button is disabled without a saved window, and an expired window
+  // would be rejected server-side.
+  const proposalsEmptyDescription = !saved
+    ? 'Save a free window above, then find people free at the same time. When someone overlaps your window and shares an interest, their invitation appears here.'
+    : availabilityStatus(saved) === 'expired'
+      ? 'Your free window has ended. Set a new one above, then search again — when someone overlaps your new window and shares an interest, their invitation appears here.'
+      : 'Run a search above. When someone overlaps your window and shares an interest, their invitation appears here.';
+
   async function searchMatches() {
     if (finding) return;
     if (!saved) return toast.error('Save a free window first, then search.');
@@ -526,6 +535,13 @@ export function FreeScreen() {
                 const busy = actingId === proposal.id;
                 const waiting = proposal.myDecision === 'accepted';
                 const peer = peers.get(proposal.id) || null;
+                // Human-friendly status for actionable cards (only 'pending' or
+                // 'active' can appear here; DB statuses are never shown raw).
+                const statusLabel = waiting
+                  ? 'Waiting for the other person'
+                  : proposal.status === 'active'
+                    ? 'Waiting for your answer'
+                    : 'Open invitation';
                 return (
                   <li key={proposal.id} className='rounded-2xl border border-border bg-secondary/50 p-4'>
                     {peer ? (
@@ -555,7 +571,7 @@ export function FreeScreen() {
                         {proposal.sharedInterest}
                       </Badge>
                       <span className='text-xs font-bold text-muted-foreground'>
-                        {proposal.status} · {formatWindow(proposal.createdAt)}
+                        {statusLabel} · Invitation sent {formatWindow(proposal.createdAt)}
                       </span>
                     </div>
                     <div className='mt-3 flex flex-wrap gap-2'>
@@ -564,9 +580,11 @@ export function FreeScreen() {
                           <Check aria-hidden='true' /> {busy ? 'Working…' : 'Accept'}
                         </ActionButton>
                       )}
-                      <ActionButton type='button' tone='secondary' disabled={Boolean(actingId)} onClick={() => decide(proposal.id, 'decline')}>
-                        <X aria-hidden='true' /> {busy ? 'Working…' : waiting ? 'Withdraw' : 'Decline'}
-                      </ActionButton>
+                      {!waiting && (
+                        <ActionButton type='button' tone='secondary' disabled={Boolean(actingId)} onClick={() => decide(proposal.id, 'decline')}>
+                          <X aria-hidden='true' /> {busy ? 'Working…' : 'Decline'}
+                        </ActionButton>
+                      )}
                     </div>
                     {waiting && (
                       <p className='mt-3 rounded-xl bg-soft-green p-3 text-xs leading-relaxed text-forest'>
@@ -579,7 +597,7 @@ export function FreeScreen() {
             </ul>
           ) : (
             <div className='mt-4'>
-              <EmptyState tone='soft' title='No invitations yet.' description='Run a search above. When someone overlaps your window and shares an interest, their invitation appears here.' />
+              <EmptyState tone='soft' title='No invitations yet.' description={proposalsEmptyDescription} />
             </div>
           )}
           {proposals.length > actionableProposals.length && (

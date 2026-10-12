@@ -30,6 +30,7 @@ export function FreeGroupScreen() {
   const [loadError, setLoadError] = useState('');
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
+  const [offline, setOffline] = useState(false);
   const scrollRef = useRef(null);
 
   const load = useCallback(async () => {
@@ -64,10 +65,23 @@ export function FreeGroupScreen() {
     if (region) region.scrollTop = region.scrollHeight;
   }, [messages.length, group?.id]);
 
+  // Same offline-detection pattern as chat.jsx: proactive banner + disabled
+  // send while offline. No message queuing — wording must not promise it.
+  useEffect(() => {
+    const sync = () => setOffline(typeof navigator !== 'undefined' && navigator.onLine === false);
+    sync();
+    window.addEventListener('online', sync);
+    window.addEventListener('offline', sync);
+    return () => {
+      window.removeEventListener('online', sync);
+      window.removeEventListener('offline', sync);
+    };
+  }, []);
+
   async function submit(event) {
     event.preventDefault();
     const text = draft.trim();
-    if (!text || sending || !groupId) return;
+    if (!text || sending || offline || !groupId) return;
     setSending(true);
     try {
       await sendGroupMessage(groupId, text);
@@ -138,6 +152,14 @@ export function FreeGroupScreen() {
               <EmptyState tone='soft' title='No messages yet.' description='Say hello — your first message starts the conversation.' />
             )}
           </div>
+          {offline && (
+            <p
+              role='status'
+              className='border-b border-[#f3c1d3] bg-[#fff2f7] px-4 py-2 text-center text-xs font-bold text-[#9f2849]'
+            >
+              You’re offline. Sending is disabled until you’re back online.
+            </p>
+          )}
           <form onSubmit={submit} className='border-t border-border bg-card px-4 py-3'>
             <div className='flex items-end gap-2'>
               <label htmlFor='free-group-draft' className='sr-only'>Message the group</label>
@@ -151,7 +173,7 @@ export function FreeGroupScreen() {
                 aria-label='Message the group'
                 className='min-h-11 max-h-32 min-w-0 flex-1 resize-none rounded-[22px] border border-border bg-[#f8faf7] px-4 py-2.5 leading-6 outline-none placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20'
               />
-              <ActionButton type='submit' disabled={sending || !draft.trim()} className='size-11 shrink-0 rounded-full bg-pink px-0 hover:bg-[#c82270]'>
+              <ActionButton type='submit' disabled={sending || offline || !draft.trim()} className='size-11 shrink-0 rounded-full bg-pink px-0 hover:bg-[#c82270]'>
                 <SendHorizontal aria-hidden='true' />
                 <span className='sr-only'>{sending ? 'Sending…' : 'Send message'}</span>
               </ActionButton>

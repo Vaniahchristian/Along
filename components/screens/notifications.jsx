@@ -11,6 +11,8 @@ import {
   Flag,
   Megaphone,
   LifeBuoy,
+  Timer,
+  Users,
   Trash2
 } from 'lucide-react';
 import { useAlongSession } from '@/components/providers/along';
@@ -24,7 +26,9 @@ const icons = {
   plan_completed: CircleCheck,
   report: Flag,
   broadcast: Megaphone,
-  support: LifeBuoy
+  support: LifeBuoy,
+  match_proposal: Timer,
+  group_ready: Users
 };
 const tones = {
   join_request: 'bg-[#fff2df] text-[#9b6415]',
@@ -35,7 +39,9 @@ const tones = {
   plan_completed: 'bg-[#e9f1e8] text-[#2f5d34]',
   report: 'bg-[#fff2f7] text-[#9f2849]',
   broadcast: 'bg-[#e7f5e9] text-[#246b43]',
-  support: 'bg-[#e8f1ff] text-[#1d4f91]'
+  support: 'bg-[#e8f1ff] text-[#1d4f91]',
+  match_proposal: 'bg-[#e4f4ff] text-[#07598a]',
+  group_ready: 'bg-[#e7f5e9] text-[#3b793f]'
 };
 
 function dateLabel(value) {
@@ -178,7 +184,7 @@ export function NotificationsScreen() {
               All quiet for now
             </h2>
             <p className='mx-auto mt-2 max-w-sm text-sm leading-relaxed text-[#607061]'>
-              Join requests, messages, check-ins, and completed plans will appear here.
+              Join requests, messages, matches, groups, and completed plans will appear here.
             </p>
           </div>
         )

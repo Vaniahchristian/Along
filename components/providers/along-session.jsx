@@ -147,6 +147,24 @@ export function AlongSessionProvider({ children }) {
         }
         return;
       }
+      // I'm Free kinds are handled BEFORE plan routing: they never carry a
+      // plan_id and must never fall through to normal plan chat/detail.
+      if (notification.kind === 'group_ready') {
+        // group_ready rows carry a real (nullable) group_id: open that exact
+        // group conversation; fall back to the I'm Free screen if missing.
+        router.push(
+          notification.group_id ? `/app/free/${notification.group_id}` : ROUTES.free
+        );
+        window.scrollTo({ top: 0, behavior: 'instant' });
+        return;
+      }
+      if (notification.kind === 'match_proposal') {
+        // The payload carries no proposal identifier (none exists in the
+        // schema), so open the I'm Free list where the invitation appears.
+        router.push(ROUTES.free);
+        window.scrollTo({ top: 0, behavior: 'instant' });
+        return;
+      }
       if (notification.plan_id) {
         try {
           await refresh(viewer.id);
@@ -163,7 +181,7 @@ export function AlongSessionProvider({ children }) {
         else openPlan(notification.plan_id);
       }
     },
-    [openChat, openPlan, refresh, refreshNotifications, setNotifications, viewer]
+    [openChat, openPlan, refresh, refreshNotifications, router, setNotifications, viewer]
   );
 
   const readAllNotifications = useCallback(async () => {
