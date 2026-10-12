@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
   Bell,
   CalendarDays,
+  Clock,
   Compass,
   LifeBuoy,
   LogOut,
@@ -28,16 +29,19 @@ const navigation = [
   { id: 'explore', href: '/app/explore', label: 'Explore', icon: Compass },
   { id: 'plans', href: '/app/plans', label: 'My plans', icon: CalendarDays },
   { id: 'chat', href: '/app/chat', label: 'Messages', icon: MessageCircle },
+  { id: 'free', href: '/app/free', label: 'I’m Free', icon: Clock },
   { id: 'profile', href: '/app/profile', label: 'Profile', icon: UserRound }
 ];
 
 function activeNavId(pathname) {
   if (pathname.startsWith('/app/plans/') && pathname !== '/app/plans') return 'detail';
   if (pathname.startsWith('/app/chat/')) return 'chat';
+  if (pathname.startsWith('/app/free/') || pathname === '/app/free') return 'free';
   if (pathname.startsWith('/app/notifications')) return 'notifications';
   if (pathname.startsWith('/app/create')) return 'create';
   if (pathname.startsWith('/app/plans')) return 'plans';
   if (pathname.startsWith('/app/chat')) return 'chat';
+  if (pathname.startsWith('/app/free')) return 'free';
   if (pathname.startsWith('/app/profile')) return 'profile';
   return 'explore';
 }
@@ -255,7 +259,7 @@ export function AppShell({ children }) {
         </main>
       </div>
       <nav
-        className={`fixed inset-x-0 bottom-0 z-20 hidden grid-cols-5 items-end border-t border-border bg-card px-1.5 pt-1 pb-[calc(.35rem+env(safe-area-inset-bottom))] shadow-[0_-6px_20px_rgba(15,34,24,.04)] ${inMobileChat || inMobileDetail ? '' : 'max-[760px]:grid'}`}
+        className={`fixed inset-x-0 bottom-0 z-20 hidden grid-cols-6 items-end border-t border-border bg-card px-1.5 pt-1 pb-[calc(.35rem+env(safe-area-inset-bottom))] shadow-[0_-6px_20px_rgba(15,34,24,.04)] ${inMobileChat || inMobileDetail ? '' : 'max-[760px]:grid'}`}
         aria-label='Mobile navigation'
       >
         {navigation.slice(0, 2).map(({ id, label, icon: Icon }) => (

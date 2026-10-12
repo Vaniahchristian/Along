@@ -17,6 +17,7 @@ const ROUTES = {
   plans: '/app/plans',
   create: '/app/create',
   chat: '/app/chat',
+  free: '/app/free',
   profile: '/app/profile',
   notifications: '/app/notifications'
 };
